@@ -1,0 +1,10 @@
+spring:
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+
+server:
+  port: ${SERVER_PORT:3001}
+
+logging:
+  level:
+    org.springframework.security: INFO
