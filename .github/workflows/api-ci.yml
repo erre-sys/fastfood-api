@@ -21,7 +21,8 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Build JAR (skip tests por ahora)
+      - name: Build JAR (module fastfood)
+        working-directory: fastfood
         run: mvn -B -DskipTests package
 
       - uses: docker/setup-qemu-action@v3
@@ -45,16 +46,16 @@ jobs:
             echo "tags=${IMAGE}:${{ github.ref_name }}" >> $GITHUB_OUTPUT
           fi
 
-      - name: Build & push image
+      - name: Build & push image (context=fastfood)
         uses: docker/build-push-action@v6
         with:
-          context: .
-          file: Dockerfile
+          context: ./fastfood
+          file: ./fastfood/Dockerfile
           platforms: linux/amd64
           push: true
           tags: ${{ steps.vars.outputs.tags }}
           build-args: |
-            JAR_FILE=target/*.jar
+            JAR_FILE=target/*.jar   # el jar se generó en fastfood/target
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
