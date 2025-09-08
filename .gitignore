@@ -31,9 +31,3 @@ build/
 
 ### VS Code ###
 .vscode/
-
-.git
-target
-.mvn
-Dockerfile
-docker-compose*.yml
