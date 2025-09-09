@@ -1,26 +1,44 @@
 # ===== Builder =====
 FROM maven:3.9.7-eclipse-temurin-17 AS build
-WORKDIR /workspace
+WORKDIR /app
 
-# Descarga dependencias a cache
+# --- Elegir módulo que genera el jar ejecutable ---
+# Usa 'bootstrap' si ahí vive tu @SpringBootApplication.
+# Si el jar sale de 'infrastructure', pásalo como build-arg MODULE=infrastructure
+ARG MODULE=bootstrap
+
+# Copiamos solo poms para calentar caché de dependencias
 COPY pom.xml .
-RUN --mount=type=cache,target=/root/.m2 mvn -q -B -DskipTests dependency:go-offline
+COPY bootstrap/pom.xml bootstrap/pom.xml
+COPY domain/pom.xml domain/pom.xml
+COPY infrastructure/pom.xml infrastructure/pom.xml
+COPY share/pom.xml share/pom.xml
 
-# Compila
-COPY src ./src
-RUN --mount=type=cache,target=/root/.m2 mvn -q -B -DskipTests package
+# Descarga dependencias a caché sin compilar código aún
+RUN --mount=type=cache,target=/root/.m2 \
+    mvn -q -B -DskipTests -pl ${MODULE} -am dependency:go-offline
+
+# Ahora sí copiamos el código
+COPY . .
+
+# Compila sólo el módulo elegido (y lo necesario con -am)
+RUN --mount=type=cache,target=/root/.m2 \
+    mvn -q -B -DskipTests -pl ${MODULE} -am package
 
 # ===== Runtime =====
 FROM eclipse-temurin:17-jre-jammy
 WORKDIR /opt/app
 
-RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates wget \
-  && rm -rf /var/lib/apt/lists/*
+# (opcional) certificados / wget para healthcheck
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends ca-certificates wget \
+ && rm -rf /var/lib/apt/lists/*
 
 ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75 -XX:InitialRAMPercentage=25 -Duser.timezone=UTC"
 
-# copia jar
-COPY --from=build /workspace/target/*.jar /opt/app/app.jar
+# copiamos el jar compilado del módulo elegido
+ARG MODULE=bootstrap
+COPY --from=build /app/${MODULE}/target/*.jar /opt/app/app.jar
 
 # usuario no root
 RUN useradd -r -u 1000 appuser
@@ -28,7 +46,8 @@ USER 1000:1000
 
 EXPOSE 8080
 
-# healthcheck a actuator
+# OJO: si en producción usas context-path (/fastfood/api),
+# ajusta la ruta del healthcheck acorde.
 HEALTHCHECK --interval=15s --timeout=5s --retries=20 \
   CMD wget -qO- http://127.0.0.1:8080/actuator/health | grep -q '"status":"UP"' || exit 1
 
