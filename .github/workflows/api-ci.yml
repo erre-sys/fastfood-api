@@ -56,7 +56,7 @@ jobs:
           push: true
           tags: ${{ steps.vars.outputs.tags }}
           build-args: |
-            MODULE=bootstrap    # o infrastructure si ahí vive tu aplicación
+            MODULE=bootstrap
           cache-from: type=gha
           cache-to: type=gha,mode=max
 

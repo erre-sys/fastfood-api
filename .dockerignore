@@ -1,7 +1,9 @@
 .git
 .idea
-target
+.vscode
 **/target
 .mvn
 mvnw
 mvnw.cmd
+.dev/
+Dockerfile~

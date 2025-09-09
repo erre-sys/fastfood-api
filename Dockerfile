@@ -36,6 +36,9 @@ RUN apt-get update \
 
 ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75 -XX:InitialRAMPercentage=25 -Duser.timezone=UTC"
 
+ENV LOG_DIR=/opt/app/logs
+RUN mkdir -p $LOG_DIR && chown -R 1000:1000 $LOG_DIR
+
 # copiamos el jar compilado del módulo elegido
 ARG MODULE=bootstrap
 COPY --from=build /app/${MODULE}/target/*.jar /opt/app/app.jar
