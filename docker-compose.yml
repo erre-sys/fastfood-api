@@ -1,0 +1,42 @@
+version: "3.8"
+name: fastfood-dev
+
+services:
+  mysql:
+    image: mysql:8.0
+    command: --mysql-native-password=ON
+    environment:
+      MYSQL_ROOT_PASSWORD: root_dev
+      MYSQL_DATABASE: fastfood
+      MYSQL_USER: fastfood
+      MYSQL_PASSWORD: fastfood
+    ports:
+      - "3307:3306"              # host→container (evita chocar con 3306 si lo usas en tu Mac)
+    volumes:
+      - ./.dev/mysql:/var/lib/mysql
+      - ./.dev/mysql-init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-proot_dev", "-hmysql" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+        # Keycloak local es opcional para dev. Si no lo necesitas, comenta todo este servicio.
+        #keycloak:
+        # image: quay.io/keycloak/keycloak:24.0.5
+        #command: ["start-dev"]
+        #environment:
+        # KC_DB: mysql
+        # KC_DB_URL_HOST: mysql
+        # KC_DB_URL_PORT: "3306"
+        # KC_DB_USERNAME: keycloak
+        # KC_DB_PASSWORD: keycloak
+        # KEYCLOAK_ADMIN: admin
+        # KEYCLOAK_ADMIN_PASSWORD: change_me
+        # KC_HTTP_ENABLED: "true"
+        # KC_PROXY: edge
+        # depends_on:
+        # mysql:
+        # condition: service_healthy
+      # ports:
+      # - "8088:8080"              # http://localhost:8088
