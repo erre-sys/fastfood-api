@@ -25,7 +25,7 @@ jobs:
           java-version: '17'
 
       - name: Build JAR (solo módulo bootstrap)
-        run: ./mvnw -B -DskipTests -pl $MODULE -am package
+        run: ./mvnw -B -DskipTests -pl bootstrap -am package
 
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
@@ -56,7 +56,7 @@ jobs:
           push: true
           platforms: linux/amd64
           build-args: |
-            MODULE=${{ env.MODULE }}
+            MODULE=bootstrap
           tags: ${{ steps.vars.outputs.tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
