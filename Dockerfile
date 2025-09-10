@@ -48,6 +48,7 @@ HEALTHCHECK --interval=15s --timeout=5s --retries=20 \
 # copiamos el jar compilado del módulo elegido
 ARG MODULE=bootstrap
 COPY --from=build /app/${MODULE}/target/*.jar /opt/app/app.jar
+COPY --from=build /app/infrastructure/target/*.jar /opt/app/app.jar
 
 # usuario no root
 RUN useradd -r -u 1000 appuser
