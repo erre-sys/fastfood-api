@@ -12,6 +12,7 @@
     <artifactId>${project.parent.artifactId}-infrastructure</artifactId>
     <name>${project.parent.artifactId}-infrastructure</name>
     <description>Demo project for Spring Boot</description>
+    <packaging>jar</packaging>
 
     <properties>
         <jakarta.persistence.version>3.1.0</jakarta.persistence.version>
