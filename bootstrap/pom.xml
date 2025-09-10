@@ -54,19 +54,19 @@
 
         <dependency>
             <groupId>ec.com.erre</groupId>
-            <artifactId>${project.parent.artifactId}-domain</artifactId>
+            <artifactId>fastfood-service-domain</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>ec.com.erre</groupId>
-            <artifactId>${project.parent.artifactId}-infrastructure</artifactId>
+            <artifactId>fastfood-service-infrastructure</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>ec.com.erre</groupId>
-            <artifactId>${project.parent.artifactId}-share</artifactId>
+            <artifactId>fastfood-service-share</artifactId>
             <version>${project.version}</version>
         </dependency>
 
