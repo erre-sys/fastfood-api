@@ -1,4 +1,4 @@
-package ec.com.erre.fastfood.domain.commons;
+package ec.com.erre.fastfood.domain.commons.exceptions;
 
 public class RegistroDuplicadoException extends Exception {
 	/**

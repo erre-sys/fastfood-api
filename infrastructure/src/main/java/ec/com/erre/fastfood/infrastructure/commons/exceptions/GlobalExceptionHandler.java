@@ -1,7 +1,7 @@
 package ec.com.erre.fastfood.infrastructure.commons.exceptions;
 
-import ec.com.erre.fastfood.domain.commons.EntidadNoEncontradaException;
-import ec.com.erre.fastfood.domain.commons.ServiceException;
+import ec.com.erre.fastfood.domain.commons.exceptions.EntidadNoEncontradaException;
+import ec.com.erre.fastfood.domain.commons.exceptions.ServiceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;

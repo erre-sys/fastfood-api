@@ -1,5 +1,5 @@
 package ec.com.erre.fastfood.share.api.dtos;
-import ec.com.erre.fastfood.share.commons.ValidationGroups.*;
+
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,18 +15,26 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-class PagoProveedorDto {
-    @Null(groups = Crear.class) @NotNull(groups = Actualizar.class)
-    private Long id;
-    @NotNull(groups = {Crear.class, Actualizar.class})
-    private Long proveedorId;
-    @NotNull(groups = {Crear.class, Actualizar.class})
-    @Digits(integer = 10, fraction = 2)
-    private BigDecimal montoTotal;
-    @NotBlank(groups = {Crear.class, Actualizar.class})
-    private String metodo; // EFECTIVO, TARJETA, TRANSFERENCIA, OTRO
-    private String referencia;
-    private String observaciones;
-    private String creadoPorSub;
-    private LocalDateTime fecha;
+public class PagoProveedorDto {
+	@Null(groups = Crear.class)
+	@NotNull(groups = Actualizar.class)
+	private Long id;
+	@NotNull(groups = { Crear.class, Actualizar.class })
+	private Long proveedorId;
+	@NotNull(groups = { Crear.class, Actualizar.class })
+	@Digits(integer = 10, fraction = 2)
+	private BigDecimal montoTotal;
+	@NotBlank(groups = { Crear.class, Actualizar.class })
+	private String metodo; // EFECTIVO, TARJETA, TRANSFERENCIA, OTRO
+	private String referencia;
+	private String observaciones;
+	private String creadoPorSub;
+	private LocalDateTime fecha;
+
+	// Interfaces para definir grupos
+	public interface Crear {
+	}
+
+	public interface Actualizar {
+	}
 }

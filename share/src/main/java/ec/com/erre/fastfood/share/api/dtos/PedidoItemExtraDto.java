@@ -1,6 +1,5 @@
 package ec.com.erre.fastfood.share.api.dtos;
 
-import ec.com.erre.fastfood.share.commons.ValidationGroups.*;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,15 +14,23 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-class PedidoItemExtraDto {
-    @Null(groups = Crear.class) @NotNull(groups = Actualizar.class)
-    private Long id;
-    @NotNull(groups = {Crear.class, Actualizar.class})
-    private Long ingredienteId;
-    @NotNull(groups = {Crear.class, Actualizar.class})
-    @Digits(integer = 12, fraction = 3)
-    private BigDecimal cantidad;
-    @NotNull(groups = {Crear.class, Actualizar.class})
-    @Digits(integer = 10, fraction = 2)
-    private BigDecimal precioExtra;
+public class PedidoItemExtraDto {
+	@Null(groups = Crear.class)
+	@NotNull(groups = Actualizar.class)
+	private Long id;
+	@NotNull(groups = { Crear.class, Actualizar.class })
+	private Long ingredienteId;
+	@NotNull(groups = { Crear.class, Actualizar.class })
+	@Digits(integer = 12, fraction = 3)
+	private BigDecimal cantidad;
+	@NotNull(groups = { Crear.class, Actualizar.class })
+	@Digits(integer = 10, fraction = 2)
+	private BigDecimal precioExtra;
+
+	// Interfaces para definir grupos
+	public interface Crear {
+	}
+
+	public interface Actualizar {
+	}
 }
