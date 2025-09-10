@@ -2547,3 +2547,8 @@ java.lang.IllegalArgumentException: Invalid character found in method name [0x16
 	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659)
 	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
 	at java.base/java.lang.Thread.run(Thread.java:833)
+2025-09-09T20:33:01,134 ECT WARN  [fastfood-api] [] [HikariPool-1 housekeeper] c.z.h.p.HikariPool$HouseKeeper [line: 797] HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=2m8s174ms).
+2025-09-09T20:49:01,904 ECT WARN  [fastfood-api] [] [HikariPool-1 housekeeper] c.z.h.p.HikariPool$HouseKeeper [line: 797] HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=15m30s707ms).
+2025-09-09T20:51:40,059 ECT WARN  [fastfood-api] [] [HikariPool-1 housekeeper] c.z.h.p.HikariPool$HouseKeeper [line: 797] HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=2m38s158ms).
+2025-09-09T20:57:42,213 ECT WARN  [fastfood-api] [] [HikariPool-1 housekeeper] c.z.h.p.HikariPool$HouseKeeper [line: 797] HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=5m32s137ms).
+2025-09-09T20:59:26,947 ECT WARN  [fastfood-api] [] [HikariPool-1 housekeeper] c.z.h.p.HikariPool$HouseKeeper [line: 797] HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=1m14s483ms).
