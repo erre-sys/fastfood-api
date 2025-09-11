@@ -107,20 +107,14 @@ jobs:
     needs: build-push
     runs-on: self-hosted
     steps:
-      - name: Deploy locally
-        run: |
-          set -e
-          sudo docker compose -f /opt/apps/stack/docker-compose.yml pull api-fastfood
-          sudo docker compose -f /opt/apps/stack/docker-compose.yml up -d api-fastfood
-          curl -k --fail --retry 5 --retry-delay 3 https://api.erre.com/fastfood/api/health
-          
-          echo "== Versión corriendo =="
-          IMG=$(sudo docker ps --format '{{.Image}}' --filter 'name=api-fastfood')
-          echo "Image: $IMG"
-          sudo docker run --rm "$IMG" sh -lc 'jar tf /opt/app/app.jar | grep -i "GrupoIngredienteController" | head -n1 || true'
-          
-          echo "== Mappings expuestos =="          
-          curl -s https://api.erre.com/fastfood/api/actuator/mappings | grep -i grupo-ingredientes || (echo "No se ve el endpoint" && exit 1)
-          
-          echo "== Health =="
-          curl -k --fail https://api.erre.com/fastfood/api/actuator/health
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            set -e
+            sudo docker compose -f /opt/apps/stack/docker-compose.yml pull api-fastfood
+            sudo docker compose -f /opt/apps/stack/docker-compose.yml up -d api-fastfood
+            curl -k --fail --retry 5 --retry-delay 3 https://api.erre.com/fastfood/api/health
