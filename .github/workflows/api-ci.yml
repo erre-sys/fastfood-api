@@ -37,10 +37,10 @@ jobs:
       - name: Build JAR (solo módulo bootstrap)
         run: ./mvnw -B -DskipTests -pl bootstrap -am clean package
 
-      - name: Smoke check: controller dentro del JAR
+      - name: Smoke check controller dentro del JAR
         run: |
           jar tf bootstrap/target/app.jar | grep -qi 'infrastructure/api/in/rest/GrupoIngredienteController' \
-          || (echo "❌ Controller NO está dentro del JAR" && exit 1)
+          || (echo "Controller NO está dentro del JAR" && exit 1)
 
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
