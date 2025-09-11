@@ -2,19 +2,19 @@ name: api-ci
 
 on:
   push:
-    branches: [ main ]          # solo cuando mergeas a main
-  workflow_dispatch:            # y por si quieres lanzarlo manualmente
+    branches: [ main ]           # solo main
+  workflow_dispatch:
 
 permissions:
   contents: read
   packages: write
 
+concurrency:
+  group: fastfood-api-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   MODULE: bootstrap
-
-concurrency:
-  group: fastfood-api-main
-  cancel-in-progress: true
 
 jobs:
   build-push:
@@ -22,14 +22,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Cache Maven repo
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: m2-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
+          restore-keys: m2-${{ runner.os }}-
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-          cache: maven
 
-      - name: Build JAR
-        run: ./mvnw -B -DskipTests -pl bootstrap -am package
+      - name: Build JAR (solo módulo bootstrap)
+        run: ./mvnw -B -DskipTests -pl bootstrap -am clean package
+
+      - name: Smoke check: controller dentro del JAR
+        run: |
+          jar tf bootstrap/target/app.jar | grep -qi 'infrastructure/api/in/rest/GrupoIngredienteController' \
+          || (echo "❌ Controller NO está dentro del JAR" && exit 1)
 
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
@@ -41,16 +52,19 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Compute tags
-        id: vars
+      - name: Compute metadata
+        id: meta
         run: |
           OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           IMAGE="ghcr.io/${OWNER}/fastfood-api"
-          if [[ "${{ github.ref_type }}" == "branch" && "${{ github.ref_name }}" == "main" ]]; then
-            echo "tags=${IMAGE}:dev,${IMAGE}:sha-${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
-          else
-            echo "tags=${IMAGE}:${{ github.ref_name }}" >> $GITHUB_OUTPUT
-          fi
+          SHORT=${GITHUB_SHA::7}
+          echo "image=$IMAGE" >> $GITHUB_OUTPUT
+          echo "tags=$IMAGE:dev,$IMAGE:sha-$SHORT" >> $GITHUB_OUTPUT
+          {
+            echo "labels=org.opencontainers.image.source=${{ github.repository }}";
+            echo "org.opencontainers.image.revision=${GITHUB_SHA}";
+            echo "org.opencontainers.image.created=$(date -u +%FT%TZ)";
+          } >> $GITHUB_OUTPUT
 
       - name: Build & push image
         uses: docker/build-push-action@v6
@@ -59,15 +73,19 @@ jobs:
           file: Dockerfile
           platforms: linux/amd64
           push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             MODULE=${{ env.MODULE }}
-          tags: ${{ steps.vars.outputs.tags }}
+            BUILD_SHA=${{ github.sha }}
+            CACHE_BUSTER=${{ github.run_id }}   # fuerza recompilar capa del JAR
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  deploy:
+  deploy-dev:
     needs: build-push
-    runs-on: self-hosted
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
     steps:
       - name: Deploy over SSH
         uses: appleboy/ssh-action@v1.0.3
@@ -76,8 +94,18 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-              set -e
-              sudo docker compose -f /opt/apps/stack/docker-compose.yml pull api-fastfood
-              sudo docker compose -f /opt/apps/stack/docker-compose.yml up -d api-fastfood
-              curl -k --fail --retry 5 --retry-delay 3 https://api.erre.com/fastfood/api/health
+            set -euo pipefail
+            echo "== Pull + recreate =="
+            sudo docker compose -f /opt/apps/stack/docker-compose.yml pull --quiet api-fastfood
+            sudo docker compose -f /opt/apps/stack/docker-compose.yml up -d --no-deps --force-recreate api-fastfood
 
+            echo "== Versión corriendo =="
+            IMG=$(sudo docker ps --format '{{.Image}}' --filter 'name=api-fastfood')
+            echo "Image: $IMG"
+            sudo docker run --rm "$IMG" sh -lc 'jar tf /opt/app/app.jar | grep -i "GrupoIngredienteController" | head -n1 || true'
+
+            echo "== Mappings expuestos =="
+            curl -s http://127.0.0.1:8090/fastfood/api/actuator/mappings | grep -i grupo-ingredientes || (echo "No se ve el endpoint" && exit 1)
+
+            echo "== Health =="
+            curl -k --fail https://api.erre.com/fastfood/api/actuator/health
