@@ -65,7 +65,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  deploy-dev:
+  deploy:
     needs: build-push
     runs-on: self-hosted
     steps:
