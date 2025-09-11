@@ -26,8 +26,9 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+          cache: maven
 
-      - name: Build JAR (módulo bootstrap)
+      - name: Build JAR
         run: ./mvnw -B -DskipTests -pl bootstrap -am package
 
       - uses: docker/setup-qemu-action@v3
@@ -42,11 +43,14 @@ jobs:
 
       - name: Compute tags
         id: vars
-        shell: bash
         run: |
           OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           IMAGE="ghcr.io/${OWNER}/fastfood-api"
-          echo "tags=${IMAGE}:dev,${IMAGE}:sha-${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+          if [[ "${{ github.ref_type }}" == "branch" && "${{ github.ref_name }}" == "main" ]]; then
+            echo "tags=${IMAGE}:dev,${IMAGE}:sha-${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+          else
+            echo "tags=${IMAGE}:${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          fi
 
       - name: Build & push image
         uses: docker/build-push-action@v6
@@ -67,7 +71,7 @@ jobs:
     steps:
       - name: Deploy locally
         run: |
-          set -euo pipefail
+          set -e
           sudo docker compose -f /opt/apps/stack/docker-compose.yml pull api-fastfood
           sudo docker compose -f /opt/apps/stack/docker-compose.yml up -d api-fastfood
           curl -k --fail --retry 5 --retry-delay 3 https://api.erre.com/fastfood/api/health
