@@ -75,4 +75,4 @@ jobs:
             set -e
             sudo docker compose -f /opt/apps/stack/docker-compose.yml pull api-fastfood
             sudo docker compose -f /opt/apps/stack/docker-compose.yml up -d api-fastfood
-            curl -k --fail https://api.erre.com/health
+            curl -k --fail https://api.erre.com/fastfood/api/health
