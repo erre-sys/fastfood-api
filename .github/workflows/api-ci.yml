@@ -39,8 +39,29 @@ jobs:
 
       - name: Smoke check controller dentro del JAR
         run: |
-          jar tf bootstrap/target/app.jar | grep -qi 'infrastructure/api/in/rest/GrupoIngredienteController' \
-          || (echo "Controller NO está dentro del JAR" && exit 1)
+          set -e
+          JAR=bootstrap/target/app.jar
+          # 1) validar que el fat-jar exista
+          test -f "$JAR" || (echo "❌ No existe $JAR" && exit 1)
+
+          # 2) extraer el jar anidado del módulo infrastructure
+          TMPDIR=$(mktemp -d)
+          unzip -q "$JAR" 'BOOT-INF/lib/*infrastructure*.jar' -d "$TMPDIR" || true
+          INF_JAR=$(find "$TMPDIR" -type f -name '*infrastructure*.jar' | head -n1)
+
+          if [ -z "$INF_JAR" ]; then
+            echo "❌ No se encontró el jar de infrastructure dentro de BOOT-INF/lib"
+            echo "Contenido de BOOT-INF/lib:"
+            unzip -l "$JAR" BOOT-INF/lib/\*.jar || true
+            exit 1
+          fi
+
+          echo "Infra jar: $INF_JAR"
+          # 3) buscar el controller dentro del jar anidado
+          jar tf "$INF_JAR" | grep -qi 'ec/com/erre/fastfood/infrastructure/api/in/rest/GrupoIngredienteController' \
+            && echo "✅ Controller encontrado dentro del JAR anidado" \
+            || (echo "❌ Controller NO está dentro de $INF_JAR" && exit 1)
+
 
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
