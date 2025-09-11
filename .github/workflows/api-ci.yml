@@ -2,8 +2,8 @@ name: api-ci
 
 on:
   push:
-    branches: [dev, main]
-    tags: ['dev-*', 'prod-*']
+    branches: [main]
+    tags: ['v*']
   workflow_dispatch:
 
 permissions:
@@ -42,7 +42,7 @@ jobs:
         run: |
           OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           IMAGE="ghcr.io/${OWNER}/fastfood-api"
-          if [[ "${{ github.ref_name }}" == "main" ]]; then
+          if [[ "${{ github.ref_type }}" == "branch" && "${{ github.ref_name }}" == "main" ]]; then
             echo "tags=${IMAGE}:dev,${IMAGE}:sha-${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
           else
             echo "tags=${IMAGE}:${{ github.ref_name }}" >> $GITHUB_OUTPUT
@@ -53,10 +53,26 @@ jobs:
         with:
           context: .
           file: Dockerfile
-          push: true
           platforms: linux/amd64
           build-args: |
             MODULE=bootstrap
           tags: ${{ steps.vars.outputs.tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  deploy-dev:
+    needs: build-push
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            set -e
+            sudo docker compose -f /opt/apps/stack/docker-compose.yml pull api-fastfood
+            sudo docker compose -f /opt/apps/stack/docker-compose.yml up -d api-fastfood
+            curl -k --fail https://api.erre.com/health
