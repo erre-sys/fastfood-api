@@ -51,19 +51,13 @@ jobs:
 
       - name: Compute tags
         id: vars
-        shell: bash
         run: |
           OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           IMAGE="ghcr.io/${OWNER}/fastfood-api"
           if [[ "${{ github.ref_type }}" == "branch" && "${{ github.ref_name }}" == "main" ]]; then
-            # pushes a main -> etiqueta de DEV + por SHA
             echo "tags=${IMAGE}:dev,${IMAGE}:sha-${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.ref_type }}" == "tag" ]]; then
-            # tags v* -> publica etiqueta con el nombre del tag y además latest-version
-            echo "tags=${IMAGE}:${{ github.ref_name }},${IMAGE}:version-latest" >> $GITHUB_OUTPUT
           else
-            # fallback (no debería entrar)
-            echo "tags=${IMAGE}:sha-${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+            echo "tags=${IMAGE}:${{ github.ref_name }}" >> $GITHUB_OUTPUT
           fi
 
       - name: Build & push image
@@ -72,18 +66,16 @@ jobs:
           context: .
           file: Dockerfile
           platforms: linux/amd64
-          push: true
           build-args: |
-            MODULE=${{ env.MODULE }}
+            MODULE=bootstrap
           tags: ${{ steps.vars.outputs.tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # Despliegue automático SOLO cuando el push es a main
   deploy-dev:
     needs: build-push
     if: github.ref == 'refs/heads/main'
-    runs-on: self-hosted         # importante: tu runner dentro de la red
+    runs-on: ubuntu-latest
     steps:
       - name: Deploy on server
         shell: bash
@@ -94,4 +86,4 @@ jobs:
           sudo docker compose -f /opt/apps/stack/docker-compose.yml up -d api-fastfood
 
           # Healthcheck: usa el endpoint estable detrás de Nginx
-          curl -k --fail --silent https://api.erre.com/health | jq .
+            curl -k --fail https://api.erre.com/fastfood/api/health
