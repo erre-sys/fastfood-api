@@ -63,16 +63,12 @@ jobs:
 
   deploy-dev:
     needs: build-push
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
-      - name: Deploy over SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SSH_HOST }}     # ej. tu IP/DNS público
-          username: ${{ secrets.SSH_USER }} # deploy
-          key: ${{ secrets.SSH_KEY }}       # clave privada (PEM)
-          script: |
-            set -euo pipefail
-            sudo docker compose -f /opt/apps/stack/docker-compose.yml pull api-fastfood
-            sudo docker compose -f /opt/apps/stack/docker-compose.yml up -d api-fastfood
-            curl -k --fail --retry 5 --retry-delay 3 https://api.erre.com/fastfood/api/health
+      - name: Deploy locally
+        run: |
+          set -euo pipefail
+          sudo docker compose -f /opt/apps/stack/docker-compose.yml pull api-fastfood
+          sudo docker compose -f /opt/apps/stack/docker-compose.yml up -d api-fastfood
+          curl -k --fail --retry 5 --retry-delay 3 https://api.erre.com/fastfood/api/health
+
