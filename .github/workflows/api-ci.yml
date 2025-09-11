@@ -2,9 +2,8 @@ name: api-ci
 
 on:
   push:
-    branches: [ main ]         # solo build/deploy desde main
-    tags:    [ 'v*' ]          # build versionado (no despliega)
-  workflow_dispatch:           # permitir ejecución manual
+    branches: [ main ]          # solo cuando mergeas a main
+  workflow_dispatch:            # y por si quieres lanzarlo manualmente
 
 permissions:
   contents: read
@@ -14,7 +13,7 @@ env:
   MODULE: bootstrap
 
 concurrency:
-  group: fastfood-api-${{ github.ref }}
+  group: fastfood-api-main
   cancel-in-progress: true
 
 jobs:
@@ -23,20 +22,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Cache de Maven para acelerar builds
-      - name: Cache Maven repo
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository
-          key: m2-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
-          restore-keys: m2-${{ runner.os }}-
-
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
-      - name: Build JAR (solo módulo bootstrap)
+      - name: Build JAR (módulo bootstrap)
         run: ./mvnw -B -DskipTests -pl bootstrap -am package
 
       - uses: docker/setup-qemu-action@v3
@@ -51,14 +42,11 @@ jobs:
 
       - name: Compute tags
         id: vars
+        shell: bash
         run: |
           OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           IMAGE="ghcr.io/${OWNER}/fastfood-api"
-          if [[ "${{ github.ref_type }}" == "branch" && "${{ github.ref_name }}" == "main" ]]; then
-            echo "tags=${IMAGE}:dev,${IMAGE}:sha-${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
-          else
-            echo "tags=${IMAGE}:${{ github.ref_name }}" >> $GITHUB_OUTPUT
-          fi
+          echo "tags=${IMAGE}:dev,${IMAGE}:sha-${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
 
       - name: Build & push image
         uses: docker/build-push-action@v6
@@ -66,24 +54,25 @@ jobs:
           context: .
           file: Dockerfile
           platforms: linux/amd64
+          push: true
           build-args: |
-            MODULE=bootstrap
+            MODULE=${{ env.MODULE }}
           tags: ${{ steps.vars.outputs.tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
   deploy-dev:
     needs: build-push
-    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy on server
-        shell: bash
-        run: |
-          set -euo pipefail
-          # Trae última imagen :dev y recrea el servicio
-          sudo docker compose -f /opt/apps/stack/docker-compose.yml pull api-fastfood
-          sudo docker compose -f /opt/apps/stack/docker-compose.yml up -d api-fastfood
-
-          # Healthcheck: usa el endpoint estable detrás de Nginx
-            curl -k --fail https://api.erre.com/fastfood/api/health
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}     # ej. tu IP/DNS público
+          username: ${{ secrets.SSH_USER }} # deploy
+          key: ${{ secrets.SSH_KEY }}       # clave privada (PEM)
+          script: |
+            set -euo pipefail
+            sudo docker compose -f /opt/apps/stack/docker-compose.yml pull api-fastfood
+            sudo docker compose -f /opt/apps/stack/docker-compose.yml up -d api-fastfood
+            curl -k --fail --retry 5 --retry-delay 3 https://api.erre.com/fastfood/api/health
