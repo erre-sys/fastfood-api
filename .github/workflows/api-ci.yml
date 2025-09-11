@@ -108,25 +108,18 @@ jobs:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy over SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            set -e
-            echo "== Pull + recreate =="
-            sudo docker compose -f /opt/apps/stack/docker-compose.yml pull --quiet api-fastfood
-            sudo docker compose -f /opt/apps/stack/docker-compose.yml up -d --no-deps --force-recreate api-fastfood
-
-            echo "== Versión corriendo =="
-            IMG=$(sudo docker ps --format '{{.Image}}' --filter 'name=api-fastfood')
-            echo "Image: $IMG"
-            sudo docker run --rm "$IMG" sh -lc 'jar tf /opt/app/app.jar | grep -i "GrupoIngredienteController" | head -n1 || true'
-
-            echo "== Mappings expuestos =="
-            curl -s http://127.0.0.1:8090/fastfood/api/actuator/mappings | grep -i grupo-ingredientes || (echo "No se ve el endpoint" && exit 1)
-
-            echo "== Health =="
-            curl -k --fail https://api.erre.com/fastfood/api/actuator/health
+      - name: Deploy locally
+        run: |
+          set -e
+          sudo docker compose -f /opt/apps/stack/docker-compose.yml pull api-fastfood
+          sudo docker compose -f /opt/apps/stack/docker-compose.yml up -d api-fastfood
+          echo "== Versión corriendo =="
+          IMG=$(sudo docker ps --format '{{.Image}}' --filter 'name=api-fastfood')
+          echo "Image: $IMG"
+          sudo docker run --rm "$IMG" sh -lc 'jar tf /opt/app/app.jar | grep -i "GrupoIngredienteController" | head -n1 || true'
+          
+          echo "== Mappings expuestos =="          
+          curl -s https://api.erre.com/fastfood/api/actuator/mappings | grep -i grupo-ingredientes || (echo "No se ve el endpoint" && exit 1)
+          
+          echo "== Health =="
+          curl -k --fail https://api.erre.com/fastfood/api/actuator/health
