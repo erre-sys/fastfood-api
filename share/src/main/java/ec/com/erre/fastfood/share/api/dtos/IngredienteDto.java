@@ -18,24 +18,32 @@ public class IngredienteDto {
 	@Null(groups = Crear.class)
 	@NotNull(groups = Actualizar.class)
 	private Long id;
+
+	@NotNull(groups = { Crear.class, Actualizar.class })
+	private Long grupoIngredienteId;
+
 	@NotBlank(groups = { Crear.class })
 	@Size(max = 40)
 	private String codigo;
+
 	@NotBlank(groups = { Crear.class, Actualizar.class })
 	@Size(max = 160)
 	private String nombre;
-	@NotNull(groups = { Crear.class, Actualizar.class })
-	private Long grupoIngredienteId;
+
 	@NotBlank(groups = { Crear.class, Actualizar.class })
 	@Size(max = 16)
 	private String unidad; // kg, g, ml, un
-	private Boolean esExtra; // default false
+
+	private String esExtra;
+
 	@Digits(integer = 10, fraction = 2)
-	private BigDecimal precioExtra; // >0 si esExtra
+	private BigDecimal precioExtra;
+
 	@NotNull(groups = { Crear.class, Actualizar.class })
 	@Digits(integer = 11, fraction = 3)
 	private BigDecimal stockMinimo;
-	private Boolean activo; // default true
+
+	private String activo;
 
 	// Interfaces para definir grupos
 	public interface Crear {

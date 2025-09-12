@@ -15,12 +15,12 @@ import java.math.BigDecimal;
 @Builder
 public class Ingrediente {
 	private Long id;
+	private Long grupoIngredienteId;
 	private String codigo;
 	private String nombre;
-	private GrupoIngrediente grupo;
 	private String unidad;
-	private boolean esExtra;
+	private String esExtra;
 	private BigDecimal precioExtra;
 	private BigDecimal stockMinimo;
-	private boolean activo;
+	private String activo;
 }

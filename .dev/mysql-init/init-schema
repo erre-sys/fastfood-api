@@ -1,6 +1,12 @@
--- FastFood DB (Minimal pero robusto) - MySQL 8
--- Diseño centrado en los casos de uso esenciales: compras simples, inventario actual, platos/recetas y pedidos con extras.
--- Sin triggers ni SP: la app actualiza stock en transacciones al ENTREGAR el pedido. Menos tablas, menos fricción con JPA/DSL.
+/* ===========================
+   FastFood DB
+   Diseño centrado en los casos de uso esenciales: compras simples, inventario actual, platos/recetas y pedidos con extras.
+   Menos tablas, menos fricción con JPA/DSL.
+   FastFood DB - Patch V2 (MySQL 8)
+   Requiere esquema base 'fastfood_min' ya creado.
+   Objetivos: Caja, Promos programadas (flag en platos),
+              Kardex con % descuento, SP/Triggers sin ENUM/BOOL.
+   =========================== */
 
 SET sql_mode = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
 SET NAMES utf8mb4 COLLATE utf8mb4_0900_ai_ci;
@@ -10,9 +16,7 @@ CREATE DATABASE IF NOT EXISTS fastfood_min
   DEFAULT COLLATE utf8mb4_0900_ai_ci;
 USE fastfood_min;
 
--- =====================
--- Catálogos mínimos
--- =====================
+
 CREATE TABLE grupo_ingrediente (
   grupo_ingrediente_id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
   nombre               VARCHAR(120) NOT NULL UNIQUE
@@ -20,16 +24,15 @@ CREATE TABLE grupo_ingrediente (
 
 CREATE TABLE ingredientes (
   ingrediente_id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  grupo_ingrediente_id BIGINT UNSIGNED NOT NULL,
   codigo         VARCHAR(40) NOT NULL UNIQUE,
   nombre         VARCHAR(160) NOT NULL,
-  grupo_ingrediente_id BIGINT UNSIGNED NOT NULL,
-  unidad         VARCHAR(16) NOT NULL, -- ej: kg, g, ml, un
-  es_extra       TINYINT(1) NOT NULL DEFAULT 0,
-  precio_extra   DECIMAL(12,2) DEFAULT NULL, -- >0 si es_extra=1
+  unidad         VARCHAR(16) NOT NULL,
+  es_extra       VARCHAR(1) NOT NULL DEFAULT 'N', -- Si es extra, se puede agregar al plato (validar en la app)
+  precio_extra   DECIMAL(12,2) DEFAULT NULL,
   stock_minimo   DECIMAL(12,3) NOT NULL DEFAULT 0,
-  activo         TINYINT(1) NOT NULL DEFAULT 1,
-  CONSTRAINT fk_ing_grupo FOREIGN KEY (grupo_ingrediente_id) REFERENCES grupo_ingrediente(grupo_ingrediente_id),
-  CONSTRAINT chk_extra_precio CHECK ((es_extra = 0 AND (precio_extra IS NULL OR precio_extra = 0)) OR (es_extra = 1 AND precio_extra > 0))
+  activo         VARCHAR(1) NOT NULL DEFAULT 'S',
+  CONSTRAINT fk_ing_grupo FOREIGN KEY (grupo_ingrediente_id) REFERENCES grupo_ingrediente(grupo_ingrediente_id)
 ) ENGINE=InnoDB;
 
 -- Inventario actual (1 fila por ingrediente). La app ajusta en transacción.
@@ -40,16 +43,14 @@ CREATE TABLE inventario (
   FOREIGN KEY (ingrediente_id) REFERENCES ingredientes(ingrediente_id)
 ) ENGINE=InnoDB;
 
--- =====================
--- Compras simples
--- =====================
+
 CREATE TABLE proveedores (
   proveedor_id  BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
   nombre        VARCHAR(160) NOT NULL,
   ruc           VARCHAR(20),
   telefono      VARCHAR(40),
   email         VARCHAR(160),
-  activo        TINYINT(1) NOT NULL DEFAULT 1
+  activo        VARCHAR(1) NOT NULL DEFAULT 'S'
 ) ENGINE=InnoDB;
 
 CREATE TABLE compra (
@@ -86,7 +87,9 @@ CREATE TABLE platos (
   nombre         VARCHAR(160) NOT NULL,
   grupo_plato_id BIGINT UNSIGNED NOT NULL,
   precio_base    DECIMAL(12,2) NOT NULL,
-  activo         TINYINT(1) NOT NULL DEFAULT 1,
+  activo         VARCHAR(1) NOT NULL DEFAULT 'S',
+  en_promocion   VARCHAR(1) NOT NULL DEFAULT 'N' AFTER activo,
+  descuento      DECIMAL(5,2) NOT NULL DEFAULT 0 AFTER en_promocion, -- Indica si el plato está en promoción (la app puede aplicar descuento)
   FOREIGN KEY (grupo_plato_id) REFERENCES grupo_plato(grupo_plato_id)
 ) ENGINE=InnoDB;
 
@@ -105,15 +108,29 @@ CREATE TABLE receta_item (
 -- =====================
 CREATE TABLE pedidos (
   pedido_id      BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-  estado         ENUM('CREADO','EN_COCINA','LISTO','ENTREGADO','CANCELADO') NOT NULL DEFAULT 'CREADO',
+  estado         VARCHAR(50 ) DEFAULT 'CREADO', -- CREADO, EN_COCINA, LISTO, ENTREGADO, CANCELADO
   total_bruto    DECIMAL(12,2) NOT NULL DEFAULT 0,
   total_extras   DECIMAL(12,2) NOT NULL DEFAULT 0,
   total_neto     DECIMAL(12,2) NOT NULL DEFAULT 0,
   creado_por_sub VARCHAR(64) NOT NULL,
   entregado_por_sub VARCHAR(64) NULL,
   creado_en      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  entregado_en   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   actualizado_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_ped_estado (estado)
+) ENGINE=InnoDB;
+
+CREATE TABLE pago_cliente (
+  pago_cliente_id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  pedido_id      BIGINT UNSIGNED NOT NULL,
+  fecha          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  monto_total    DECIMAL(12,2) NOT NULL,
+  metodo         VARCHAR(64) NOT NULL DEFAULT 'EFECTIVO', -- EFECTIVO, TARJETA, TRANSFERENCIA, OTRO
+  estado         VARCHAR(1) NOT NULL DEFAULT 'PENDIENTE', -- PENDIENTE, COMPLETADO, CANCELADO, FIADO
+  referencia     VARCHAR(80),
+  creado_por_sub VARCHAR(64) NOT NULL,
+  FOREIGN KEY (pedido_id) REFERENCES pedidos(pedido_id),
+  INDEX idx_pago_cli_fecha (fecha)
 ) ENGINE=InnoDB;
 
 CREATE TABLE pedido_item (
@@ -123,6 +140,10 @@ CREATE TABLE pedido_item (
   cantidad       INT UNSIGNED NOT NULL,
   precio_unitario DECIMAL(12,2) NOT NULL,
   subtotal       DECIMAL(12,2) NOT NULL,
+  descuento_porcentaje DECIMAL(12,2) NOT NULL DEFAULT 0,
+  total       DECIMAL(12,2) NOT NULL,
+  descuento_pct   DECIMAL(5,2)  NOT NULL DEFAULT 0 ,
+  descuento_monto DECIMAL(12,2) NOT NULL DEFAULT 0 ,
   FOREIGN KEY (pedido_id) REFERENCES pedidos(pedido_id) ON DELETE CASCADE,
   FOREIGN KEY (plato_id) REFERENCES platos(plato_id)
 ) ENGINE=InnoDB;
@@ -138,6 +159,7 @@ CREATE TABLE pedido_item_extra (
   FOREIGN KEY (ingrediente_id) REFERENCES ingredientes(ingrediente_id)
 ) ENGINE=InnoDB;
 
+
 -- =====================
 -- Pagos a proveedores (simple)
 -- =====================
@@ -146,12 +168,82 @@ CREATE TABLE pago_proveedor (
   proveedor_id  BIGINT UNSIGNED NOT NULL,
   fecha         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   monto_total   DECIMAL(12,2) NOT NULL,
-  metodo        ENUM('EFECTIVO','TARJETA','TRANSFERENCIA','OTRO') NOT NULL,
+  metodo        VARCHAR(16) NOT NULL; -- EFECTIVO, TRANSFERENCIA, OTRO
+  estado        VARCHAR(20) NOT NULL DEFAULT 'PENDIENTE', -- PEND IENTE, COMPLETADO, CANCELADO, FIADO
   referencia    VARCHAR(80),
   observaciones VARCHAR(500),
   creado_por_sub VARCHAR(64) NOT NULL,
   FOREIGN KEY (proveedor_id) REFERENCES proveedores(proveedor_id)
 ) ENGINE=InnoDB;
+
+
+CREATE TABLE IF NOT EXISTS pago_cliente (
+  pago_cliente_id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  pedido_id      BIGINT UNSIGNED NOT NULL,
+  fecha          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  monto_total    DECIMAL(12,2) NOT NULL,
+  metodo         VARCHAR(16) NOT NULL, -- 'EFECTIVO','TARJETA','TRANSFERENCIA','OTRO' (libre)
+  referencia     VARCHAR(80),
+  creado_por_sub VARCHAR(64) NOT NULL,
+  FOREIGN KEY (pedido_id) REFERENCES pedidos(pedido_id),
+  INDEX idx_pago_cli_fecha (fecha),
+  INDEX idx_pago_cli_ped (pedido_id)
+) ENGINE=InnoDB;
+
+CREATE OR REPLACE VIEW v_caja_movimientos AS
+SELECT fecha, 'INGRESO' AS tipo, metodo, monto_total AS monto FROM pago_cliente
+UNION ALL
+SELECT fecha, 'EGRESO'  AS tipo, metodo, monto_total       FROM pago_proveedor;
+
+/* -------------------------------------
+   2) Kardex (movimientos de inventario)
+   ------------------------------------- */
+CREATE TABLE IF NOT EXISTS inventario_mov (
+  inventario_mov_id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  ingrediente_id    BIGINT UNSIGNED NOT NULL,
+  fecha             DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  tipo              VARCHAR(12) NOT NULL,         -- 'COMPRA','CONSUMO','AJUSTE'
+  cantidad          DECIMAL(14,3) NOT NULL,       -- +entrada / -salida
+  descuento_pct     DECIMAL(5,2) NOT NULL DEFAULT 0, -- % promedio aplicado al consumo
+  referencia        VARCHAR(80),
+  compra_item_id    BIGINT UNSIGNED NULL,
+  pedido_id         BIGINT UNSIGNED NULL,
+  FOREIGN KEY (ingrediente_id) REFERENCES ingredientes(ingrediente_id),
+  INDEX idx_inv_mov_fecha (fecha),
+  INDEX idx_inv_mov_ing (ingrediente_id),
+  INDEX idx_inv_mov_ped (pedido_id),
+  INDEX idx_inv_mov_comp (compra_item_id)
+) ENGINE=InnoDB;
+
+-- (opcional) CHECKs ligeros
+DROP CHECK IF EXISTS chk_inv_tipo;
+ALTER TABLE inventario_mov
+  ADD CONSTRAINT chk_inv_tipo CHECK (tipo IN ('COMPRA','CONSUMO','AJUSTE'));
+
+/* -------------------------------------
+   3) Promos programadas (flag en platos)
+   ------------------------------------- */
+CREATE TABLE IF NOT EXISTS promo_programada (
+  promo_id       BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  plato_id       BIGINT UNSIGNED NOT NULL,
+  fecha_inicio   DATETIME NOT NULL,
+  fecha_fin      DATETIME NOT NULL,
+  descuento_pct  DECIMAL(5,2) NOT NULL,  -- 0..100
+  estado         VARCHAR(1) NOT NULL DEFAULT 'A',  -- A/I
+  creado_por_sub VARCHAR(64) NOT NULL,
+  FOREIGN KEY (plato_id) REFERENCES platos(plato_id),
+  INDEX idx_promo_plato (plato_id),
+  INDEX idx_promo_rango (fecha_inicio, fecha_fin)
+) ENGINE=InnoDB;
+
+DROP CHECK IF EXISTS chk_promo_estado;
+ALTER TABLE promo_programada
+  ADD CONSTRAINT chk_promo_estado CHECK (estado IN ('A','I'));
+
+DROP CHECK IF EXISTS chk_promo_pct;
+ALTER TABLE promo_programada
+  ADD CONSTRAINT chk_promo_pct CHECK (descuento_pct >= 0 AND descuento_pct <= 100);
+
 
 -- =====================
 -- Reglas de uso (sin triggers)
@@ -285,6 +377,9 @@ BEGIN
   INSERT INTO inventario(ingrediente_id, stock_actual)
   VALUES (NEW.ingrediente_id, NEW.cantidad)
   ON DUPLICATE KEY UPDATE stock_actual = stock_actual + NEW.cantidad;
+
+  INSERT INTO inventario_mov(ingrediente_id, tipo, cantidad, referencia, compra_item_id)
+  VALUES (NEW.ingrediente_id, 'COMPRA', NEW.cantidad, CONCAT('COMPRA #',NEW.compra_id), NEW.compra_item_id);
 END $$
 DELIMITER ;
 

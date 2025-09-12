@@ -19,4 +19,5 @@ public interface IngredienteMapper {
 
 	Ingrediente entityToDomain(IngredienteEntity entity);
 
+	List<Ingrediente> entitiesToDomains(List<IngredienteEntity> entities);
 }
