@@ -34,7 +34,7 @@ public class IngredienteRepositoryImpl extends JPABaseRepository<IngredienteEnti
 	@Override
 	public List<Ingrediente> buscarTodos() {
 		List<IngredienteEntity> entities = getQueryFactory().selectFrom(ingredienteEntity)
-				.orderBy(ingredienteEntity.nombre.asc()).fetch();
+				.orderBy(ingredienteEntity.id.asc()).fetch();
 		return ingredienteMapper.entitiesToDomains(entities);
 	}
 

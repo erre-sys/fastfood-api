@@ -14,4 +14,5 @@ import lombok.Builder;
 public class GrupoPlato {
 	private Long id;
 	private String nombre;
+	private String estado;
 }

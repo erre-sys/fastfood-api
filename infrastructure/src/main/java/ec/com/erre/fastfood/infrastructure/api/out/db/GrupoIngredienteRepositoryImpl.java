@@ -48,7 +48,7 @@ public class GrupoIngredienteRepositoryImpl extends JPABaseRepository<GrupoIngre
 	public boolean existePorNombre(String nombre) {
 		GrupoIngredienteEntity entity = getQueryFactory().selectFrom(grupoIngredienteEntity)
 				.where(grupoIngredienteEntity.nombre.equalsIgnoreCase(nombre)).fetchFirst();
-		return null != entity;
+		return entity == null;
 	}
 
 	@Override
@@ -98,13 +98,17 @@ public class GrupoIngredienteRepositoryImpl extends JPABaseRepository<GrupoIngre
 		this.save(grupoIngredienteMapper.domainToEntity(update));
 	}
 
+	@Override
+	public void eliminar(GrupoIngrediente delete) {
+		this.delete(grupoIngredienteMapper.domainToEntity(delete));
+	}
+
 	/**
 	 * Builder query
 	 *
 	 * @param criterios Query
 	 * @return Builder boolean query
 	 */
-
 	private Predicate buildQuery(List<CriterioBusqueda> criterios) {
 		BooleanBuilder builder = new BooleanBuilder();
 		PathBuilder<QGrupoIngredienteEntity> pathBuilder = new PathBuilder<>(QGrupoIngredienteEntity.class,

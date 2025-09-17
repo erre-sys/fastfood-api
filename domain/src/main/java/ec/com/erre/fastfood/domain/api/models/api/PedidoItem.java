@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -16,9 +17,13 @@ import java.util.List;
 @Builder
 public class PedidoItem {
 	private Long id;
-	private Plato plato;
+	private Long pedidoId;
+	private Long platoId;
 	private Integer cantidad;
 	private BigDecimal precioUnitario;
+	private BigDecimal descuentoPct;
+	private BigDecimal descuentoMonto;
 	private BigDecimal subtotal;
-	private List<PedidoItemExtra> extras;
+
+	private List<PedidoItemExtra> extras = new ArrayList<>();
 }

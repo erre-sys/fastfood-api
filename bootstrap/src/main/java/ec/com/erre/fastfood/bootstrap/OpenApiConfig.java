@@ -15,13 +15,13 @@ public class OpenApiConfig {
 	@Bean
 	public OpenAPI customOpenAPI() {
 		final String securitySchemeName = "bearerAuth";
-		final String apiTitle = String.format("%s API", "Nomina");
+		final String apiTitle = String.format("%s API", "FastFood");
 		return new OpenAPI().addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
 				.components(new Components().addSecuritySchemes(securitySchemeName,
 						new SecurityScheme().name(securitySchemeName).type(SecurityScheme.Type.HTTP).scheme("bearer")
 								.bearerFormat("JWT")))
-				.info(new Info().title(apiTitle).description("REST API Documentation for services").version("1.0")
-						.contact(new Contact().name("CGBV Centric").email("info@centric.com.ec"))
+				.info(new Info().title(apiTitle).description("Documentacion de servicios REST API").version("1.0")
+						.contact(new Contact().name("ERRE").email("info@erre.com.ec"))
 
 				);
 	}

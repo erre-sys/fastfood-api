@@ -17,6 +17,7 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,23 +29,31 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CompraEntity {
+public class CompraEntity implements Serializable {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "compra_id")
 	private Long id;
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "proveedor_id", nullable = false)
-	private ProveedorEntity proveedor;
-	@Column(nullable = false)
+
+	@Column(name = "proveedor_id", nullable = false)
+	private Long proveedorId;
+
+	@Column(name = "fecha", nullable = false)
 	private LocalDateTime fecha;
-	@Column(length = 80)
+
+	@Column(name = "referencia", length = 80)
 	private String referencia;
-	@Column(name = "creado_por_sub", length = 64, nullable = false)
+
+	@Column(name = "creado_por_sub", nullable = false, length = 64)
 	private String creadoPorSub;
-	@Column(length = 500)
+
+	@Column(name = "observaciones", length = 500)
 	private String observaciones;
-	@OneToMany(mappedBy = "compra", cascade = CascadeType.ALL, orphanRemoval = true)
-	@Builder.Default
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "proveedor_id", insertable = false, updatable = false)
+	private ProveedorEntity proveedor;
+
+	@OneToMany(mappedBy = "compra", fetch = FetchType.LAZY)
 	private List<CompraItemEntity> items = new ArrayList<>();
 }

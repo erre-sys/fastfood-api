@@ -51,24 +51,20 @@ public class GrupoIngredienteServiceImpl implements GrupoIngredienteService {
 	}
 
 	@Override
-	public void actualizar(GrupoIngrediente grupoIngrediente)
-			throws EntidadNoEncontradaException, RegistroDuplicadoException {
-		if (!repository.existePorNombre(grupoIngrediente.getNombre())) {
-			throw new RegistroDuplicadoException(messageSource.getMessage(FastFoodExceptionMessages.ERROR_NO_EXISTE,
-					new Object[] { grupoIngrediente.getNombre() }, LocaleContextHolder.getLocale()));
-		}
-		GrupoIngrediente encontrado = repository.buscarPorId(grupoIngrediente.getId());
-		if (null == encontrado) {
-			throw new EntidadNoEncontradaException(messageSource.getMessage(FastFoodExceptionMessages.ERROR_NO_EXISTE,
-					new Object[] { grupoIngrediente.getNombre() }, LocaleContextHolder.getLocale()));
-		}
-		setearDatos(grupoIngrediente, encontrado);
-
+	public void actualizar(GrupoIngrediente update) throws EntidadNoEncontradaException {
+		GrupoIngrediente encontrado = repository.buscarPorId(update.getId());
+		setearDatos(update, encontrado);
 		this.repository.actualizar(encontrado);
 	}
 
-	private void setearDatos(GrupoIngrediente grupoIngrediente, GrupoIngrediente encontrado) {
-		encontrado.setEstado(grupoIngrediente.getEstado());
-		encontrado.setNombre(grupoIngrediente.getNombre());
+	@Override
+	public void eliminarPorId(Long id) throws EntidadNoEncontradaException {
+		GrupoIngrediente encontrado = repository.buscarPorId(id);
+		this.repository.eliminar(encontrado);
+	}
+
+	private void setearDatos(GrupoIngrediente update, GrupoIngrediente encontrado) {
+		encontrado.setEstado(update.getEstado() != null ? update.getEstado() : encontrado.getEstado());
+		encontrado.setNombre(update.getNombre() != null ? update.getNombre() : encontrado.getNombre());
 	}
 }

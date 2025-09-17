@@ -14,6 +14,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 @SpringBootApplication(scanBasePackages = { "ec.com.erre.fastfood" })
 @EnableJpaRepositories(basePackages = { "ec.com.erre.fastfood" })
 @EntityScan("ec.com.erre.fastfood")
+@EnableWebMvc
 public class FastfoodApplication {
 
 	public static void main(String[] args) {

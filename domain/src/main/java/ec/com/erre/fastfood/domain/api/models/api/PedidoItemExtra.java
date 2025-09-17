@@ -15,7 +15,8 @@ import java.math.BigDecimal;
 @Builder
 public class PedidoItemExtra {
 	private Long id;
-	private Ingrediente ingrediente;
+	private Long pedidoItemId;
+	private Long ingredienteId;
 	private BigDecimal cantidad;
 	private BigDecimal precioExtra;
 }

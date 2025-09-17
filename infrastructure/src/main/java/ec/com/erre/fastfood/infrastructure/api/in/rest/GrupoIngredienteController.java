@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -81,7 +81,7 @@ public class GrupoIngredienteController {
 	@Operation(summary = "Buscar grupo por id")
 	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Grupo encontrado"),
 			@ApiResponse(responseCode = "404", description = "No existe el grupo con ese id", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))) })
-	public ResponseEntity<GrupoIngredienteDto> buscarPorId(@NotBlank @PathVariable Long id)
+	public ResponseEntity<GrupoIngredienteDto> buscarPorId(@NotNull @PathVariable Long id)
 			throws EntidadNoEncontradaException {
 		return ResponseEntity.ok(grupoIngredienteMapper.domainToDto(grupoIngredienteService.buscarPorId(id)));
 	}
@@ -101,7 +101,22 @@ public class GrupoIngredienteController {
 			@Validated(GrupoIngredienteDto.Actualizar.class) @RequestBody GrupoIngredienteDto grupoIngredienteDto)
 			throws RegistroDuplicadoException, EntidadNoEncontradaException {
 		this.grupoIngredienteService.actualizar(this.grupoIngredienteMapper.dtoToDomain(grupoIngredienteDto));
-		return new ResponseEntity<>(HttpStatus.CREATED);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
+	/**
+	 * Buscar y eliminar grupo por ID
+	 *
+	 * @param id
+	 * @return GrupoIngredienteDto
+	 */
+	@DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(summary = "Buscar grupo por id")
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Grupo encontrado"),
+			@ApiResponse(responseCode = "404", description = "No existe el grupo con ese id", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))) })
+	public ResponseEntity<Void> eliminarPorId(@NotNull @PathVariable Long id) throws EntidadNoEncontradaException {
+		this.grupoIngredienteService.eliminarPorId(id);
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	/**

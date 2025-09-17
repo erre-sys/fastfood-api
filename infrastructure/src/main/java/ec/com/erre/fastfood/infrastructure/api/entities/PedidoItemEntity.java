@@ -7,7 +7,6 @@ import jakarta.persistence.Table;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Column;
@@ -17,6 +16,7 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,24 +28,41 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PedidoItemEntity {
+public class PedidoItemEntity implements Serializable {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "pedido_item_id")
 	private Long id;
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "pedido_id", nullable = false)
-	private PedidoEntity pedido;
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "plato_id", nullable = false)
-	private PlatoEntity plato;
-	@Column(nullable = false)
+
+	@Column(name = "pedido_id", nullable = false)
+	private Long pedidoId;
+
+	@Column(name = "plato_id", nullable = false)
+	private Long platoId;
+
+	@Column(name = "cantidad", nullable = false)
 	private Integer cantidad;
+
 	@Column(name = "precio_unitario", precision = 12, scale = 2, nullable = false)
 	private BigDecimal precioUnitario;
-	@Column(precision = 12, scale = 2, nullable = false)
+
+	@Column(name = "descuento_pct", precision = 5, scale = 2, nullable = false)
+	private BigDecimal descuentoPct;
+
+	@Column(name = "descuento_monto", precision = 12, scale = 2, nullable = false)
+	private BigDecimal descuentoMonto;
+
+	@Column(name = "subtotal", precision = 12, scale = 2, nullable = false)
 	private BigDecimal subtotal;
-	@OneToMany(mappedBy = "pedidoItem", cascade = CascadeType.ALL, orphanRemoval = true)
-	@Builder.Default
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "pedido_id", insertable = false, updatable = false)
+	private PedidoEntity pedido;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "plato_id", insertable = false, updatable = false)
+	private PlatoEntity plato;
+
+	@OneToMany(mappedBy = "pedidoItem", fetch = FetchType.LAZY)
 	private List<PedidoItemExtraEntity> extras = new ArrayList<>();
 }

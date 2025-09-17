@@ -17,11 +17,14 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class InventarioDto {
+
 	@NotNull(groups = { Crear.class, Actualizar.class })
 	private Long ingredienteId;
+
 	@NotNull(groups = { Crear.class, Actualizar.class })
 	@Digits(integer = 12, fraction = 3)
 	private BigDecimal stockActual;
+
 	private LocalDateTime actualizadoEn;
 
 	// Interfaces para definir grupos

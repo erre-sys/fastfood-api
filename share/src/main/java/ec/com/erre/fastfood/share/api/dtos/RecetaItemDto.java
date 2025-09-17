@@ -15,11 +15,16 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Builder
 public class RecetaItemDto {
+
+	@NotNull(groups = { Crear.class, Actualizar.class })
+	private Long platoId;
+
 	@NotNull(groups = { Crear.class, Actualizar.class })
 	private Long ingredienteId;
+
 	@NotNull(groups = { Crear.class, Actualizar.class })
-	@Digits(integer = 12, fraction = 3)
-	private BigDecimal cantidad; // por 1 plato
+	@Digits(integer = 11, fraction = 3)
+	private BigDecimal cantidad;
 
 	// Interfaces para definir grupos
 	public interface Crear {

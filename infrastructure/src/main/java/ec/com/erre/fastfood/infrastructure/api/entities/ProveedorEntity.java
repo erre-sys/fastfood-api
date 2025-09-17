@@ -12,6 +12,8 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 
+import java.io.Serializable;
+
 @Entity
 @Table(name = "proveedores")
 @Getter
@@ -19,19 +21,24 @@ import lombok.Builder;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ProveedorEntity {
+public class ProveedorEntity implements Serializable {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "proveedor_id")
 	private Long id;
-	@Column(nullable = false, length = 160)
+
+	@Column(name = "nombre", nullable = false, length = 160)
 	private String nombre;
-	@Column(length = 20)
+
+	@Column(name = "ruc", length = 20, unique = true)
 	private String ruc;
-	@Column(length = 40)
+
+	@Column(name = "telefono", length = 40)
 	private String telefono;
-	@Column(length = 160)
+
+	@Column(name = "email", length = 160)
 	private String email;
-	@Column(nullable = false)
-	private boolean activo = true;
+
+	@Column(name = "estado", nullable = false, length = 1) // S/N
+	private String estado;
 }

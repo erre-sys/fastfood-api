@@ -17,5 +17,5 @@ public class Proveedor {
 	private String ruc;
 	private String telefono;
 	private String email;
-	private boolean activo;
+	private String estado;
 }

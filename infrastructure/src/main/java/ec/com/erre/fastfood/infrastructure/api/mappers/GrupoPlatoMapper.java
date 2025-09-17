@@ -19,4 +19,5 @@ public interface GrupoPlatoMapper {
 
 	GrupoPlato entityToDomain(GrupoPlatoEntity entity);
 
+	List<GrupoPlato> entitiesToDomains(List<GrupoPlatoEntity> entity);
 }

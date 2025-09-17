@@ -7,18 +7,29 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class GrupoPlatoDto {
+
 	@Null(groups = Crear.class)
 	@NotNull(groups = Actualizar.class)
 	private Long id;
+
 	@NotBlank(groups = { Crear.class, Actualizar.class })
 	@Size(max = 120)
 	private String nombre;
+
+	@NotBlank(groups = { Crear.class, Actualizar.class })
+	@Size(max = 1)
+	private String estado;
+
+	private List<PlatoDto> platos = new ArrayList<>();
 
 	// Interfaces para definir grupos
 	public interface Crear {

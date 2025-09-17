@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -17,7 +19,11 @@ public class Plato {
 	private Long id;
 	private String codigo;
 	private String nombre;
-	private GrupoPlato grupo;
+	private Long grupoPlatoId;
 	private BigDecimal precioBase;
-	private boolean activo;
+	private String activo; // S/N
+	private String enPromocion; // S/N
+	private BigDecimal descuentoPct;
+	private List<RecetaItem> receta = new ArrayList<>();
+
 }

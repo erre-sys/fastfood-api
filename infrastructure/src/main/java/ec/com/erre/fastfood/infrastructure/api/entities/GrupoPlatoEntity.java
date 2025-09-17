@@ -1,29 +1,34 @@
 package ec.com.erre.fastfood.infrastructure.api.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Column;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
+import lombok.ToString;
 
-@Entity
-@Table(name = "grupo_plato")
+import java.io.Serializable;
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class GrupoPlatoEntity {
+@Entity
+@Table(name = "grupo_plato")
+@ToString
+public class GrupoPlatoEntity implements Serializable {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "grupo_plato_id")
 	private Long id;
+
 	@Column(nullable = false, unique = true, length = 120)
 	private String nombre;
+
+	@Column(nullable = false, unique = true, length = 120)
+	private String estado;
+
+	@OneToMany(mappedBy = "grupoPlato", fetch = FetchType.LAZY)
+	private List<PlatoEntity> platos;
 }

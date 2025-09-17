@@ -23,7 +23,7 @@ public class SecurityConfig {
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http.authorizeHttpRequests((authz) -> authz.requestMatchers(HttpMethod.GET, "/actuator/**").permitAll()
-				.requestMatchers(HttpMethod.GET, "/inseguro/**").permitAll()
+				.requestMatchers(HttpMethod.GET, "/swagger-ui.html").permitAll()
 				.requestMatchers(HttpMethod.GET, "/v3/api-docs/**").permitAll()
 				.requestMatchers(HttpMethod.GET, "/swagger-ui/**").permitAll().anyRequest().authenticated());
 
@@ -36,8 +36,7 @@ public class SecurityConfig {
 		http.cors(cors -> {
 			CorsConfigurationSource source = request -> {
 				CorsConfiguration config = new CorsConfiguration();
-				config.setAllowedOrigins(Arrays.asList("http://localhost:4200", "http://192.168.40.146:8080",
-						"http://192.168.40.146:8083"));
+				config.setAllowedOrigins(Arrays.asList("http://localhost:4200"));
 				config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
 				config.setAllowedHeaders(Arrays.asList("*"));
 				return config;

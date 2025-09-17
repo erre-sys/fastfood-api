@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 @Entity
@@ -24,19 +25,29 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PedidoItemExtraEntity {
+public class PedidoItemExtraEntity implements Serializable {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "pedido_item_extra_id")
 	private Long id;
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "pedido_item_id", nullable = false)
-	private PedidoItemEntity pedidoItem;
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "ingrediente_id", nullable = false)
-	private IngredienteEntity ingrediente;
-	@Column(precision = 14, scale = 3, nullable = false)
+
+	@Column(name = "pedido_item_id", nullable = false)
+	private Long pedidoItemId;
+
+	@Column(name = "ingrediente_id", nullable = false)
+	private Long ingredienteId;
+
+	@Column(name = "cantidad", precision = 14, scale = 3, nullable = false)
 	private BigDecimal cantidad;
+
 	@Column(name = "precio_extra", precision = 12, scale = 2, nullable = false)
 	private BigDecimal precioExtra;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "pedido_item_id", insertable = false, updatable = false)
+	private PedidoItemEntity pedidoItem;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "ingrediente_id", insertable = false, updatable = false)
+	private IngredienteEntity ingrediente;
 }

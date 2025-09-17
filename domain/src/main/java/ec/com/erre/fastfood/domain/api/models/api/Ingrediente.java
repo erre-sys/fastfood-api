@@ -19,8 +19,8 @@ public class Ingrediente {
 	private String codigo;
 	private String nombre;
 	private String unidad;
-	private String esExtra;
+	private String esExtra; // S/N
 	private BigDecimal precioExtra;
 	private BigDecimal stockMinimo;
-	private String activo;
+	private String estado;
 }

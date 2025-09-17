@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -52,16 +53,16 @@ public class IngredienteController {
 	@Operation(summary = "Buscar ingredientes por ID de Grupo")
 	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Ingredientes encontrados"),
 			@ApiResponse(responseCode = "404", description = "No existe el grupo con ese ID", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))) })
-	public ResponseEntity<List<IngredienteDto>> buscarPorGrupoId(@RequestParam Long grupoId)
+	public ResponseEntity<List<IngredienteDto>> buscarPorGrupoId(@PathVariable Long grupoId)
 			throws EntidadNoEncontradaException {
 		return ResponseEntity.ok(ingredienteMapper.domainsToDtos(ingredienteService.buscarPorGrupoId(grupoId)));
 	}
 
-	@GetMapping(value = "/{nombre}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "/nombre/{nombre}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "Buscar ingrediente por nombre (case-sesitive)")
 	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Ingrediente encontrado"),
 			@ApiResponse(responseCode = "404", description = "No existe el ingrediente con ese nombre", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))) })
-	public ResponseEntity<IngredienteDto> buscarPorEstado(@RequestParam String nombre) {
+	public ResponseEntity<IngredienteDto> buscarPorEstado(@NotBlank @RequestParam String nombre) {
 		return ResponseEntity.ok(ingredienteMapper.domainToDto(ingredienteService.buscarPorNombre(nombre)));
 	}
 

@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -19,18 +20,28 @@ public class PlatoDto {
 	@Null(groups = Crear.class)
 	@NotNull(groups = Actualizar.class)
 	private Long id;
+
+	@NotNull(groups = { Crear.class, Actualizar.class })
+	private Long grupoPlatoId;
+
 	@NotBlank(groups = { Crear.class })
 	@Size(max = 40)
 	private String codigo;
+
 	@NotBlank(groups = { Crear.class, Actualizar.class })
 	private String nombre;
-	@NotNull(groups = { Crear.class, Actualizar.class })
-	private Long grupoPlatoId;
+
 	@NotNull(groups = { Crear.class, Actualizar.class })
 	@Digits(integer = 10, fraction = 2)
 	private BigDecimal precioBase;
-	private Boolean activo;
-	private List<RecetaItemDto> receta;
+
+	private String estado;
+
+	private String enPromocion;
+
+	private BigDecimal descuentoPct;
+
+	private List<RecetaItemDto> recetas = new ArrayList<>();
 
 	// Interfaces para definir grupos
 	public interface Crear {

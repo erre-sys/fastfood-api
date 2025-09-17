@@ -16,7 +16,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "INGREDIENTES")
+@Table(name = "ingredientes")
 @ToString
 public class IngredienteEntity implements Serializable {
 	@Id
@@ -24,19 +24,19 @@ public class IngredienteEntity implements Serializable {
 	@Column(name = "ingrediente_id")
 	private Long id;
 
-	@Column(name = "GRUPO_INGREDIENTE_ID")
+	@Column(name = "grupo_ingrediente_id", nullable = false)
 	private Long grupoIngredienteId;
 
-	@Column(nullable = false, unique = true, length = 40)
+	@Column(name = "codigo", nullable = false, length = 40, unique = true)
 	private String codigo;
 
-	@Column(nullable = false, length = 160)
+	@Column(name = "nombre", nullable = false, length = 160)
 	private String nombre;
 
-	@Column(nullable = false, length = 16)
+	@Column(name = "unidad", nullable = false, length = 16)
 	private String unidad;
 
-	@Column(name = "es_extra", nullable = false)
+	@Column(name = "es_extra", nullable = false, length = 1) // S/N
 	private String esExtra;
 
 	@Column(name = "precio_extra", precision = 12, scale = 2)
@@ -45,8 +45,8 @@ public class IngredienteEntity implements Serializable {
 	@Column(name = "stock_minimo", precision = 14, scale = 3, nullable = false)
 	private BigDecimal stockMinimo;
 
-	@Column(nullable = false)
-	private String activo;
+	@Column(name = "activo", nullable = false, length = 1) // S/N
+	private String estado;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "grupo_ingrediente_id", insertable = false, updatable = false)

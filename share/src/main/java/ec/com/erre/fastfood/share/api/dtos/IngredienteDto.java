@@ -43,7 +43,7 @@ public class IngredienteDto {
 	@Digits(integer = 11, fraction = 3)
 	private BigDecimal stockMinimo;
 
-	private String activo;
+	private String estado;
 
 	// Interfaces para definir grupos
 	public interface Crear {

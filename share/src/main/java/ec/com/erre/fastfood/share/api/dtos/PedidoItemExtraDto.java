@@ -15,15 +15,18 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Builder
 public class PedidoItemExtraDto {
+
 	@Null(groups = Crear.class)
 	@NotNull(groups = Actualizar.class)
 	private Long id;
-	@NotNull(groups = { Crear.class, Actualizar.class })
+	@NotNull(groups = Crear.class)
 	private Long ingredienteId;
-	@NotNull(groups = { Crear.class, Actualizar.class })
-	@Digits(integer = 12, fraction = 3)
+
+	@NotNull(groups = Crear.class)
+	@Digits(integer = 11, fraction = 3)
 	private BigDecimal cantidad;
-	@NotNull(groups = { Crear.class, Actualizar.class })
+
+	@NotNull(groups = Crear.class)
 	@Digits(integer = 10, fraction = 2)
 	private BigDecimal precioExtra;
 

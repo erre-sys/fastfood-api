@@ -19,4 +19,5 @@ public interface PlatoMapper {
 
 	Plato entityToDomain(PlatoEntity entity);
 
+	List<Plato> entitiesToDomains(List<PlatoEntity> entities);
 }

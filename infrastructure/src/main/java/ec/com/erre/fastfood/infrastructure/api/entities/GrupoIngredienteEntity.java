@@ -22,13 +22,13 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "GRUPO_INGREDIENTE")
+@Table(name = "grupo_ingrediente")
 @ToString
 public class GrupoIngredienteEntity implements Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "GRUPO_INGREDIENTE_ID")
+	@Column(name = "grupo_ingrediente_id")
 	private Long id;
 
 	@Column(nullable = false, unique = true, length = 120)

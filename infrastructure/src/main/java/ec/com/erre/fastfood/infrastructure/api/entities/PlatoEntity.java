@@ -9,35 +9,56 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Column;
+import jakarta.persistence.OneToMany;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Table(name = "platos")
+@Table(name = "PLATOS")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PlatoEntity {
+public class PlatoEntity implements Serializable {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "plato_id")
+	@Column(name = "PLATO_ID")
 	private Long id;
+
+	@Column(name = "GRUPO_PLATO_ID")
+	private Long grupoPlatoId;
+
 	@Column(nullable = false, unique = true, length = 40)
 	private String codigo;
+
 	@Column(nullable = false, length = 160)
 	private String nombre;
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "grupo_plato_id", nullable = false)
-	private GrupoPlatoEntity grupo;
-	@Column(name = "precio_base", precision = 12, scale = 2, nullable = false)
+
+	@Column(name = "PRECIO_BASE", precision = 12, scale = 2, nullable = false)
 	private BigDecimal precioBase;
-	@Column(nullable = false)
-	private boolean activo = true;
+
+	@Column(nullable = false, length = 1)
+	private String estado;
+
+	@Column(name = "EN_PROMOCION", precision = 12, scale = 2, nullable = false)
+	private String enPromocion;
+
+	@Column(name = "DESCUENTO_PCT", precision = 12, scale = 2, nullable = false)
+	private BigDecimal descuentoPct;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "grupo_plato_id", insertable = false, updatable = false)
+	private GrupoPlatoEntity grupoPlato;
+
+	@OneToMany(mappedBy = "plato", fetch = FetchType.LAZY)
+	private List<RecetaItemEntity> receta = new ArrayList<>();
 }

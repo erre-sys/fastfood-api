@@ -70,4 +70,5 @@ public interface GrupoIngredienteRepository {
 	 */
 	void actualizar(GrupoIngrediente grupoIngrediente) throws EntidadNoEncontradaException;
 
+	void eliminar(GrupoIngrediente encontrado);
 }

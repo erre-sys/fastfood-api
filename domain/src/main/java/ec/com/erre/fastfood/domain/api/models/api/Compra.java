@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -16,10 +17,12 @@ import java.util.List;
 @Builder
 public class Compra {
 	private Long id;
-	private Proveedor proveedor;
+	private Long proveedorId;
 	private LocalDateTime fecha;
 	private String referencia;
 	private String creadoPorSub;
 	private String observaciones;
-	private List<CompraItem> items;
+
+	private List<CompraItem> compras = new ArrayList<>();
+
 }

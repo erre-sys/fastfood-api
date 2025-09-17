@@ -15,12 +15,8 @@ import java.math.BigDecimal;
 @Builder
 public class CompraItem {
 	private Long id;
-	private String codigo;
-	private String nombre;
-	private GrupoIngrediente grupo;
-	private String unidad;
-	private boolean esExtra;
-	private BigDecimal precioExtra;
-	private BigDecimal stockMinimo;
-	private boolean activo;
+	private Long compraId;
+	private Long ingredienteId;
+	private BigDecimal cantidad;
+	private BigDecimal costoUnitario;
 }

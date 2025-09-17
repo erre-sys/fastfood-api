@@ -66,7 +66,7 @@ public class IngredienteServiceImpl implements IngredienteService {
 
 		Ingrediente existente = ingredienteRepository.buscarPorNombre(ingrediente.getNombre().trim().toUpperCase());
 		if (existente != null) {
-			throw new RegistroDuplicadoException("Ya existe un ingrediente con ese nombre");
+			throw new ServiceException("Ya existe un ingrediente con ese nombre");
 		}
 
 		ingredienteRepository.crear(ingrediente);

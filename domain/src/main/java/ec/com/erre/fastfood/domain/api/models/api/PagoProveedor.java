@@ -1,6 +1,5 @@
 package ec.com.erre.fastfood.domain.api.models.api;
 
-import ec.com.erre.fastfood.domain.api.models.enums.MetodoPago;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
@@ -17,10 +16,10 @@ import java.time.LocalDateTime;
 @Builder
 public class PagoProveedor {
 	private Long id;
-	private Proveedor proveedor;
+	private Long proveedorId;
 	private LocalDateTime fecha;
 	private BigDecimal montoTotal;
-	private MetodoPago metodo;
+	private String metodo;
 	private String referencia;
 	private String observaciones;
 	private String creadoPorSub;

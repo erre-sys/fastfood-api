@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 @Entity
@@ -24,19 +25,29 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CompraItemEntity {
+public class CompraItemEntity implements Serializable {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "compra_item_id")
 	private Long id;
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "compra_id", nullable = false)
-	private CompraEntity compra;
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "ingrediente_id", nullable = false)
-	private IngredienteEntity ingrediente;
-	@Column(precision = 14, scale = 3, nullable = false)
+
+	@Column(name = "compra_id", nullable = false)
+	private Long compraId;
+
+	@Column(name = "ingrediente_id", nullable = false)
+	private Long ingredienteId;
+
+	@Column(name = "cantidad", precision = 14, scale = 3, nullable = false)
 	private BigDecimal cantidad;
+
 	@Column(name = "costo_unitario", precision = 12, scale = 4, nullable = false)
 	private BigDecimal costoUnitario;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "compra_id", insertable = false, updatable = false)
+	private CompraEntity compra;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "ingrediente_id", insertable = false, updatable = false)
+	private IngredienteEntity ingrediente;
 }

@@ -16,20 +16,30 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class PagoProveedorDto {
+
 	@Null(groups = Crear.class)
 	@NotNull(groups = Actualizar.class)
 	private Long id;
+
 	@NotNull(groups = { Crear.class, Actualizar.class })
 	private Long proveedorId;
-	@NotNull(groups = { Crear.class, Actualizar.class })
+
+	@NotNull(groups = Crear.class)
 	@Digits(integer = 10, fraction = 2)
 	private BigDecimal montoTotal;
-	@NotBlank(groups = { Crear.class, Actualizar.class })
-	private String metodo; // EFECTIVO, TARJETA, TRANSFERENCIA, OTRO
+
+	@NotBlank(groups = Crear.class)
+	@Size(max = 16)
+	private String metodo;
+
+	@Size(max = 80)
 	private String referencia;
+	@Size(max = 500)
 	private String observaciones;
+
+	@NotBlank(groups = Crear.class)
+	@Size(max = 64)
 	private String creadoPorSub;
-	private LocalDateTime fecha;
 
 	// Interfaces para definir grupos
 	public interface Crear {

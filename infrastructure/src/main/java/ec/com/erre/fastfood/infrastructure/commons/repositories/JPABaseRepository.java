@@ -60,6 +60,10 @@ public class JPABaseRepository<T, ID extends Serializable> {
 
 	// Añade otros métodos delegados según sea necesario
 
+	public void delete(T entity) {
+		simpleJpaRepository.delete(entity);
+	}
+
 	// Método para clonar una consulta
 	protected <P> JPQLQuery<P> cloneQuery(JPAQuery<P> query) {
 		return query.clone(this.entityManager);

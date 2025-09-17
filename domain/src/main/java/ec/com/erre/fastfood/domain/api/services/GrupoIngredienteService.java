@@ -60,4 +60,6 @@ public interface GrupoIngredienteService {
 	 * @author eduardo.romero
 	 */
 	void actualizar(GrupoIngrediente grupoIngrediente) throws EntidadNoEncontradaException, RegistroDuplicadoException;
+
+	void eliminarPorId(Long id) throws EntidadNoEncontradaException;
 }
