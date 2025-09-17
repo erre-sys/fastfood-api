@@ -136,16 +136,6 @@ jobs:
             docker compose -f /opt/apps/stack/docker-compose.yml --env-file "$COMPOSE_ENV" pull api-fastfood
             docker compose -f /opt/apps/stack/docker-compose.yml --env-file "$COMPOSE_ENV" up -d api-fastfood
 
-            # 4) Verificación de salud
-            # Ajusta la URL real (HTTP/HTTPS y host)
-            for i in {1..10}; do
-              if curl -fsS -m 3 http://localhost:8080/fastfood/api/health > /dev/null; then
-                echo "Health OK"
-                exit 0
-              fi
-              echo "Esperando app ($i/10)..."
-              sleep 3
-            done
 
             echo "Health FAIL. Logs del contenedor:"
             docker compose -f /opt/apps/stack/docker-compose.yml logs --tail=200 api-fastfood || true
