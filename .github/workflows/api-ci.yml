@@ -2,7 +2,7 @@ name: api-ci
 
 on:
   push:
-    branches: [ main ]           # solo main
+    branches: [ main ]      # despliega solo en main
   workflow_dispatch:
 
 permissions:
@@ -19,6 +19,10 @@ env:
 jobs:
   build-push:
     runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.meta.outputs.image }}
+      tag_dev: ${{ steps.meta.outputs.tag_dev }}
+      tag_sha: ${{ steps.meta.outputs.tag_sha }}
     steps:
       - uses: actions/checkout@v4
 
@@ -41,27 +45,19 @@ jobs:
         run: |
           set -e
           JAR=bootstrap/target/app.jar
-          # 1) validar que el fat-jar exista
           test -f "$JAR" || (echo "No existe $JAR" && exit 1)
 
-          # 2) extraer el jar anidado del módulo infrastructure
           TMPDIR=$(mktemp -d)
           unzip -q "$JAR" 'BOOT-INF/lib/*infrastructure*.jar' -d "$TMPDIR" || true
           INF_JAR=$(find "$TMPDIR" -type f -name '*infrastructure*.jar' | head -n1)
-
           if [ -z "$INF_JAR" ]; then
             echo "No se encontró el jar de infrastructure dentro de BOOT-INF/lib"
-            echo "Contenido de BOOT-INF/lib:"
             unzip -l "$JAR" BOOT-INF/lib/\*.jar || true
             exit 1
           fi
-
-          echo "Infra jar: $INF_JAR"
-          # 3) buscar el controller dentro del jar anidado
           jar tf "$INF_JAR" | grep -qi 'ec/com/erre/fastfood/infrastructure/api/in/rest/GrupoIngredienteController' \
-            && echo "Controller encontrado dentro del JAR anidado" \
-            || (echo "Controller NO está dentro de $INF_JAR" && exit 1)
-
+            && echo "Controller OK" \
+            || (echo "Controller NO está en el JAR anidado" && exit 1)
 
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
@@ -76,11 +72,13 @@ jobs:
       - name: Compute metadata
         id: meta
         run: |
+          set -e
           OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           IMAGE="ghcr.io/${OWNER}/fastfood-api"
           SHORT=${GITHUB_SHA::7}
           echo "image=$IMAGE" >> $GITHUB_OUTPUT
-          echo "tags=$IMAGE:dev,$IMAGE:sha-$SHORT" >> $GITHUB_OUTPUT
+          echo "tag_dev=$IMAGE:dev" >> $GITHUB_OUTPUT
+          echo "tag_sha=$IMAGE:sha-$SHORT" >> $GITHUB_OUTPUT
           {
             echo "labels=org.opencontainers.image.source=${{ github.repository }}";
             echo "org.opencontainers.image.revision=${GITHUB_SHA}";
@@ -94,18 +92,22 @@ jobs:
           file: Dockerfile
           platforms: linux/amd64
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: |
+            ${{ steps.meta.outputs.tag_dev }}
+            ${{ steps.meta.outputs.tag_sha }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             MODULE=${{ env.MODULE }}
             BUILD_SHA=${{ github.sha }}
-            CACHE_BUSTER=${{ github.run_id }}   # fuerza recompilar capa del JAR
+            CACHE_BUSTER=${{ github.run_id }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
   deploy-dev:
+    # Si el runner está en TU servidor, usa self-hosted y NO hagas SSH.
+    # Si despliegas a OTRO servidor, deja ubuntu-latest + SSH como tenías.
     needs: build-push
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: Deploy over SSH
         uses: appleboy/ssh-action@v1.0.3
@@ -115,6 +117,36 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             set -e
-            sudo docker compose -f /opt/apps/stack/docker-compose.yml pull api-fastfood
-            sudo docker compose -f /opt/apps/stack/docker-compose.yml up -d api-fastfood
-            curl -k --fail --retry 5 --retry-delay 3 https://api.erre.com/fastfood/api/health
+
+            # 1) Login a GHCR (token con read:packages)
+            echo '${{ secrets.GHCR_PAT }}' | docker login ghcr.io -u '${{ github.repository_owner }}' --password-stdin
+
+            # 2) Actualizar el tag inmutable en el .env de compose
+            COMPOSE_ENV="/opt/apps/stack/.compose.env"
+            TAG='${{ needs.build-push.outputs.tag_sha }}'   # p.ej. ghcr.io/owner/fastfood-api:sha-abc1234
+            mkdir -p /opt/apps/stack
+            if [ -f "$COMPOSE_ENV" ]; then
+              sed -i "s|^IMAGE_TAG=.*|IMAGE_TAG=${TAG##*:}|" "$COMPOSE_ENV"
+            else
+              echo "IMAGE_TAG=${TAG##*:}" > "$COMPOSE_ENV"
+            fi
+            echo "Desplegando imagen: $TAG"
+
+            # 3) Pull + Up
+            docker compose -f /opt/apps/stack/docker-compose.yml --env-file "$COMPOSE_ENV" pull api-fastfood
+            docker compose -f /opt/apps/stack/docker-compose.yml --env-file "$COMPOSE_ENV" up -d api-fastfood
+
+            # 4) Verificación de salud
+            # Ajusta la URL real (HTTP/HTTPS y host)
+            for i in {1..10}; do
+              if curl -fsS -m 3 http://localhost:8080/fastfood/api/health > /dev/null; then
+                echo "Health OK"
+                exit 0
+              fi
+              echo "Esperando app ($i/10)..."
+              sleep 3
+            done
+
+            echo "Health FAIL. Logs del contenedor:"
+            docker compose -f /opt/apps/stack/docker-compose.yml logs --tail=200 api-fastfood || true
+            exit 1
