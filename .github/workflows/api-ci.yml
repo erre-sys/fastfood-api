@@ -104,10 +104,8 @@ jobs:
           cache-to: type=gha,mode=max
 
   deploy-dev:
-    # Si el runner está en TU servidor, usa self-hosted y NO hagas SSH.
-    # Si despliegas a OTRO servidor, deja ubuntu-latest + SSH como tenías.
     needs: build-push
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Deploy over SSH
         uses: appleboy/ssh-action@v1.0.3
