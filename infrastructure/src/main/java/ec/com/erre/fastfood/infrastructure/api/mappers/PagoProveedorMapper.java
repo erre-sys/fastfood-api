@@ -9,14 +9,14 @@ import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface PagoProveedorMapper {
-	PagoProveedorDto domainToDto(PagoProveedor domain);
+
+	PagoProveedorDto domainToDto(PagoProveedor d);
 
 	PagoProveedor dtoToDomain(PagoProveedorDto dto);
 
-	List<PagoProveedorDto> domainsToDtos(List<PagoProveedor> domain);
+	List<PagoProveedorDto> domainsToDtos(List<PagoProveedor> d);
 
-	PagoProveedorEntity domainToEntity(PagoProveedor domain);
+	PagoProveedor entityToDomain(PagoProveedorEntity e);
 
-	PagoProveedor entityToDomain(PagoProveedorEntity entity);
-
+	PagoProveedorEntity domainToEntity(PagoProveedor d);
 }

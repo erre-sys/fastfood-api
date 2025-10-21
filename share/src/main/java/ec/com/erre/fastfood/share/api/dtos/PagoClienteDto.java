@@ -1,9 +1,11 @@
 package ec.com.erre.fastfood.share.api.dtos;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -11,30 +13,24 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Builder
 public class PagoClienteDto {
-
 	@Null(groups = Crear.class)
 	@NotNull(groups = Actualizar.class)
 	private Long id;
-
-	@NotNull(groups = Crear.class)
+	@NotNull
 	private Long pedidoId;
-
-	@NotNull(groups = Crear.class)
-	@Digits(integer = 10, fraction = 2)
+	@NotNull
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd' 'HH:mm:ss")
+	private LocalDateTime fecha;
+	@NotNull
+	@DecimalMin("0.00")
 	private BigDecimal montoTotal;
-
-	@NotBlank(groups = Crear.class)
-	@Size(max = 16)
+	@NotBlank
+	@Size(max = 20)
 	private String metodo;
-
-	@Size(max = 80)
+	@Size(max = 40)
 	private String referencia;
-
-	@NotBlank(groups = Crear.class)
-	@Size(max = 64)
 	private String creadoPorSub;
 
-	// Interfaces para definir grupos
 	public interface Crear {
 	}
 

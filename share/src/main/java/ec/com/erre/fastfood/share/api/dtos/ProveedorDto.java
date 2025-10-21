@@ -13,29 +13,29 @@ import lombok.Builder;
 @AllArgsConstructor
 @Builder
 public class ProveedorDto {
-
 	@Null(groups = Crear.class)
 	@NotNull(groups = Actualizar.class)
 	private Long id;
 
 	@NotBlank(groups = { Crear.class, Actualizar.class })
-	@Size(max = 160)
+	@Size(max = 120)
 	private String nombre;
 
-	@Size(max = 20)
+	@NotBlank(groups = { Crear.class, Actualizar.class })
+	@Size(max = 13)
 	private String ruc;
 
-	@Size(max = 40)
+	@Size(max = 30)
 	private String telefono;
 
-	@Size(max = 160)
+	@Size(max = 120)
+	@Email
 	private String email;
 
 	@NotBlank(groups = { Crear.class, Actualizar.class })
 	@Size(max = 1)
 	private String estado;
 
-	// Interfaces para definir grupos
 	public interface Crear {
 	}
 

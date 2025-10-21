@@ -15,26 +15,23 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Builder
 public class CompraItemDto {
-
-	@Null(groups = Crear.class)
-	@NotNull(groups = Actualizar.class)
+	@Null(groups = CompraDto.Crear.class)
+	@NotNull(groups = CompraDto.Actualizar.class)
 	private Long id;
 
-	@NotNull(groups = Crear.class)
+	@Null(groups = CompraDto.Crear.class)
+	private Long compraId;
+
+	@NotNull(groups = { CompraDto.Crear.class })
 	private Long ingredienteId;
 
-	@NotNull(groups = Crear.class)
-	@Digits(integer = 11, fraction = 3)
+	@NotNull(groups = { CompraDto.Crear.class })
+	@Digits(integer = 14, fraction = 3)
+	@DecimalMin(value = "0.001", inclusive = true)
 	private BigDecimal cantidad;
 
-	@NotNull(groups = Crear.class)
-	@Digits(integer = 10, fraction = 4)
+	@NotNull(groups = { CompraDto.Crear.class })
+	@Digits(integer = 14, fraction = 2)
+	@DecimalMin(value = "0.00", inclusive = true)
 	private BigDecimal costoUnitario;
-
-	// Interfaces para definir grupos
-	public interface Crear {
-	}
-
-	public interface Actualizar {
-	}
 }

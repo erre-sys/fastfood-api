@@ -26,16 +26,13 @@ import java.time.LocalDateTime;
 public class InventarioEntity {
 	@Id
 	@Column(name = "ingrediente_id")
-	private Long ingredienteId;
-
-	@Column(name = "stock_actual", precision = 14, scale = 3, nullable = false)
-	private BigDecimal stockActual;
-
-	@Column(name = "actualizado_en", nullable = false)
-	private LocalDateTime actualizadoEn;
-
+	private Long ingredienteId; // PK=FK
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "ingrediente_id", insertable = false, updatable = false)
 	private IngredienteEntity ingrediente;
+	@Column(name = "stock_actual", precision = 14, scale = 3, nullable = false)
+	private BigDecimal stockActual;
+	@Column(name = "actualizado_en")
+	private LocalDateTime actualizadoEn;
 
 }

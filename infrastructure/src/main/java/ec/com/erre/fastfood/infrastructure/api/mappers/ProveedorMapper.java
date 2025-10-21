@@ -15,8 +15,10 @@ public interface ProveedorMapper {
 
 	List<ProveedorDto> domainsToDtos(List<Proveedor> domain);
 
+	Proveedor entityToDomain(ProveedorEntity entity);
+
 	ProveedorEntity domainToEntity(Proveedor domain);
 
-	Proveedor entityToDomain(ProveedorEntity entity);
+	List<Proveedor> entitiesToDomains(List<ProveedorEntity> entity);
 
 }

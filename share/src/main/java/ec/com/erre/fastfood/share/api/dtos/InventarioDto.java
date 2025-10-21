@@ -1,7 +1,6 @@
 package ec.com.erre.fastfood.share.api.dtos;
 
-import jakarta.validation.constraints.Digits;
-import jakarta.validation.constraints.NotNull;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
@@ -18,19 +17,11 @@ import java.time.LocalDateTime;
 @Builder
 public class InventarioDto {
 
-	@NotNull(groups = { Crear.class, Actualizar.class })
 	private Long ingredienteId;
-
-	@NotNull(groups = { Crear.class, Actualizar.class })
-	@Digits(integer = 12, fraction = 3)
+	private String codigo;
+	private String nombre;
 	private BigDecimal stockActual;
-
+	private BigDecimal stockMinimo;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd' 'HH:mm:ss")
 	private LocalDateTime actualizadoEn;
-
-	// Interfaces para definir grupos
-	public interface Crear {
-	}
-
-	public interface Actualizar {
-	}
 }

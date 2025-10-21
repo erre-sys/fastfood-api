@@ -1,10 +1,12 @@
 package ec.com.erre.fastfood.domain.api.services;
 
-import ec.com.erre.fastfood.domain.api.models.api.GrupoIngrediente;
 import ec.com.erre.fastfood.domain.api.models.api.Ingrediente;
 import ec.com.erre.fastfood.domain.commons.exceptions.EntidadNoEncontradaException;
 import ec.com.erre.fastfood.domain.commons.exceptions.RegistroDuplicadoException;
 import ec.com.erre.fastfood.domain.commons.exceptions.ReglaDeNegocioException;
+import ec.com.erre.fastfood.share.commons.CriterioBusqueda;
+import ec.com.erre.fastfood.share.commons.PagerAndSortDto;
+import ec.com.erre.fastfood.share.commons.Pagina;
 
 import java.util.List;
 
@@ -15,16 +17,16 @@ import java.util.List;
  * @version $1.0$
  */
 public interface IngredienteService {
+	void crear(Ingrediente i) throws RegistroDuplicadoException, ReglaDeNegocioException, EntidadNoEncontradaException;
 
-	List<Ingrediente> buscarTodos();
+	void actualizar(Ingrediente i)
+			throws EntidadNoEncontradaException, RegistroDuplicadoException, ReglaDeNegocioException;
 
-	Ingrediente buscarPorId(Long ingredienteId);
+	void eliminarPorId(Long id) throws EntidadNoEncontradaException, ReglaDeNegocioException;
 
-	List<Ingrediente> buscarPorGrupoId(Long grupoId) throws EntidadNoEncontradaException;
+	Ingrediente buscarPorId(Long id) throws EntidadNoEncontradaException;
 
-	Ingrediente buscarPorNombre(String nombre);
+	List<Ingrediente> activos();
 
-	void crear(Ingrediente ingrediente) throws RegistroDuplicadoException;
-
-	void actualizar(Ingrediente ingrediente);
+	Pagina<Ingrediente> paginado(PagerAndSortDto pager, List<CriterioBusqueda> filters);
 }

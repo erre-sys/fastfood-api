@@ -1,5 +1,6 @@
 package ec.com.erre.fastfood.infrastructure.api.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -44,16 +45,15 @@ public class CompraEntity implements Serializable {
 	@Column(name = "referencia", length = 80)
 	private String referencia;
 
-	@Column(name = "creado_por_sub", nullable = false, length = 64)
-	private String creadoPorSub;
-
-	@Column(name = "observaciones", length = 500)
+	@Column(name = "observaciones", length = 255)
 	private String observaciones;
 
+	@Column(name = "creado_por_sub", length = 64)
+	private String creadoPorSub;
+
+	// Navegación opcional (no necesaria para tu flujo)
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "proveedor_id", insertable = false, updatable = false)
+	@JsonBackReference
 	private ProveedorEntity proveedor;
-
-	@OneToMany(mappedBy = "compra", fetch = FetchType.LAZY)
-	private List<CompraItemEntity> items = new ArrayList<>();
 }

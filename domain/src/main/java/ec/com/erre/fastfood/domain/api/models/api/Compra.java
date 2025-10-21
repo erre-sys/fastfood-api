@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,9 +21,10 @@ public class Compra {
 	private Long proveedorId;
 	private LocalDateTime fecha;
 	private String referencia;
-	private String creadoPorSub;
 	private String observaciones;
+	private String creadoPorSub;
+	private BigDecimal total; // Campo calculado
 
-	private List<CompraItem> compras = new ArrayList<>();
-
+	@Builder.Default
+	private List<CompraItem> items = new ArrayList<>();
 }

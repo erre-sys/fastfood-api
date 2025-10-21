@@ -17,6 +17,6 @@ public class PedidoItemExtra {
 	private Long id;
 	private Long pedidoItemId;
 	private Long ingredienteId;
-	private BigDecimal cantidad;
-	private BigDecimal precioExtra;
+	private BigDecimal cantidad; // escala 3
+	private BigDecimal precioExtra; // TOTAL línea, escala 2
 }

@@ -7,9 +7,6 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Getter
 @Setter
 @NoArgsConstructor
@@ -29,13 +26,13 @@ public class GrupoIngredienteDto {
 	@Size(max = 1)
 	private String estado;
 
-	private List<IngredienteDto> ingredientes = new ArrayList<>();
+	@NotBlank(groups = { Crear.class, Actualizar.class })
+	@Size(max = 1)
+	private String aplicaComida;
 
-	// Interfaces para definir grupos
 	public interface Crear {
 	}
 
 	public interface Actualizar {
 	}
-
 }

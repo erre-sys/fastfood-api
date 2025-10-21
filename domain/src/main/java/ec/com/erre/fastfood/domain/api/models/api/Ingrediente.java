@@ -20,7 +20,8 @@ public class Ingrediente {
 	private String nombre;
 	private String unidad;
 	private String esExtra; // S/N
-	private BigDecimal precioExtra;
-	private BigDecimal stockMinimo;
-	private String estado;
+	private BigDecimal precioExtra; // escala 2
+	private BigDecimal stockMinimo; // escala 3
+	private String aplicaComida; // S/N
+	private String estado; // A/I
 }

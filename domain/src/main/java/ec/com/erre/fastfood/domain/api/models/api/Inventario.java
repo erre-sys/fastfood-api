@@ -15,9 +15,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class Inventario {
-
 	private Long ingredienteId;
 	private BigDecimal stockActual;
 	private LocalDateTime actualizadoEn;
-
 }

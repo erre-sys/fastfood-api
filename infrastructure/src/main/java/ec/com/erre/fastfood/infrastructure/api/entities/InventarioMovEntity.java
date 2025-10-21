@@ -1,8 +1,10 @@
 package ec.com.erre.fastfood.infrastructure.api.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -13,7 +15,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class InventarioMovEntity {
+public class InventarioMovEntity implements Serializable {
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "inventario_mov_id")
@@ -25,11 +28,11 @@ public class InventarioMovEntity {
 	@Column(name = "fecha", nullable = false)
 	private LocalDateTime fecha;
 
-	@Column(name = "tipo", nullable = false, length = 12) // COMPRA/CONSUMO/AJUSTE
+	@Column(name = "tipo", length = 12, nullable = false) // COMPRA / CONSUMO / AJUSTE
 	private String tipo;
 
 	@Column(name = "cantidad", precision = 14, scale = 3, nullable = false)
-	private BigDecimal cantidad; // +entrada / -salida
+	private BigDecimal cantidad;
 
 	@Column(name = "descuento_pct", precision = 5, scale = 2, nullable = false)
 	private BigDecimal descuentoPct;
@@ -38,12 +41,14 @@ public class InventarioMovEntity {
 	private String referencia;
 
 	@Column(name = "compra_item_id")
-	private Long compraItemId;
+	private Long compraItemId; // nullable
 
 	@Column(name = "pedido_id")
-	private Long pedidoId;
+	private Long pedidoId; // nullable
 
+	// Relaciones opcionales, solo lectura (evita updates accidentales)
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "ingrediente_id", insertable = false, updatable = false)
+	@JsonBackReference
 	private IngredienteEntity ingrediente;
 }

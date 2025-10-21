@@ -3,9 +3,9 @@ package ec.com.erre.fastfood.domain.api.repositories;
 import ec.com.erre.fastfood.domain.api.models.api.GrupoPlato;
 import ec.com.erre.fastfood.domain.commons.exceptions.EntidadNoEncontradaException;
 import ec.com.erre.fastfood.domain.commons.exceptions.RegistroDuplicadoException;
-import ec.com.erre.fastfood.infrastructure.commons.repositories.CriterioBusqueda;
-import ec.com.erre.fastfood.infrastructure.commons.repositories.PagerAndSortDto;
-import ec.com.erre.fastfood.infrastructure.commons.repositories.Pagina;
+import ec.com.erre.fastfood.share.commons.PagerAndSortDto;
+import ec.com.erre.fastfood.share.commons.Pagina;
+import ec.com.erre.fastfood.share.commons.CriterioBusqueda;
 
 import java.util.List;
 

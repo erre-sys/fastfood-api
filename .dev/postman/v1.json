@@ -1,0 +1,317 @@
+{
+  "info": {
+    "name": "Fastfood API ",
+    "_postman_id": "e2f9b7b1-1111-4f21-aaaa-0000fastfoodapi",
+    "description": "Colección consolidada de endpoints entregados: Grupo Ingredientes, Proveedores, Compras, Pagos a Proveedor, Promos, Platos, Pedidos y Inventario (snapshot/kardex/ajuste).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Grupo de Ingredientes",
+      "item": [
+        {
+          "name": "Crear Grupo",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": "{{baseUrl}}/grupo-ingredientes",
+            "body": { "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Carnes\",\n  \"estado\": \"A\"\n}" }
+          }
+        },
+        {
+          "name": "Listar Todos (activos)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/grupo-ingredientes" }
+        },
+        {
+          "name": "Buscar por ID",
+          "request": { "method": "GET", "url": "{{baseUrl}}/grupo-ingredientes/1" }
+        },
+        {
+          "name": "Actualizar Grupo",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": "{{baseUrl}}/grupo-ingredientes",
+            "body": { "mode": "raw",
+              "raw": "{\n  \"id\": 1,\n  \"nombre\": \"Cárnicos\",\n  \"estado\": \"A\"\n}" }
+          }
+        },
+        {
+          "name": "Eliminar por ID",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/grupo-ingredientes/1" }
+        },
+        {
+          "name": "Search (paginado + filtros)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": {
+              "raw": "{{baseUrl}}/grupo-ingredientes/search?page=0&size=10&orderBy=nombre&direction=ASC",
+              "host": ["{{baseUrl}}"],
+              "path": ["grupo-ingredientes","search"],
+              "query": [
+                {"key":"page","value":"0"}, {"key":"size","value":"10"},
+                {"key":"orderBy","value":"nombre"}, {"key":"direction","value":"ASC"}
+              ]
+            },
+            "body": { "mode": "raw", "raw": "[ { \"llave\":\"estado\", \"operacion\":\"EQ\", \"valor\":\"A\" } ]" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Proveedores",
+      "item": [
+        {
+          "name": "Crear Proveedor",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": "{{baseUrl}}/proveedores",
+            "body": { "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Distribuidora ABC\",\n  \"ruc\": \"1799999999001\",\n  \"telefono\": \"+593998887776\",\n  \"email\": \"contacto@abc.com\",\n  \"direccion\": \"Av. Siempre Viva 123\",\n  \"estado\": \"A\"\n}" }
+          }
+        },
+        { "name": "Listar Activos", "request": { "method": "GET", "url": "{{baseUrl}}/proveedores" } },
+        { "name": "Buscar por ID", "request": { "method": "GET", "url": "{{baseUrl}}/proveedores/1" } },
+        {
+          "name": "Actualizar Proveedor",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": "{{baseUrl}}/proveedores",
+            "body": { "mode": "raw", "raw": "{\n  \"id\": 1,\n  \"telefono\": \"+593990001122\",\n  \"estado\": \"A\"\n}" }
+          }
+        },
+        {
+          "name": "Search (paginado + filtros)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": {
+              "raw": "{{baseUrl}}/proveedores/search?page=0&size=10&orderBy=nombre&direction=ASC",
+              "host": ["{{baseUrl}}"], "path": ["proveedores","search"],
+              "query":[{"key":"page","value":"0"},{"key":"size","value":"10"},{"key":"orderBy","value":"nombre"},{"key":"direction","value":"ASC"}]
+            },
+            "body": { "mode": "raw", "raw": "[ { \"llave\":\"nombre\", \"operacion\":\"LIKE\", \"valor\":\"abc\" } ]" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Compras",
+      "item": [
+        {
+          "name": "Crear Compra",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": "{{baseUrl}}/compras",
+            "body": { "mode": "raw",
+              "raw": "{\n  \"proveedorId\": 1,\n  \"referencia\": \"FAC-000123\",\n  \"observaciones\": \"Insumos semanales\",\n  \"items\": [\n    { \"ingredienteId\": 10, \"cantidad\": 5.000, \"costoUnitario\": 1.25 },\n    { \"ingredienteId\": 12, \"cantidad\": 2.500, \"costoUnitario\": 3.90 }\n  ]\n}" }
+          }
+        },
+        { "name": "Buscar Compra por ID", "request": { "method": "GET", "url": "{{baseUrl}}/compras/1" } },
+        {
+          "name": "Compras - Search",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": {
+              "raw": "{{baseUrl}}/compras/search?page=0&size=10&orderBy=fecha&direction=DESC",
+              "host": ["{{baseUrl}}"], "path": ["compras","search"],
+              "query":[{"key":"page","value":"0"},{"key":"size","value":"10"},{"key":"orderBy","value":"fecha"},{"key":"direction","value":"DESC"}]
+            },
+            "body": { "mode": "raw", "raw": "[ { \"llave\":\"proveedorId\", \"operacion\":\"EQ\", \"valor\":\"1\" } ]" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pagos a Proveedor",
+      "item": [
+        {
+          "name": "Crear Pago",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": "{{baseUrl}}/pagos-proveedor",
+            "body": { "mode": "raw",
+              "raw": "{\n  \"proveedorId\": 1,\n  \"montoTotal\": 150.00,\n  \"metodo\": \"TRANSFERENCIA\",\n  \"referencia\": \"TRX-12345\",\n  \"observaciones\": \"Pago de factura FAC-000123\"\n}" }
+          }
+        },
+        { "name": "Buscar Pago por ID", "request": { "method": "GET", "url": "{{baseUrl}}/pagos-proveedor/1" } },
+        {
+          "name": "Pagos - Search",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": {
+              "raw": "{{baseUrl}}/pagos-proveedor/search?page=0&size=10&orderBy=fecha&direction=DESC",
+              "host":["{{baseUrl}}"], "path":["pagos-proveedor","search"],
+              "query":[{"key":"page","value":"0"},{"key":"size","value":"10"},{"key":"orderBy","value":"fecha"},{"key":"direction","value":"DESC"}]
+            },
+            "body": { "mode": "raw", "raw": "[ { \"llave\":\"proveedorId\", \"operacion\":\"EQ\", \"valor\":\"1\" } ]" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Promos",
+      "item": [
+        {
+          "name": "Crear Promo",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": "{{baseUrl}}/promos",
+            "body": { "mode": "raw",
+              "raw": "{\n  \"platoId\": 42,\n  \"fechaInicio\": \"2025-10-03T10:00:00\",\n  \"fechaFin\": \"2025-10-10T23:59:59\",\n  \"descuentoPct\": 25.00,\n  \"estado\": \"A\"\n}" }
+          }
+        },
+        {
+          "name": "Actualizar Promo",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": "{{baseUrl}}/promos",
+            "body": { "mode": "raw",
+              "raw": "{\n  \"id\": 1,\n  \"platoId\": 42,\n  \"fechaInicio\": \"2025-10-04T00:00:00\",\n  \"fechaFin\": \"2025-10-12T23:59:59\",\n  \"descuentoPct\": 30.00,\n  \"estado\": \"A\"\n}" }
+          }
+        },
+        { "name": "Buscar Promo por ID", "request": { "method": "GET", "url": "{{baseUrl}}/promos/1" } },
+        { "name": "Listar Promos por Plato", "request": { "method": "GET", "url": "{{baseUrl}}/promos/platos/42" } },
+        {
+          "name": "Promos - Search",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": {
+              "raw": "{{baseUrl}}/promos/search?page=0&size=10&orderBy=fechaInicio&direction=DESC",
+              "host":["{{baseUrl}}"], "path":["promos","search"],
+              "query":[{"key":"page","value":"0"},{"key":"size","value":"10"},{"key":"orderBy","value":"fechaInicio"},{"key":"direction","value":"DESC"}]
+            },
+            "body": { "mode": "raw", "raw": "[ { \"llave\":\"estado\", \"operacion\":\"EQ\", \"valor\":\"A\" } ]" }
+          }
+        },
+        { "name": "Aplicar Promos (llama SP)", "request": { "method": "POST", "url": "{{baseUrl}}/promos/aplicar" } }
+      ]
+    },
+    {
+      "name": "Platos",
+      "item": [
+        {
+          "name": "Crear Plato",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": "{{baseUrl}}/platos",
+            "body": { "mode": "raw",
+              "raw": "{\n  \"codigo\": \"BURGER001\",\n  \"nombre\": \"Hamburguesa Clásica\",\n  \"grupoPlatoId\": 1,\n  \"precioBase\": 4.50,\n  \"estado\": \"A\"\n}" }
+          }
+        },
+        {
+          "name": "Actualizar Plato",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": "{{baseUrl}}/platos",
+            "body": { "mode": "raw",
+              "raw": "{\n  \"id\": 1,\n  \"precioBase\": 4.80,\n  \"estado\": \"A\"\n}" }
+          }
+        },
+        { "name": "Buscar Plato por ID", "request": { "method": "GET", "url": "{{baseUrl}}/platos/1" } },
+        { "name": "Listar Platos Activos", "request": { "method": "GET", "url": "{{baseUrl}}/platos" } },
+        {
+          "name": "Platos - Search",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": {
+              "raw": "{{baseUrl}}/platos/search?page=0&size=10&orderBy=nombre&direction=ASC",
+              "host":["{{baseUrl}}"], "path":["platos","search"],
+              "query":[{"key":"page","value":"0"},{"key":"size","value":"10"},{"key":"orderBy","value":"nombre"},{"key":"direction","value":"ASC"}]
+            },
+            "body": { "mode": "raw", "raw": "[ { \"llave\":\"estado\", \"operacion\":\"EQ\", \"valor\":\"A\" } ]" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pedidos (POS)",
+      "item": [
+        {
+          "name": "Crear Pedido",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": "{{baseUrl}}/pedidos",
+            "body": { "mode": "raw", "raw": "{ \"observaciones\": \"Mesa 3\" }" }
+          }
+        },
+        { "name": "Obtener Pedido (detalle)", "request": { "method": "GET", "url": "{{baseUrl}}/pedidos/1" } },
+        {
+          "name": "Agregar Ítem al Pedido",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": "{{baseUrl}}/pedidos/1/items",
+            "body": { "mode": "raw",
+              "raw": "{ \"platoId\": 42, \"cantidad\": 2.000 }" }
+          }
+        },
+        { "name": "Cambiar a EN_COCINA", "request": { "method": "POST", "url": "{{baseUrl}}/pedidos/1/estado/P" } },
+        { "name": "Cambiar a LISTO", "request": { "method": "POST", "url": "{{baseUrl}}/pedidos/1/estado/L" } },
+        { "name": "Cancelar Pedido", "request": { "method": "POST", "url": "{{baseUrl}}/pedidos/1/cancelar" } },
+        { "name": "Entregar Pedido (SP consumo inventario)", "request": { "method": "POST", "url": "{{baseUrl}}/pedidos/1/entregar" } }
+      ]
+    },
+    {
+      "name": "Inventario",
+      "item": [
+        {
+          "name": "Snapshot - Search (paginado + filtros)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": {
+              "raw": "{{baseUrl}}/inventario/search?page=0&size=10&orderBy=ingredienteNombre&direction=ASC",
+              "host":["{{baseUrl}}"], "path":["inventario","search"],
+              "query":[{"key":"page","value":"0"},{"key":"size","value":"10"},{"key":"orderBy","value":"ingredienteNombre"},{"key":"direction","value":"ASC"}]
+            },
+            "body": { "mode": "raw",
+              "raw": "[ { \"llave\":\"codigoONombre\", \"operacion\":\"LIKE\", \"valor\":\"tomate\" } ]" }
+          }
+        },
+        {
+          "name": "Kardex - Search",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": {
+              "raw": "{{baseUrl}}/inventario/kardex/search?page=0&size=20&orderBy=fecha&direction=DESC",
+              "host":["{{baseUrl}}"], "path":["inventario","kardex","search"],
+              "query":[{"key":"page","value":"0"},{"key":"size","value":"20"},{"key":"orderBy","value":"fecha"},{"key":"direction","value":"DESC"}]
+            },
+            "body": { "mode": "raw",
+              "raw": "[ { \"llave\":\"ingredienteId\", \"operacion\":\"EQ\", \"valor\":\"10\" }, { \"llave\":\"tipo\", \"operacion\":\"IN\", \"valor\":\"COMPRA,CONSUMO,AJUSTE\" } ]" }
+          }
+        },
+        {
+          "name": "Ajuste Manual de Inventario (SP)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": "{{baseUrl}}/inventario/ajustar",
+            "body": { "mode": "raw",
+              "raw": "{\n  \"ingredienteId\": 10,\n  \"cantidad\": -1.250,\n  \"referencia\": \"Merma conteo\",\n  \"permitirNeg\": \"N\"\n}" }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" }
+  ]
+}

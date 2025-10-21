@@ -1,5 +1,6 @@
 package ec.com.erre.fastfood.infrastructure.api.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -29,6 +30,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class PedidoItemEntity implements Serializable {
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "pedido_item_id")
@@ -40,29 +42,28 @@ public class PedidoItemEntity implements Serializable {
 	@Column(name = "plato_id", nullable = false)
 	private Long platoId;
 
-	@Column(name = "cantidad", nullable = false)
-	private Integer cantidad;
+	@Column(name = "cantidad", precision = 14, scale = 3, nullable = false)
+	private BigDecimal cantidad;
 
-	@Column(name = "precio_unitario", precision = 12, scale = 2, nullable = false)
+	@Column(name = "precio_unitario", precision = 14, scale = 2, nullable = false)
 	private BigDecimal precioUnitario;
 
-	@Column(name = "descuento_pct", precision = 5, scale = 2, nullable = false)
-	private BigDecimal descuentoPct;
+	@Column(name = "descuento_pct", precision = 5, scale = 2)
+	private BigDecimal descuentoPct; // puede ser null
 
-	@Column(name = "descuento_monto", precision = 12, scale = 2, nullable = false)
-	private BigDecimal descuentoMonto;
+	@Column(name = "descuento_monto", precision = 14, scale = 2)
+	private BigDecimal descuentoMonto; // puede ser null
 
-	@Column(name = "subtotal", precision = 12, scale = 2, nullable = false)
+	@Column(name = "subtotal", precision = 14, scale = 2, nullable = false)
 	private BigDecimal subtotal;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "pedido_id", insertable = false, updatable = false)
+	@JsonBackReference
 	private PedidoEntity pedido;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "plato_id", insertable = false, updatable = false)
+	@JsonBackReference
 	private PlatoEntity plato;
-
-	@OneToMany(mappedBy = "pedidoItem", fetch = FetchType.LAZY)
-	private List<PedidoItemExtraEntity> extras = new ArrayList<>();
 }

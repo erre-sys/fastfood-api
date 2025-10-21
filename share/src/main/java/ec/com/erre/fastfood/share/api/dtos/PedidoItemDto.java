@@ -8,8 +8,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @Setter
@@ -22,32 +20,24 @@ public class PedidoItemDto {
 	@NotNull(groups = Actualizar.class)
 	private Long id;
 
-	@NotNull(groups = Crear.class)
-	private Long platoId;
-	@NotNull(groups = Crear.class)
-	@Min(1)
-	private Integer cantidad;
+	private Long pedidoId;
 
-	@NotNull(groups = Crear.class)
-	@Digits(integer = 10, fraction = 2)
+	@NotNull(groups = { Crear.class })
+	private Long platoId;
+
+	@NotNull(groups = { Crear.class })
+	@Digits(integer = 14, fraction = 3)
+	@DecimalMin(value = "0.001", inclusive = true)
+	private BigDecimal cantidad;
+
+	// Solo lectura: el backend calcula con promo vigente
 	private BigDecimal precioUnitario;
 
-	@NotNull(groups = Crear.class)
-	@Digits(integer = 3, fraction = 2)
-	private BigDecimal descuentoPct;
+	private BigDecimal descuentoPct; // solo lectura si decides calcular del lado backend
+	private BigDecimal descuentoMonto; // idem
 
-	@NotNull(groups = Crear.class)
-	@Digits(integer = 10, fraction = 2)
-	private BigDecimal descuentoMonto;
+	private BigDecimal subtotal; // calculado por backend
 
-	@NotNull(groups = Crear.class)
-	@Digits(integer = 10, fraction = 2)
-	private BigDecimal subtotal;
-
-	@Builder.Default
-	private List<PedidoItemExtraDto> extras = new ArrayList<>();
-
-	// Interfaces para definir grupos
 	public interface Crear {
 	}
 

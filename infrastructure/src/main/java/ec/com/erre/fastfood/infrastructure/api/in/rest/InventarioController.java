@@ -1,91 +1,84 @@
 package ec.com.erre.fastfood.infrastructure.api.in.rest;
 
-import ec.com.erre.fastfood.domain.api.services.IngredienteService;
-import ec.com.erre.fastfood.domain.commons.exceptions.EntidadNoEncontradaException;
-import ec.com.erre.fastfood.domain.commons.exceptions.RegistroDuplicadoException;
-import ec.com.erre.fastfood.infrastructure.api.mappers.IngredienteMapper;
+import ec.com.erre.fastfood.domain.api.models.api.Inventario;
+import ec.com.erre.fastfood.domain.api.models.api.InventarioMov;
+import ec.com.erre.fastfood.domain.api.services.InventarioService;
+import ec.com.erre.fastfood.domain.commons.exceptions.ReglaDeNegocioException;
+import ec.com.erre.fastfood.infrastructure.api.mappers.InventarioMapper;
+import ec.com.erre.fastfood.infrastructure.api.mappers.KardexMapper;
 import ec.com.erre.fastfood.infrastructure.commons.exceptions.ErrorResponse;
-import ec.com.erre.fastfood.share.api.dtos.IngredienteDto;
+import ec.com.erre.fastfood.share.commons.PagerAndSortDto;
+import ec.com.erre.fastfood.share.commons.Pagina;
+import ec.com.erre.fastfood.share.api.dtos.InventarioDto;
+import ec.com.erre.fastfood.share.api.dtos.InventarioMovDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.constraints.NotBlank;
-import org.springframework.http.HttpStatus;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/inventario")
-@Tag(name = "Ingredientes", description = "Ingredientes")
+@Tag(name = "Inventario", description = "Inventario de items / ingredientes")
 public class InventarioController {
-	private final IngredienteService ingredienteService;
-	private final IngredienteMapper ingredienteMapper;
 
-	public InventarioController(IngredienteService ingredienteService, IngredienteMapper ingredienteMapper) {
-		this.ingredienteService = ingredienteService;
-		this.ingredienteMapper = ingredienteMapper;
+	private final InventarioService inventarioService;
+	private final InventarioMapper inventarioMapper;
+	private final KardexMapper kardexMapper;
+
+	public InventarioController(InventarioService inventarioService, InventarioMapper inventarioMapper,
+			KardexMapper kardexMapper) {
+		this.inventarioService = inventarioService;
+		this.inventarioMapper = inventarioMapper;
+		this.kardexMapper = kardexMapper;
 	}
 
-	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "Buscar todos los inventario")
-	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Ingredientes encontrados"),
-			@ApiResponse(responseCode = "404", description = "No existen inventario", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))) })
-	public ResponseEntity<List<IngredienteDto>> buscarTodos() {
-		return ResponseEntity.ok(ingredienteMapper.domainsToDtos(ingredienteService.buscarTodos()));
+	/**
+	 * Kardex de inventario (paginado) con filtro opcional por texto y bandera de "bajo mínimo".
+	 */
+	@PostMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(summary = "Buscar el inventario paginado")
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Listado obtenido") })
+	public Pagina<InventarioDto> search(PagerAndSortDto pager, @RequestParam(required = false) String q,
+			@RequestParam(defaultValue = "false") boolean soloBajoMinimo) {
+
+		Pagina<Inventario> page = inventarioService.listarInventario(pager, q, soloBajoMinimo);
+
+		return Pagina.<InventarioDto> builder().paginaActual(page.getPaginaActual())
+				.totalpaginas(page.getTotalpaginas()).totalRegistros(page.getTotalRegistros())
+				.contenido(page.getContenido().stream().map(inventarioMapper::domaintoDto).toList()).build();
 	}
 
-	@GetMapping(value = "/{ingredienteId}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "Buscar ingrediente por id")
-	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Ingrediente encontrado"),
-			@ApiResponse(responseCode = "404", description = "No existe el ingrediente con ese id", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))) })
-	public ResponseEntity<IngredienteDto> buscarPorId(@RequestParam Long ingredienteId) {
-		return ResponseEntity.ok(ingredienteMapper.domainToDto(ingredienteService.buscarPorId(ingredienteId)));
-	}
+	/**
+	 * Kardex (movimientos) paginado por ingrediente y rango de fechas opcional.
+	 */
+	@PostMapping(value = "/kardex/search", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(summary = "Kardex (movimientos) paginado")
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Listado obtenido"),
+			@ApiResponse(responseCode = "400", description = "Parámetros inválidos", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))) })
+	public Pagina<InventarioMovDto> kardexSearch(PagerAndSortDto pager, @RequestParam @NotNull Long ingredienteId,
+			@RequestParam(required = false) String desde, // ISO-8601 (yyyy-MM-dd'T'HH:mm:ss)
+			@RequestParam(required = false) String hasta, // ISO-8601
+			@RequestParam(required = false) String tipo // COMPRA/CONSUMO/AJUSTE
+	) throws ReglaDeNegocioException {
 
-	@GetMapping(value = "/grupo/{grupoId}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "Buscar inventario por ID de Ingrediente")
-	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Ingredientes encontrados"),
-			@ApiResponse(responseCode = "404", description = "No existe el grupo con ese ID", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))) })
-	public ResponseEntity<List<IngredienteDto>> buscarPorGrupoId(@PathVariable Long grupoId)
-			throws EntidadNoEncontradaException {
-		return ResponseEntity.ok(ingredienteMapper.domainsToDtos(ingredienteService.buscarPorGrupoId(grupoId)));
-	}
+		LocalDateTime fDesde = desde != null && !desde.isBlank() ? LocalDateTime.parse(desde) : null;
+		LocalDateTime fHasta = hasta != null && !hasta.isBlank() ? LocalDateTime.parse(hasta) : null;
 
-	@GetMapping(value = "/nombre/{nombre}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "Buscar ingrediente por nombre (case-sesitive)")
-	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Ingrediente encontrado"),
-			@ApiResponse(responseCode = "404", description = "No existe el ingrediente con ese nombre", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))) })
-	public ResponseEntity<IngredienteDto> buscarPorEstado(@NotBlank @RequestParam String nombre) {
-		return ResponseEntity.ok(ingredienteMapper.domainToDto(ingredienteService.buscarPorNombre(nombre)));
-	}
+		if (fDesde != null && fHasta != null && fDesde.isAfter(fHasta)) {
+			throw new ReglaDeNegocioException("El parámetro 'desde' no puede ser mayor que 'hasta'");
+		}
 
-	@PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "Crea un nuevo ingrediente")
-	@ApiResponses(value = { @ApiResponse(responseCode = "201", description = "Ingrediente creado"),
-			@ApiResponse(responseCode = "400", description = "Entrada incorrecta"),
-			@ApiResponse(responseCode = "409", description = "Ingrediente ya existe", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))) })
-	public ResponseEntity<Void> crear(@Validated(IngredienteDto.Crear.class) @RequestBody IngredienteDto dto)
-			throws RegistroDuplicadoException {
-		this.ingredienteService.crear(this.ingredienteMapper.dtoToDomain(dto));
-		return new ResponseEntity<>(HttpStatus.CREATED);
+		Pagina<InventarioMov> page = inventarioService.listarKardex(ingredienteId, fDesde, fHasta, tipo, pager);
 
-	}
-
-	@PutMapping()
-	@Operation(summary = "Actualizar un ingrediente")
-	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Ingrediente actualizada correctamente"),
-			@ApiResponse(responseCode = "404", description = "Ingrediente no existe", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))) })
-	public ResponseEntity<Void> actualizar(
-			@Validated(IngredienteDto.Actualizar.class) @RequestBody IngredienteDto dto) {
-		this.ingredienteService.actualizar(this.ingredienteMapper.dtoToDomain(dto));
-		return new ResponseEntity<>(HttpStatus.CREATED);
-
+		return Pagina.<InventarioMovDto> builder().paginaActual(page.getPaginaActual())
+				.totalpaginas(page.getTotalpaginas()).totalRegistros(page.getTotalRegistros())
+				.contenido(page.getContenido().stream().map(kardexMapper::domaintoDto).toList()).build();
 	}
 }

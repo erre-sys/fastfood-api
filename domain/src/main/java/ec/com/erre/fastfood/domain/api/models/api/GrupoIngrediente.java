@@ -6,9 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Getter
 @Setter
 @NoArgsConstructor
@@ -17,6 +14,6 @@ import java.util.List;
 public class GrupoIngrediente {
 	private Long id;
 	private String nombre;
-	private String estado;
-	private List<Ingrediente> ingredientes = new ArrayList<>();
+	private String estado; // A/I
+	private String aplicaComida;
 }

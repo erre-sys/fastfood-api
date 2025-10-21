@@ -19,6 +19,7 @@ import java.math.BigDecimal;
 @Table(name = "ingredientes")
 @ToString
 public class IngredienteEntity implements Serializable {
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "ingrediente_id")
@@ -27,30 +28,32 @@ public class IngredienteEntity implements Serializable {
 	@Column(name = "grupo_ingrediente_id", nullable = false)
 	private Long grupoIngredienteId;
 
-	@Column(name = "codigo", nullable = false, length = 40, unique = true)
+	@Column(name = "codigo", length = 40, nullable = false, unique = true)
 	private String codigo;
 
-	@Column(name = "nombre", nullable = false, length = 160)
+	@Column(name = "nombre", length = 120, nullable = false)
 	private String nombre;
 
-	@Column(name = "unidad", nullable = false, length = 16)
+	@Column(name = "unidad", length = 12, nullable = false) // KG,G,LT,ML,UND,ETC
 	private String unidad;
 
-	@Column(name = "es_extra", nullable = false, length = 1) // S/N
+	@Column(name = "es_extra", length = 1, nullable = false) // S/N
 	private String esExtra;
 
-	@Column(name = "precio_extra", precision = 12, scale = 2)
+	@Column(name = "precio_extra", precision = 14, scale = 2, nullable = false)
 	private BigDecimal precioExtra;
 
 	@Column(name = "stock_minimo", precision = 14, scale = 3, nullable = false)
 	private BigDecimal stockMinimo;
 
-	@Column(name = "activo", nullable = false, length = 1) // S/N
+	@Column(name = "aplica_comida", length = 1, nullable = false) // S/N
+	private String aplicaComida;
+
+	@Column(name = "estado", length = 1, nullable = false) // A/I
 	private String estado;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "grupo_ingrediente_id", insertable = false, updatable = false)
 	@JsonBackReference
-	private GrupoIngredienteEntity grupoIngrediente;
-
+	private GrupoIngredienteEntity grupo;
 }

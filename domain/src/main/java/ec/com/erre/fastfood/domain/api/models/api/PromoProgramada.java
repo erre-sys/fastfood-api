@@ -16,6 +16,6 @@ public class PromoProgramada {
 	private LocalDateTime fechaInicio;
 	private LocalDateTime fechaFin;
 	private BigDecimal descuentoPct;
-	private String estado; // A/I
+	private String estado; // 'A' / 'I'
 	private String creadoPorSub;
 }

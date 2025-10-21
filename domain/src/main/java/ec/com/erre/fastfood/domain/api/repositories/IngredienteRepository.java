@@ -2,7 +2,9 @@ package ec.com.erre.fastfood.domain.api.repositories;
 
 import ec.com.erre.fastfood.domain.api.models.api.Ingrediente;
 import ec.com.erre.fastfood.domain.commons.exceptions.EntidadNoEncontradaException;
-import ec.com.erre.fastfood.domain.commons.exceptions.RegistroDuplicadoException;
+import ec.com.erre.fastfood.share.commons.CriterioBusqueda;
+import ec.com.erre.fastfood.share.commons.PagerAndSortDto;
+import ec.com.erre.fastfood.share.commons.Pagina;
 
 import java.util.List;
 
@@ -13,17 +15,17 @@ import java.util.List;
  * @version $1.0$
  */
 public interface IngredienteRepository {
+	boolean existePorCodigo(String codigo);
 
-	List<Ingrediente> buscarTodos();
+	void crear(Ingrediente i);
 
-	Ingrediente buscarPorId(Long ingredienteId) throws EntidadNoEncontradaException;
+	void actualizar(Ingrediente i);
 
-	List<Ingrediente> buscarPorGrupoId(Long grupoId);
+	void eliminar(Ingrediente i);
 
-	Ingrediente buscarPorNombre(String nombre);
+	Ingrediente buscarPorId(Long id) throws EntidadNoEncontradaException;
 
-	void crear(Ingrediente ingrediente);
+	List<Ingrediente> activos();
 
-	void actualizar(Ingrediente ingrediente);
-
+	Pagina<Ingrediente> paginado(PagerAndSortDto pager, List<CriterioBusqueda> filters);
 }

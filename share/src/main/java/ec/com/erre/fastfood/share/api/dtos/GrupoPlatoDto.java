@@ -16,22 +16,15 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class GrupoPlatoDto {
-
 	@Null(groups = Crear.class)
 	@NotNull(groups = Actualizar.class)
 	private Long id;
-
-	@NotBlank(groups = { Crear.class, Actualizar.class })
+	@NotBlank
 	@Size(max = 120)
 	private String nombre;
-
-	@NotBlank(groups = { Crear.class, Actualizar.class })
-	@Size(max = 1)
+	@NotBlank
 	private String estado;
 
-	private List<PlatoDto> platos = new ArrayList<>();
-
-	// Interfaces para definir grupos
 	public interface Crear {
 	}
 

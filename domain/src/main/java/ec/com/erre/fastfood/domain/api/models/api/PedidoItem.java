@@ -24,6 +24,4 @@ public class PedidoItem {
 	private BigDecimal descuentoPct;
 	private BigDecimal descuentoMonto;
 	private BigDecimal subtotal;
-
-	private List<PedidoItemExtra> extras = new ArrayList<>();
 }

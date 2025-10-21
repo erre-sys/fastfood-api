@@ -9,14 +9,16 @@ import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface PedidoItemMapper {
-	PedidoItemDto domainToDto(PedidoItem domain);
+
+	PedidoItemDto domainToDto(PedidoItem d);
 
 	PedidoItem dtoToDomain(PedidoItemDto dto);
 
-	List<PedidoItemDto> domainsToDtos(List<PedidoItem> domain);
+	List<PedidoItemDto> domainsToDtos(List<PedidoItem> d);
 
-	PedidoItemEntity domainToEntity(PedidoItem domain);
+	List<PedidoItem> dtosToDomains(List<PedidoItemDto> dto);
 
-	PedidoItem entityToDomain(PedidoItemEntity entity);
+	PedidoItem entityToDomain(PedidoItemEntity e);
 
+	PedidoItemEntity domainToEntity(PedidoItem d);
 }

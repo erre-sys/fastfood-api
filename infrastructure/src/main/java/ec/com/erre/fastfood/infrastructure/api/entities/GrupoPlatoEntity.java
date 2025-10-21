@@ -23,12 +23,9 @@ public class GrupoPlatoEntity implements Serializable {
 	@Column(name = "grupo_plato_id")
 	private Long id;
 
-	@Column(nullable = false, unique = true, length = 120)
+	@Column(name = "nombre", nullable = false, length = 120)
 	private String nombre;
 
-	@Column(nullable = false, unique = true, length = 120)
+	@Column(name = "estado", nullable = false, length = 1)
 	private String estado;
-
-	@OneToMany(mappedBy = "grupoPlato", fetch = FetchType.LAZY)
-	private List<PlatoEntity> platos;
 }

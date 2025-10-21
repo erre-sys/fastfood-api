@@ -1,0 +1,88 @@
+package ec.com.erre.fastfood.domain.api.services;
+
+import ec.com.erre.fastfood.domain.api.models.api.PagoCliente;
+import ec.com.erre.fastfood.domain.api.models.api.Pedido;
+import ec.com.erre.fastfood.domain.api.repositories.PagoClienteRepository;
+import ec.com.erre.fastfood.domain.api.repositories.PedidoRepository;
+import ec.com.erre.fastfood.domain.commons.exceptions.EntidadNoEncontradaException;
+import ec.com.erre.fastfood.domain.commons.exceptions.ReglaDeNegocioException;
+import ec.com.erre.fastfood.share.commons.CriterioBusqueda;
+import ec.com.erre.fastfood.share.commons.PagerAndSortDto;
+import ec.com.erre.fastfood.share.commons.Pagina;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Service
+public class PagoClienteServiceImpl implements PagoClienteService {
+
+	private static final java.util.Set<String> METODOS = new java.util.HashSet<>(
+			java.util.Arrays.asList("EFECTIVO", "TARJETA", "TRANSFERENCIA", "DEPOSITO"));
+
+	private final PagoClienteRepository repo;
+	private final PedidoRepository pedidoRepo;
+
+	public PagoClienteServiceImpl(PagoClienteRepository repo, PedidoRepository pedidoRepo) {
+		this.repo = repo;
+		this.pedidoRepo = pedidoRepo;
+	}
+
+	@Override
+	public Long registrarPago(PagoCliente pago) throws EntidadNoEncontradaException, ReglaDeNegocioException {
+
+		normalizar(pago);
+		validar(pago);
+
+		Pedido ped = pedidoRepo.buscarPorId(pago.getPedidoId());
+		if (!"E".equalsIgnoreCase(ped.getEstado())) {
+			throw new ReglaDeNegocioException("El pedido debe estar ENTREGADO antes de registrar el pago");
+		}
+
+		BigDecimal yaPagado = repo.totalPagadoPorPedido(pago.getPedidoId());
+		BigDecimal totalPedido = ped.getTotalNeto() == null ? BigDecimal.ZERO : ped.getTotalNeto();
+		if (yaPagado.add(pago.getMontoTotal()).compareTo(totalPedido) > 0) {
+			throw new ReglaDeNegocioException("El pago excede el total del pedido");
+		}
+
+		pago.setFecha(pago.getFecha() == null ? LocalDateTime.now() : pago.getFecha());
+
+		return repo.crear(pago);
+	}
+
+	@Override
+	public PagoCliente buscarPorId(Long id) throws EntidadNoEncontradaException {
+		return repo.buscarPorId(id);
+	}
+
+	@Override
+	public List<PagoCliente> listarPorPedido(Long pedidoId) {
+		return repo.listarPorPedido(pedidoId);
+	}
+
+	@Override
+	public Pagina<PagoCliente> paginado(PagerAndSortDto pager, List<CriterioBusqueda> filters) {
+		return repo.paginado(pager, filters);
+	}
+
+	/* ==== helpers ==== */
+	private void normalizar(PagoCliente p) {
+		if (p.getMetodo() != null)
+			p.setMetodo(p.getMetodo().trim().toUpperCase());
+		if (p.getReferencia() != null)
+			p.setReferencia(p.getReferencia().trim());
+		if (p.getMontoTotal() != null)
+			p.setMontoTotal(p.getMontoTotal().setScale(2, RoundingMode.HALF_UP));
+	}
+
+	private void validar(PagoCliente p) throws ReglaDeNegocioException {
+		if (p.getPedidoId() == null)
+			throw new ReglaDeNegocioException("pedidoId es obligatorio");
+		if (p.getMontoTotal() == null || p.getMontoTotal().compareTo(new BigDecimal("0.00")) <= 0)
+			throw new ReglaDeNegocioException("montoTotal debe ser > 0");
+		if (p.getMetodo() == null || !METODOS.contains(p.getMetodo()))
+			throw new ReglaDeNegocioException("metodo inválido. Permitidos: " + METODOS);
+	}
+}

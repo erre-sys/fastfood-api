@@ -1,4 +1,4 @@
-package ec.com.erre.fastfood.infrastructure.commons.repositories;
+package ec.com.erre.fastfood.share.commons;
 
 public class ValidacionCondicional {
 

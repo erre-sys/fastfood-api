@@ -1,5 +1,6 @@
 package ec.com.erre.fastfood.infrastructure.api.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -9,7 +10,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Column;
-import jakarta.persistence.OneToMany;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
@@ -18,47 +18,44 @@ import lombok.Builder;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
-@Table(name = "PLATOS")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(name = "platos")
 public class PlatoEntity implements Serializable {
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "PLATO_ID")
+	@Column(name = "plato_id")
 	private Long id;
 
-	@Column(name = "GRUPO_PLATO_ID")
-	private Long grupoPlatoId;
-
-	@Column(nullable = false, unique = true, length = 40)
+	@Column(name = "codigo", nullable = false, length = 40, unique = true)
 	private String codigo;
 
-	@Column(nullable = false, length = 160)
+	@Column(name = "nombre", nullable = false, length = 120)
 	private String nombre;
 
-	@Column(name = "PRECIO_BASE", precision = 12, scale = 2, nullable = false)
+	@Column(name = "grupo_plato_id", nullable = false)
+	private Long grupoPlatoId;
+
+	@Column(name = "precio_base", precision = 14, scale = 2, nullable = false)
 	private BigDecimal precioBase;
 
-	@Column(nullable = false, length = 1)
+	@Column(name = "estado", nullable = false, length = 1) // 'A'/'I'
 	private String estado;
 
-	@Column(name = "EN_PROMOCION", precision = 12, scale = 2, nullable = false)
+	@Column(name = "en_promocion", nullable = false, length = 1) // 'S'/'N'
 	private String enPromocion;
 
-	@Column(name = "DESCUENTO_PCT", precision = 12, scale = 2, nullable = false)
+	@Column(name = "descuento_pct", precision = 5, scale = 2, nullable = false)
 	private BigDecimal descuentoPct;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "grupo_plato_id", insertable = false, updatable = false)
-	private GrupoPlatoEntity grupoPlato;
-
-	@OneToMany(mappedBy = "plato", fetch = FetchType.LAZY)
-	private List<RecetaItemEntity> receta = new ArrayList<>();
+	@JsonBackReference
+	private GrupoPlatoEntity grupo;
 }

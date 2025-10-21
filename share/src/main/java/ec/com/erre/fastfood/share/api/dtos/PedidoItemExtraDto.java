@@ -19,18 +19,20 @@ public class PedidoItemExtraDto {
 	@Null(groups = Crear.class)
 	@NotNull(groups = Actualizar.class)
 	private Long id;
-	@NotNull(groups = Crear.class)
+
+	@NotNull(groups = { Crear.class })
+	private Long pedidoItemId;
+
+	@NotNull(groups = { Crear.class })
 	private Long ingredienteId;
 
-	@NotNull(groups = Crear.class)
-	@Digits(integer = 11, fraction = 3)
+	@NotNull(groups = { Crear.class, Actualizar.class })
+	@Digits(integer = 14, fraction = 3)
+	@DecimalMin(value = "0.001", inclusive = true)
 	private BigDecimal cantidad;
 
-	@NotNull(groups = Crear.class)
-	@Digits(integer = 10, fraction = 2)
 	private BigDecimal precioExtra;
 
-	// Interfaces para definir grupos
 	public interface Crear {
 	}
 

@@ -1,5 +1,6 @@
 package ec.com.erre.fastfood.infrastructure.api.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -40,14 +41,18 @@ public class CompraItemEntity implements Serializable {
 	@Column(name = "cantidad", precision = 14, scale = 3, nullable = false)
 	private BigDecimal cantidad;
 
-	@Column(name = "costo_unitario", precision = 12, scale = 4, nullable = false)
+	@Column(name = "costo_unitario", precision = 14, scale = 2, nullable = false)
 	private BigDecimal costoUnitario;
 
+	// Navegación opcional (no necesaria para tu flujo)
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "compra_id", insertable = false, updatable = false)
+	@JsonBackReference
 	private CompraEntity compra;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "ingrediente_id", insertable = false, updatable = false)
+	@JsonBackReference
 	private IngredienteEntity ingrediente;
+
 }

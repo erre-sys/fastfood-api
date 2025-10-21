@@ -2,6 +2,9 @@ package ec.com.erre.fastfood.domain.api.repositories;
 
 import ec.com.erre.fastfood.domain.api.models.api.Plato;
 import ec.com.erre.fastfood.domain.commons.exceptions.EntidadNoEncontradaException;
+import ec.com.erre.fastfood.share.commons.CriterioBusqueda;
+import ec.com.erre.fastfood.share.commons.PagerAndSortDto;
+import ec.com.erre.fastfood.share.commons.Pagina;
 
 import java.util.List;
 
@@ -13,16 +16,18 @@ import java.util.List;
  */
 public interface PlatoRepository {
 
-	List<Plato> buscarTodos();
+	boolean existePorCodigo(String codigo);
 
-	Plato buscarPorId(Long platoId) throws EntidadNoEncontradaException;
+	void crear(Plato p);
 
-	List<Plato> buscarPorGrupoId(Long grupoId);
+	void actualizar(Plato p);
 
-	Plato buscarPorNombre(String nombre);
+	void eliminar(Plato p);
 
-	void crear(Plato plato);
+	Plato buscarPorId(Long id) throws EntidadNoEncontradaException;
 
-	void actualizar(Plato plato);
+	List<Plato> activos();
+
+	Pagina<Plato> paginado(PagerAndSortDto pager, List<CriterioBusqueda> filters);
 
 }

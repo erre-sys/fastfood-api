@@ -1,5 +1,6 @@
 package ec.com.erre.fastfood.infrastructure.api.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -26,6 +27,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Builder
 public class PedidoItemExtraEntity implements Serializable {
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "pedido_item_extra_id")
@@ -40,14 +42,12 @@ public class PedidoItemExtraEntity implements Serializable {
 	@Column(name = "cantidad", precision = 14, scale = 3, nullable = false)
 	private BigDecimal cantidad;
 
-	@Column(name = "precio_extra", precision = 12, scale = 2, nullable = false)
+	// TOTAL de la línea (cantidad × precio_unitario en el momento del alta)
+	@Column(name = "precio_extra", precision = 14, scale = 2, nullable = false)
 	private BigDecimal precioExtra;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "pedido_item_id", insertable = false, updatable = false)
-	private PedidoItemEntity pedidoItem;
-
-	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "ingrediente_id", insertable = false, updatable = false)
+	@JsonBackReference
 	private IngredienteEntity ingrediente;
 }

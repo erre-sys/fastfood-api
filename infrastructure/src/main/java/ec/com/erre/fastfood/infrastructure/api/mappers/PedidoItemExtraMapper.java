@@ -9,14 +9,13 @@ import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface PedidoItemExtraMapper {
-	PedidoItemExtraDto domainToDto(PedidoItemExtra domain);
+	PedidoItemExtraDto domainToDto(PedidoItemExtra d);
 
 	PedidoItemExtra dtoToDomain(PedidoItemExtraDto dto);
 
-	List<PedidoItemExtraDto> domainsToDtos(List<PedidoItemExtra> domain);
+	List<PedidoItemExtraDto> domainsToDtos(List<PedidoItemExtra> d);
 
-	PedidoItemExtraEntity domainToEntity(PedidoItemExtra domain);
+	PedidoItemExtra entityToDomain(PedidoItemExtraEntity e);
 
-	PedidoItemExtra entityToDomain(PedidoItemExtraEntity entity);
-
+	PedidoItemExtraEntity domainToEntity(PedidoItemExtra d);
 }

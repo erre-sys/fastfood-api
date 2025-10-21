@@ -20,10 +20,8 @@ public class Plato {
 	private String codigo;
 	private String nombre;
 	private Long grupoPlatoId;
-	private BigDecimal precioBase;
-	private String activo; // S/N
-	private String enPromocion; // S/N
-	private BigDecimal descuentoPct;
-	private List<RecetaItem> receta = new ArrayList<>();
-
+	private BigDecimal precioBase; // escala 2
+	private String estado; // 'A'/'I'
+	private String enPromocion; // 'S'/'N' (solo lectura desde CRUD)
+	private BigDecimal descuentoPct; // escala 2 (solo lectura desde CRUD)
 }

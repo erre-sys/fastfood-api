@@ -9,14 +9,18 @@ import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface RecetaItemMapper {
-	RecetaItemDto domainToDto(RecetaItem domain);
+
+	// DTO ⇄ Domain
+	RecetaItemDto domainToDto(RecetaItem d);
 
 	RecetaItem dtoToDomain(RecetaItemDto dto);
 
-	List<RecetaItemDto> domainsToDtos(List<RecetaItem> domain);
+	List<RecetaItemDto> domainsToDtos(List<RecetaItem> d);
 
-	RecetaItemEntity domainToEntity(RecetaItem domain);
+	List<RecetaItem> dtosToDomains(List<RecetaItemDto> dto);
 
-	RecetaItem entityToDomain(RecetaItemEntity entity);
+	// Entity ⇄ Domain
+	RecetaItem entityToDomain(RecetaItemEntity e);
 
+	RecetaItemEntity domainToEntity(RecetaItem d);
 }

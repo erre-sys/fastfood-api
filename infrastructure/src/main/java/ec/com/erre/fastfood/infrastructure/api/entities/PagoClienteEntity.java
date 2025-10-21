@@ -19,26 +19,15 @@ public class PagoClienteEntity implements Serializable {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "pago_cliente_id")
 	private Long id;
-
 	@Column(name = "pedido_id", nullable = false)
-	private Long pedidoId;
-
-	@Column(name = "fecha", nullable = false)
+	private Long pedidoId; // FK simple
 	private LocalDateTime fecha;
-
-	@Column(name = "monto_total", precision = 12, scale = 2, nullable = false)
+	@Column(name = "monto_total", precision = 14, scale = 2, nullable = false)
 	private BigDecimal montoTotal;
-
-	@Column(name = "metodo", nullable = false, length = 16)
+	@Column(length = 20)
 	private String metodo;
-
-	@Column(name = "referencia", length = 80)
+	@Column(length = 40)
 	private String referencia;
-
-	@Column(name = "creado_por_sub", nullable = false, length = 64)
+	@Column(name = "creado_por_sub", length = 64)
 	private String creadoPorSub;
-
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "pedido_id", insertable = false, updatable = false)
-	private PedidoEntity pedido;
 }

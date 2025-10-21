@@ -9,14 +9,16 @@ import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface CompraMapper {
-	CompraDto domainToDto(Compra domain);
+
+	// DTO ⇄ Domain (cabecera)
+	CompraDto domainToDto(Compra d);
 
 	Compra dtoToDomain(CompraDto dto);
 
-	List<CompraDto> domainsToDtos(List<Compra> domain);
+	List<CompraDto> domainsToDtos(List<Compra> d);
 
-	CompraEntity domainToEntity(Compra domain);
+	// Entity ⇄ Domain (cabecera)
+	Compra entityToDomain(CompraEntity e);
 
-	Compra entityToDomain(CompraEntity entity);
-
+	CompraEntity domainToEntity(Compra d);
 }

@@ -11,15 +11,13 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class InventarioMov {
-
 	private Long id;
 	private Long ingredienteId;
 	private LocalDateTime fecha;
-	private String tipo;
-	private BigDecimal cantidad;
-	private BigDecimal descuentoPct;
+	private String tipo; // COMPRA / CONSUMO / AJUSTE
+	private BigDecimal cantidad; // escala 3
+	private BigDecimal descuentoPct; // escala 2
 	private String referencia;
 	private Long compraItemId;
 	private Long pedidoId;
-
 }

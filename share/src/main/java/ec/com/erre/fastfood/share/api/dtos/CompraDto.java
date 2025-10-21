@@ -1,5 +1,6 @@
 package ec.com.erre.fastfood.share.api.dtos;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -7,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,30 +20,31 @@ import java.util.List;
 @Builder
 public class CompraDto {
 	@Null(groups = Crear.class)
-	@Null(groups = Crear.class)
 	@NotNull(groups = Actualizar.class)
 	private Long id;
 
-	@NotNull(groups = { Crear.class, Actualizar.class })
+	@NotNull(groups = { Crear.class })
 	private Long proveedorId;
+
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd' 'HH:mm:ss")
+	private LocalDateTime fecha;
 
 	@Size(max = 80)
 	private String referencia;
-	@Size(max = 500)
+
+	@Size(max = 255)
 	private String observaciones;
 
-	@NotBlank(groups = { Crear.class, Actualizar.class })
-	@Size(max = 64)
-	private String creadoPorSub;
+	private BigDecimal total;
 
+	@NotEmpty(groups = { Crear.class })
 	@Builder.Default
-	@NotEmpty(groups = Crear.class)
 	private List<CompraItemDto> items = new ArrayList<>();
 
-	// Interfaces para definir grupos
 	public interface Crear {
 	}
 
 	public interface Actualizar {
 	}
+
 }

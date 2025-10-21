@@ -2,14 +2,12 @@ package ec.com.erre.fastfood.domain.api.services;
 
 import ec.com.erre.fastfood.domain.api.models.api.GrupoIngrediente;
 import ec.com.erre.fastfood.domain.api.repositories.GrupoIngredienteRepository;
-import ec.com.erre.fastfood.domain.commons.constants.FastFoodExceptionMessages;
 import ec.com.erre.fastfood.domain.commons.exceptions.EntidadNoEncontradaException;
 import ec.com.erre.fastfood.domain.commons.exceptions.RegistroDuplicadoException;
-import ec.com.erre.fastfood.infrastructure.commons.repositories.CriterioBusqueda;
-import ec.com.erre.fastfood.infrastructure.commons.repositories.PagerAndSortDto;
-import ec.com.erre.fastfood.infrastructure.commons.repositories.Pagina;
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
+import ec.com.erre.fastfood.domain.commons.exceptions.ServiceException;
+import ec.com.erre.fastfood.share.commons.CriterioBusqueda;
+import ec.com.erre.fastfood.share.commons.PagerAndSortDto;
+import ec.com.erre.fastfood.share.commons.Pagina;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,19 +15,15 @@ import java.util.List;
 @Service
 public class GrupoIngredienteServiceImpl implements GrupoIngredienteService {
 	private final GrupoIngredienteRepository repository;
-	private final MessageSource messageSource;
 
-	public GrupoIngredienteServiceImpl(GrupoIngredienteRepository repository, MessageSource messageSource) {
+	public GrupoIngredienteServiceImpl(GrupoIngredienteRepository repository) {
 		this.repository = repository;
-		this.messageSource = messageSource;
 	}
 
 	@Override
 	public void crear(GrupoIngrediente grupoIngrediente) throws RegistroDuplicadoException {
 		if (repository.existePorNombre(grupoIngrediente.getNombre())) {
-			throw new RegistroDuplicadoException(
-					messageSource.getMessage(FastFoodExceptionMessages.ERROR_EXISTE_PARAMETROS,
-							new Object[] { grupoIngrediente.getNombre() }, LocaleContextHolder.getLocale()));
+			throw new ServiceException("Duplicado");
 		}
 		this.repository.crear(grupoIngrediente);
 	}
@@ -66,5 +60,7 @@ public class GrupoIngredienteServiceImpl implements GrupoIngredienteService {
 	private void setearDatos(GrupoIngrediente update, GrupoIngrediente encontrado) {
 		encontrado.setEstado(update.getEstado() != null ? update.getEstado() : encontrado.getEstado());
 		encontrado.setNombre(update.getNombre() != null ? update.getNombre() : encontrado.getNombre());
+		encontrado.setAplicaComida(
+				update.getAplicaComida() != null ? update.getAplicaComida() : encontrado.getAplicaComida());
 	}
 }

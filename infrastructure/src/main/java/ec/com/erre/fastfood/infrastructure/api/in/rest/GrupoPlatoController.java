@@ -7,9 +7,9 @@ import ec.com.erre.fastfood.domain.commons.exceptions.RegistroDuplicadoException
 import ec.com.erre.fastfood.domain.commons.exceptions.ReglaDeNegocioException;
 import ec.com.erre.fastfood.infrastructure.api.mappers.GrupoPlatoMapper;
 import ec.com.erre.fastfood.infrastructure.commons.exceptions.ErrorResponse;
-import ec.com.erre.fastfood.infrastructure.commons.repositories.CriterioBusqueda;
-import ec.com.erre.fastfood.infrastructure.commons.repositories.PagerAndSortDto;
-import ec.com.erre.fastfood.infrastructure.commons.repositories.Pagina;
+import ec.com.erre.fastfood.share.commons.CriterioBusqueda;
+import ec.com.erre.fastfood.share.commons.PagerAndSortDto;
+import ec.com.erre.fastfood.share.commons.Pagina;
 import ec.com.erre.fastfood.share.api.dtos.GrupoPlatoDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

@@ -1,0 +1,93 @@
+2025-10-02T22:09:14,037 ECT INFO  [fastfood-api] [] [background-preinit] o.h.v.i.u.Version [line: 21] HV000001: Hibernate Validator 8.0.2.Final
+2025-10-02T22:09:14,063 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.StartupInfoLogger [line: 50] Starting FastfoodApplication using Java 17.0.6 with PID 17859 (/Users/eduardoromero/ERsys/proyectos/negsotel/fastfood-api/fastfood/bootstrap/target/classes started by eduardoromero in /Users/eduardoromero/ERsys/proyectos/negsotel/fastfood-api/fastfood)
+2025-10-02T22:09:14,063 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.SpringApplication [line: 660] The following 1 profile is active: "dev"
+2025-10-02T22:09:14,098 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.l.DeferredLog [line: 252] Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2025-10-02T22:09:14,099 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.l.DeferredLog [line: 252] For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2025-10-02T22:09:14,835 ECT INFO  [fastfood-api] [] [restartedMain] o.s.d.r.c.RepositoryConfigurationDelegate [line: 143] Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-10-02T22:09:14,855 ECT INFO  [fastfood-api] [] [restartedMain] o.s.d.r.c.RepositoryConfigurationDelegate [line: 211] Finished Spring Data repository scanning in 14 ms. Found 0 JPA repository interfaces.
+2025-10-02T22:09:16,145 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.w.e.t.TomcatWebServer [line: 111] Tomcat initialized with port 8081 (http)
+2025-10-02T22:09:16,155 ECT INFO  [fastfood-api] [] [restartedMain] o.a.j.l.DirectJDKLog [line: 173] Initializing ProtocolHandler ["http-nio-8081"]
+2025-10-02T22:09:16,156 ECT INFO  [fastfood-api] [] [restartedMain] o.a.j.l.DirectJDKLog [line: 173] Starting service [Tomcat]
+2025-10-02T22:09:16,156 ECT INFO  [fastfood-api] [] [restartedMain] o.a.j.l.DirectJDKLog [line: 173] Starting Servlet engine: [Apache Tomcat/10.1.39]
+2025-10-02T22:09:16,195 ECT INFO  [fastfood-api] [] [restartedMain] o.a.j.l.DirectJDKLog [line: 173] Initializing Spring embedded WebApplicationContext
+2025-10-02T22:09:16,195 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.w.s.c.ServletWebServerApplicationContext [line: 301] Root WebApplicationContext: initialization completed in 2096 ms
+2025-10-02T22:09:16,394 ECT INFO  [fastfood-api] [] [restartedMain] o.h.j.i.u.LogHelper [line: 31] HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-10-02T22:09:16,440 ECT INFO  [fastfood-api] [] [restartedMain] o.h.Version [line: 44] HHH000412: Hibernate ORM core version 6.5.3.Final
+2025-10-02T22:09:16,463 ECT INFO  [fastfood-api] [] [restartedMain] o.h.c.i.RegionFactoryInitiator [line: 50] HHH000026: Second-level cache disabled
+2025-10-02T22:09:16,688 ECT INFO  [fastfood-api] [] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo [line: 87] No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-10-02T22:09:16,714 ECT INFO  [fastfood-api] [] [restartedMain] c.z.h.HikariDataSource [line: 109] HikariPool-1 - Starting...
+2025-10-02T22:09:16,929 ECT INFO  [fastfood-api] [] [restartedMain] c.z.h.HikariDataSource [line: 122] HikariPool-1 - Start completed.
+2025-10-02T22:09:17,372 ECT WARN  [fastfood-api] [] [restartedMain] o.h.m.RootClass [line: 344] HHH000038: Composite-id class does not override equals(): ec.com.erre.fastfood.infrastructure.api.entities.RecetaItemPK
+2025-10-02T22:09:17,373 ECT WARN  [fastfood-api] [] [restartedMain] o.h.m.RootClass [line: 347] HHH000039: Composite-id class does not override hashCode(): ec.com.erre.fastfood.infrastructure.api.entities.RecetaItemPK
+2025-10-02T22:09:18,014 ECT INFO  [fastfood-api] [] [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator [line: 59] HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-10-02T22:09:18,135 ECT INFO  [fastfood-api] [] [restartedMain] o.s.o.j.AbstractEntityManagerFactoryBean [line: 437] Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-10-02T22:09:19,490 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.a.e.w.EndpointLinksResolver [line: 60] Exposing 3 endpoints beneath base path '/actuator'
+2025-10-02T22:09:20,159 ECT INFO  [fastfood-api] [] [restartedMain] o.a.j.l.DirectJDKLog [line: 173] Starting ProtocolHandler ["http-nio-8081"]
+2025-10-02T22:09:20,171 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.w.e.t.TomcatWebServer [line: 243] Tomcat started on port 8081 (http) with context path '/fastfood/api'
+2025-10-02T22:09:20,191 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.StartupInfoLogger [line: 56] Started FastfoodApplication in 6.342 seconds (process running for 7.055)
+2025-10-02T22:09:20,640 ECT INFO  [fastfood-api] [] [RMI TCP Connection(5)-127.0.0.1] o.a.j.l.DirectJDKLog [line: 173] Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-10-02T22:09:20,641 ECT INFO  [fastfood-api] [] [RMI TCP Connection(5)-127.0.0.1] o.s.w.s.FrameworkServlet [line: 532] Initializing Servlet 'dispatcherServlet'
+2025-10-02T22:09:20,642 ECT INFO  [fastfood-api] [] [RMI TCP Connection(5)-127.0.0.1] o.s.w.s.FrameworkServlet [line: 554] Completed initialization in 1 ms
+2025-10-02T22:30:17,169 ECT INFO  [fastfood-api] [] [SpringApplicationShutdownHook] o.s.o.j.AbstractEntityManagerFactoryBean [line: 650] Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-10-02T22:30:23,649 ECT INFO  [fastfood-api] [] [background-preinit] o.h.v.i.u.Version [line: 21] HV000001: Hibernate Validator 8.0.2.Final
+2025-10-02T22:30:23,705 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.StartupInfoLogger [line: 50] Starting FastfoodApplication using Java 17.0.6 with PID 24440 (/Users/eduardoromero/ERsys/proyectos/negsotel/fastfood-api/fastfood/bootstrap/target/classes started by eduardoromero in /Users/eduardoromero/ERsys/proyectos/negsotel/fastfood-api/fastfood)
+2025-10-02T22:30:23,707 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.SpringApplication [line: 660] The following 1 profile is active: "dev"
+2025-10-02T22:30:23,862 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.l.DeferredLog [line: 252] Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2025-10-02T22:30:23,862 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.l.DeferredLog [line: 252] For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2025-10-02T22:30:24,863 ECT INFO  [fastfood-api] [] [restartedMain] o.s.d.r.c.RepositoryConfigurationDelegate [line: 143] Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-10-02T22:30:24,887 ECT INFO  [fastfood-api] [] [restartedMain] o.s.d.r.c.RepositoryConfigurationDelegate [line: 211] Finished Spring Data repository scanning in 18 ms. Found 0 JPA repository interfaces.
+2025-10-02T22:30:26,240 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.w.e.t.TomcatWebServer [line: 111] Tomcat initialized with port 8081 (http)
+2025-10-02T22:30:26,258 ECT INFO  [fastfood-api] [] [restartedMain] o.a.j.l.DirectJDKLog [line: 173] Initializing ProtocolHandler ["http-nio-8081"]
+2025-10-02T22:30:26,260 ECT INFO  [fastfood-api] [] [restartedMain] o.a.j.l.DirectJDKLog [line: 173] Starting service [Tomcat]
+2025-10-02T22:30:26,260 ECT INFO  [fastfood-api] [] [restartedMain] o.a.j.l.DirectJDKLog [line: 173] Starting Servlet engine: [Apache Tomcat/10.1.39]
+2025-10-02T22:30:26,321 ECT INFO  [fastfood-api] [] [restartedMain] o.a.j.l.DirectJDKLog [line: 173] Initializing Spring embedded WebApplicationContext
+2025-10-02T22:30:26,323 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.w.s.c.ServletWebServerApplicationContext [line: 301] Root WebApplicationContext: initialization completed in 2459 ms
+2025-10-02T22:30:26,600 ECT INFO  [fastfood-api] [] [restartedMain] o.h.j.i.u.LogHelper [line: 31] HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-10-02T22:30:26,677 ECT INFO  [fastfood-api] [] [restartedMain] o.h.Version [line: 44] HHH000412: Hibernate ORM core version 6.5.3.Final
+2025-10-02T22:30:26,717 ECT INFO  [fastfood-api] [] [restartedMain] o.h.c.i.RegionFactoryInitiator [line: 50] HHH000026: Second-level cache disabled
+2025-10-02T22:30:27,046 ECT INFO  [fastfood-api] [] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo [line: 87] No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-10-02T22:30:27,069 ECT INFO  [fastfood-api] [] [restartedMain] c.z.h.HikariDataSource [line: 109] HikariPool-1 - Starting...
+2025-10-02T22:30:27,224 ECT INFO  [fastfood-api] [] [restartedMain] c.z.h.HikariDataSource [line: 122] HikariPool-1 - Start completed.
+2025-10-02T22:30:27,648 ECT WARN  [fastfood-api] [] [restartedMain] o.h.m.RootClass [line: 344] HHH000038: Composite-id class does not override equals(): ec.com.erre.fastfood.infrastructure.api.entities.RecetaItemPK
+2025-10-02T22:30:27,649 ECT WARN  [fastfood-api] [] [restartedMain] o.h.m.RootClass [line: 347] HHH000039: Composite-id class does not override hashCode(): ec.com.erre.fastfood.infrastructure.api.entities.RecetaItemPK
+2025-10-02T22:30:28,239 ECT INFO  [fastfood-api] [] [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator [line: 59] HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-10-02T22:30:28,294 ECT INFO  [fastfood-api] [] [restartedMain] o.s.o.j.AbstractEntityManagerFactoryBean [line: 437] Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-10-02T22:30:29,684 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.a.e.w.EndpointLinksResolver [line: 60] Exposing 3 endpoints beneath base path '/actuator'
+2025-10-02T22:30:30,349 ECT INFO  [fastfood-api] [] [restartedMain] o.a.j.l.DirectJDKLog [line: 173] Starting ProtocolHandler ["http-nio-8081"]
+2025-10-02T22:30:30,364 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.w.e.t.TomcatWebServer [line: 243] Tomcat started on port 8081 (http) with context path '/fastfood/api'
+2025-10-02T22:30:30,381 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.StartupInfoLogger [line: 56] Started FastfoodApplication in 7.277 seconds (process running for 8.273)
+2025-10-02T22:30:30,823 ECT INFO  [fastfood-api] [] [RMI TCP Connection(7)-127.0.0.1] o.a.j.l.DirectJDKLog [line: 173] Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-10-02T22:30:30,823 ECT INFO  [fastfood-api] [] [RMI TCP Connection(7)-127.0.0.1] o.s.w.s.FrameworkServlet [line: 532] Initializing Servlet 'dispatcherServlet'
+2025-10-02T22:30:30,825 ECT INFO  [fastfood-api] [] [RMI TCP Connection(7)-127.0.0.1] o.s.w.s.FrameworkServlet [line: 554] Completed initialization in 1 ms
+2025-10-02T23:22:06,273 ECT INFO  [fastfood-api] [] [SpringApplicationShutdownHook] o.s.o.j.AbstractEntityManagerFactoryBean [line: 650] Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-10-02T23:22:34,595 ECT INFO  [fastfood-api] [] [background-preinit] o.h.v.i.u.Version [line: 21] HV000001: Hibernate Validator 8.0.2.Final
+2025-10-02T23:22:34,656 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.StartupInfoLogger [line: 50] Starting FastfoodApplication using Java 17.0.6 with PID 40819 (/Users/eduardoromero/ERsys/proyectos/negsotel/fastfood-api/fastfood/bootstrap/target/classes started by eduardoromero in /Users/eduardoromero/ERsys/proyectos/negsotel/fastfood-api/fastfood)
+2025-10-02T23:22:34,658 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.SpringApplication [line: 660] The following 1 profile is active: "dev"
+2025-10-02T23:22:34,719 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.l.DeferredLog [line: 252] Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2025-10-02T23:22:34,719 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.l.DeferredLog [line: 252] For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2025-10-02T23:22:36,789 ECT INFO  [fastfood-api] [] [restartedMain] o.s.d.r.c.RepositoryConfigurationDelegate [line: 143] Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-10-02T23:22:36,837 ECT INFO  [fastfood-api] [] [restartedMain] o.s.d.r.c.RepositoryConfigurationDelegate [line: 211] Finished Spring Data repository scanning in 35 ms. Found 0 JPA repository interfaces.
+2025-10-02T23:22:40,343 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.w.e.t.TomcatWebServer [line: 111] Tomcat initialized with port 8081 (http)
+2025-10-02T23:22:40,410 ECT INFO  [fastfood-api] [] [restartedMain] o.a.j.l.DirectJDKLog [line: 173] Initializing ProtocolHandler ["http-nio-8081"]
+2025-10-02T23:22:40,417 ECT INFO  [fastfood-api] [] [restartedMain] o.a.j.l.DirectJDKLog [line: 173] Starting service [Tomcat]
+2025-10-02T23:22:40,418 ECT INFO  [fastfood-api] [] [restartedMain] o.a.j.l.DirectJDKLog [line: 173] Starting Servlet engine: [Apache Tomcat/10.1.39]
+2025-10-02T23:22:40,692 ECT INFO  [fastfood-api] [] [restartedMain] o.a.j.l.DirectJDKLog [line: 173] Initializing Spring embedded WebApplicationContext
+2025-10-02T23:22:40,696 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.w.s.c.ServletWebServerApplicationContext [line: 301] Root WebApplicationContext: initialization completed in 5975 ms
+2025-10-02T23:22:42,109 ECT INFO  [fastfood-api] [] [restartedMain] o.h.j.i.u.LogHelper [line: 31] HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-10-02T23:22:42,555 ECT INFO  [fastfood-api] [] [restartedMain] o.h.Version [line: 44] HHH000412: Hibernate ORM core version 6.5.3.Final
+2025-10-02T23:22:42,672 ECT INFO  [fastfood-api] [] [restartedMain] o.h.c.i.RegionFactoryInitiator [line: 50] HHH000026: Second-level cache disabled
+2025-10-02T23:22:43,762 ECT INFO  [fastfood-api] [] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo [line: 87] No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-10-02T23:22:44,024 ECT INFO  [fastfood-api] [] [restartedMain] c.z.h.HikariDataSource [line: 109] HikariPool-1 - Starting...
+2025-10-02T23:22:44,720 ECT INFO  [fastfood-api] [] [restartedMain] c.z.h.HikariDataSource [line: 122] HikariPool-1 - Start completed.
+2025-10-02T23:22:47,069 ECT WARN  [fastfood-api] [] [restartedMain] o.h.m.RootClass [line: 344] HHH000038: Composite-id class does not override equals(): ec.com.erre.fastfood.infrastructure.api.entities.RecetaItemPK
+2025-10-02T23:22:47,082 ECT WARN  [fastfood-api] [] [restartedMain] o.h.m.RootClass [line: 347] HHH000039: Composite-id class does not override hashCode(): ec.com.erre.fastfood.infrastructure.api.entities.RecetaItemPK
+2025-10-02T23:22:50,100 ECT INFO  [fastfood-api] [] [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator [line: 59] HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-10-02T23:22:50,375 ECT INFO  [fastfood-api] [] [restartedMain] o.s.o.j.AbstractEntityManagerFactoryBean [line: 437] Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-10-02T23:22:58,248 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.a.e.w.EndpointLinksResolver [line: 60] Exposing 3 endpoints beneath base path '/actuator'
+2025-10-02T23:23:01,171 ECT INFO  [fastfood-api] [] [restartedMain] o.a.j.l.DirectJDKLog [line: 173] Starting ProtocolHandler ["http-nio-8081"]
+2025-10-02T23:23:01,191 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.w.e.t.TomcatWebServer [line: 243] Tomcat started on port 8081 (http) with context path '/fastfood/api'
+2025-10-02T23:23:01,217 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.StartupInfoLogger [line: 56] Started FastfoodApplication in 27.127 seconds (process running for 29.512)
+2025-10-02T23:23:01,926 ECT INFO  [fastfood-api] [] [RMI TCP Connection(5)-127.0.0.1] o.a.j.l.DirectJDKLog [line: 173] Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-10-02T23:23:01,928 ECT INFO  [fastfood-api] [] [RMI TCP Connection(5)-127.0.0.1] o.s.w.s.FrameworkServlet [line: 532] Initializing Servlet 'dispatcherServlet'
+2025-10-02T23:23:01,938 ECT INFO  [fastfood-api] [] [RMI TCP Connection(5)-127.0.0.1] o.s.w.s.FrameworkServlet [line: 554] Completed initialization in 10 ms
+2025-10-02T23:59:17,177 ECT WARN  [fastfood-api] [] [HikariPool-1 housekeeper] c.z.h.p.HikariPool$HouseKeeper [line: 797] HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=15m30s439ms).

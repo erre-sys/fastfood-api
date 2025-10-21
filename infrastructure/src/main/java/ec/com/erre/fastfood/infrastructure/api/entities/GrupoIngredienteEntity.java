@@ -6,8 +6,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Column;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.FetchType;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
@@ -15,7 +13,6 @@ import lombok.AllArgsConstructor;
 import lombok.ToString;
 
 import java.io.Serializable;
-import java.util.List;
 
 @Getter
 @Setter
@@ -31,12 +28,12 @@ public class GrupoIngredienteEntity implements Serializable {
 	@Column(name = "grupo_ingrediente_id")
 	private Long id;
 
-	@Column(nullable = false, unique = true, length = 120)
+	@Column(name = "nombre", nullable = false, length = 120, unique = true)
 	private String nombre;
 
-	@Column(nullable = false, unique = true, length = 120)
+	@Column(name = "estado", nullable = false, length = 1) // A/I
 	private String estado;
 
-	@OneToMany(mappedBy = "grupoIngrediente", fetch = FetchType.LAZY)
-	private List<IngredienteEntity> ingredientes;
+	@Column(name = "aplica_comida", nullable = false, length = 1) // S/N
+	private String aplicaComida;
 }

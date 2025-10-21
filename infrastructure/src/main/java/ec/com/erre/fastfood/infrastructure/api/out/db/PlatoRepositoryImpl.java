@@ -1,12 +1,25 @@
 package ec.com.erre.fastfood.infrastructure.api.out.db;
 
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.PathBuilder;
+import com.querydsl.jpa.JPQLQuery;
 import ec.com.erre.fastfood.domain.api.models.api.Plato;
 import ec.com.erre.fastfood.domain.api.repositories.PlatoRepository;
 import ec.com.erre.fastfood.domain.commons.exceptions.EntidadNoEncontradaException;
 import ec.com.erre.fastfood.infrastructure.api.entities.PlatoEntity;
+import ec.com.erre.fastfood.infrastructure.api.entities.QPlatoEntity;
 import ec.com.erre.fastfood.infrastructure.api.mappers.PlatoMapper;
-import ec.com.erre.fastfood.infrastructure.commons.repositories.JPABaseRepository;
+import ec.com.erre.fastfood.infrastructure.commons.repositories.*;
+import ec.com.erre.fastfood.share.commons.CriterioBusqueda;
+import ec.com.erre.fastfood.share.commons.PagerAndSortDto;
+import ec.com.erre.fastfood.share.commons.Pagina;
 import jakarta.persistence.EntityManager;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,50 +36,88 @@ import static ec.com.erre.fastfood.infrastructure.api.entities.QPlatoEntity.plat
 @Repository
 @Transactional
 public class PlatoRepositoryImpl extends JPABaseRepository<PlatoEntity, Long> implements PlatoRepository {
-	private final PlatoMapper platoMapper;
 
-	public PlatoRepositoryImpl(EntityManager entityManager, PlatoMapper platoMapper) {
-		super(PlatoEntity.class, entityManager);
-		this.platoMapper = platoMapper;
+	private final PlatoMapper mapper;
+
+	public PlatoRepositoryImpl(EntityManager em, PlatoMapper mapper) {
+		super(PlatoEntity.class, em);
+		this.mapper = mapper;
 	}
 
 	@Override
-	public List<Plato> buscarTodos() {
-		List<PlatoEntity> entities = getQueryFactory().selectFrom(platoEntity).orderBy(platoEntity.id.asc()).fetch();
-		return platoMapper.entitiesToDomains(entities);
-	}
-
-	@Override
-	public Plato buscarPorId(Long id) throws EntidadNoEncontradaException {
-		PlatoEntity entity = getQueryFactory().selectFrom(platoEntity).where(platoEntity.id.eq(id)).fetchFirst();
-		if (null == entity)
-			throw new EntidadNoEncontradaException(String.format("No existe el grupo con el id %s", id));
-
-		return platoMapper.entityToDomain(entity);
-	}
-
-	@Override
-	public List<Plato> buscarPorGrupoId(Long grupoId) {
-		List<PlatoEntity> entities = getQueryFactory().selectFrom(platoEntity)
-				.where(platoEntity.grupoPlato.id.eq(grupoId)).fetch();
-
-		return platoMapper.entitiesToDomains(entities);
-	}
-
-	@Override
-	public Plato buscarPorNombre(String nombre) {
-		PlatoEntity entity = getQueryFactory().selectFrom(platoEntity).where(platoEntity.nombre.eq(nombre))
+	public boolean existePorCodigo(String codigo) {
+		PlatoEntity e = getQueryFactory().selectFrom(platoEntity).where(platoEntity.codigo.equalsIgnoreCase(codigo))
 				.fetchFirst();
-		return platoMapper.entityToDomain(entity);
+		return e != null;
 	}
 
 	@Override
-	public void crear(Plato plato) {
-		this.save(platoMapper.domainToEntity(plato));
+	public void crear(Plato p) {
+		save(mapper.domainToEntity(p));
 	}
 
 	@Override
-	public void actualizar(Plato plato) {
-		this.save(platoMapper.domainToEntity(plato));
+	public void actualizar(Plato p) {
+		save(mapper.domainToEntity(p));
+	}
+
+	@Override
+	public void eliminar(Plato p) {
+		delete(mapper.domainToEntity(p));
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Plato buscarPorId(Long id) throws EntidadNoEncontradaException {
+		PlatoEntity e = getQueryFactory().selectFrom(platoEntity).where(platoEntity.id.eq(id)).fetchFirst();
+		if (e == null)
+			throw new EntidadNoEncontradaException("Plato no existe: " + id);
+		return mapper.entityToDomain(e);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<Plato> activos() {
+		List<PlatoEntity> list = getQueryFactory().selectFrom(platoEntity).where(platoEntity.estado.eq("A"))
+				.orderBy(platoEntity.nombre.asc()).fetch();
+		return list.stream().map(mapper::entityToDomain).toList();
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Pagina<Plato> paginado(PagerAndSortDto pager, List<CriterioBusqueda> filters) {
+		Pageable pageable = PageRequest.of(pager.getPage(), pager.getSize());
+		Predicate where = buildQuery(filters);
+
+		JPQLQuery<Plato> q = getQueryFactory()
+				.select(Projections.bean(Plato.class, platoEntity.id.as("id"), platoEntity.codigo.as("codigo"),
+						platoEntity.nombre.as("nombre"), platoEntity.grupoPlatoId.as("grupoPlatoId"),
+						platoEntity.precioBase.as("precioBase"), platoEntity.estado.as("estado"),
+						platoEntity.enPromocion.as("enPromocion"), platoEntity.descuentoPct.as("descuentoPct")))
+				.from(platoEntity).where(where);
+
+		if (pager.datosOrdenamientoCompleto())
+			q.orderBy(buildOrder(pager));
+		else
+			q.orderBy(platoEntity.nombre.asc());
+
+		Page<Plato> pageData = this.findPageData(q, pageable);
+
+		return Pagina.<Plato> builder().paginaActual(pager.getPage()).totalpaginas(pageData.getTotalPages())
+				.totalRegistros(pageData.getTotalElements()).contenido(pageData.getContent()).build();
+	}
+
+	/* ==== helpers QueryDSL ==== */
+	private Predicate buildQuery(List<CriterioBusqueda> criterios) {
+		BooleanBuilder builder = new BooleanBuilder();
+		PathBuilder<QPlatoEntity> pb = new PathBuilder<>(QPlatoEntity.class, "platoEntity");
+		criterios.forEach(
+				c -> builder.and(getPredicate(c.getLlave(), c.getOperacion(), c.getValor(), pb, PlatoEntity.class)));
+		return builder;
+	}
+
+	private OrderSpecifier<?> buildOrder(PagerAndSortDto paging) {
+		PathBuilder<QPlatoEntity> pb = new PathBuilder<>(QPlatoEntity.class, "platoEntity");
+		return getOrderSpecifier(pb, new CriterioOrden(paging.getOrderBy(), paging.getDirection()), PlatoEntity.class);
 	}
 }

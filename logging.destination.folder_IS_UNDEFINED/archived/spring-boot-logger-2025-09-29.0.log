@@ -1,0 +1,108 @@
+2025-09-29T00:05:07,722 ECT WARN  [fastfood-api] [] [HikariPool-1 housekeeper] c.z.h.p.HikariPool$HouseKeeper [line: 797] HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=8m12s47ms).
+2025-09-29T00:20:38,562 ECT WARN  [fastfood-api] [] [HikariPool-1 housekeeper] c.z.h.p.HikariPool$HouseKeeper [line: 797] HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=15m30s842ms).
+2025-09-29T00:36:39,283 ECT WARN  [fastfood-api] [] [HikariPool-1 housekeeper] c.z.h.p.HikariPool$HouseKeeper [line: 797] HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=15m30s669ms).
+2025-09-29T00:52:10,048 ECT WARN  [fastfood-api] [] [HikariPool-1 housekeeper] c.z.h.p.HikariPool$HouseKeeper [line: 797] HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=15m30s766ms).
+2025-09-29T01:08:10,774 ECT WARN  [fastfood-api] [] [HikariPool-1 housekeeper] c.z.h.p.HikariPool$HouseKeeper [line: 797] HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=15m30s705ms).
+2025-09-29T01:14:19,722 ECT WARN  [fastfood-api] [] [HikariPool-1 housekeeper] c.z.h.p.HikariPool$HouseKeeper [line: 797] HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=6m8s949ms).
+2025-09-29T01:30:17,620 ECT WARN  [fastfood-api] [] [HikariPool-1 housekeeper] c.z.h.p.HikariPool$HouseKeeper [line: 797] HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=15m27s860ms).
+2025-09-29T01:45:48,214 ECT WARN  [fastfood-api] [] [HikariPool-1 housekeeper] c.z.h.p.HikariPool$HouseKeeper [line: 797] HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=15m30s595ms).
+2025-09-29T02:01:19,003 ECT WARN  [fastfood-api] [] [HikariPool-1 housekeeper] c.z.h.p.HikariPool$HouseKeeper [line: 797] HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=15m30s787ms).
+2025-09-29T02:17:19,748 ECT WARN  [fastfood-api] [] [HikariPool-1 housekeeper] c.z.h.p.HikariPool$HouseKeeper [line: 797] HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=15m30s675ms).
+2025-09-29T02:33:20,429 ECT WARN  [fastfood-api] [] [HikariPool-1 housekeeper] c.z.h.p.HikariPool$HouseKeeper [line: 797] HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=15m30s661ms).
+2025-09-29T02:48:50,351 ECT WARN  [fastfood-api] [] [HikariPool-1 housekeeper] c.z.h.p.HikariPool$HouseKeeper [line: 797] HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=15m29s921ms).
+2025-09-29T03:04:50,313 ECT WARN  [fastfood-api] [] [HikariPool-1 housekeeper] c.z.h.p.HikariPool$HouseKeeper [line: 797] HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=15m29s919ms).
+2025-09-29T03:20:21,097 ECT WARN  [fastfood-api] [] [HikariPool-1 housekeeper] c.z.h.p.HikariPool$HouseKeeper [line: 797] HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=15m30s785ms).
+2025-09-29T03:36:21,051 ECT WARN  [fastfood-api] [] [HikariPool-1 housekeeper] c.z.h.p.HikariPool$HouseKeeper [line: 797] HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=15m29s932ms).
+2025-09-29T03:51:51,909 ECT WARN  [fastfood-api] [] [HikariPool-1 housekeeper] c.z.h.p.HikariPool$HouseKeeper [line: 797] HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=15m30s858ms).
+2025-09-29T04:07:52,491 ECT WARN  [fastfood-api] [] [HikariPool-1 housekeeper] c.z.h.p.HikariPool$HouseKeeper [line: 797] HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=15m30s554ms).
+2025-09-29T04:23:53,426 ECT WARN  [fastfood-api] [] [HikariPool-1 housekeeper] c.z.h.p.HikariPool$HouseKeeper [line: 797] HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=15m30s883ms).
+2025-09-29T04:39:24,060 ECT WARN  [fastfood-api] [] [HikariPool-1 housekeeper] c.z.h.p.HikariPool$HouseKeeper [line: 797] HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=15m30s635ms).
+2025-09-29T04:55:24,818 ECT WARN  [fastfood-api] [] [HikariPool-1 housekeeper] c.z.h.p.HikariPool$HouseKeeper [line: 797] HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=15m30s727ms).
+2025-09-29T05:00:16,016 ECT WARN  [fastfood-api] [] [HikariPool-1 housekeeper] c.z.h.p.HikariPool$HouseKeeper [line: 797] HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=4m51s198ms).
+2025-09-29T05:08:03,916 ECT WARN  [fastfood-api] [] [HikariPool-1 housekeeper] c.z.h.p.HikariPool$HouseKeeper [line: 797] HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=7m17s858ms).
+2025-09-29T05:23:34,728 ECT WARN  [fastfood-api] [] [HikariPool-1 housekeeper] c.z.h.p.HikariPool$HouseKeeper [line: 797] HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=15m30s808ms).
+2025-09-29T05:39:34,595 ECT WARN  [fastfood-api] [] [HikariPool-1 housekeeper] c.z.h.p.HikariPool$HouseKeeper [line: 797] HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=15m29s845ms).
+2025-09-29T05:55:05,329 ECT WARN  [fastfood-api] [] [HikariPool-1 housekeeper] c.z.h.p.HikariPool$HouseKeeper [line: 797] HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=15m30s732ms).
+2025-09-29T06:11:06,014 ECT WARN  [fastfood-api] [] [HikariPool-1 housekeeper] c.z.h.p.HikariPool$HouseKeeper [line: 797] HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=15m30s656ms).
+2025-09-29T06:26:36,888 ECT WARN  [fastfood-api] [] [HikariPool-1 housekeeper] c.z.h.p.HikariPool$HouseKeeper [line: 797] HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=15m30s874ms).
+2025-09-29T06:42:37,649 ECT WARN  [fastfood-api] [] [HikariPool-1 housekeeper] c.z.h.p.HikariPool$HouseKeeper [line: 797] HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=15m30s695ms).
+2025-09-29T06:58:37,623 ECT WARN  [fastfood-api] [] [HikariPool-1 housekeeper] c.z.h.p.HikariPool$HouseKeeper [line: 797] HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=15m29s909ms).
+2025-09-29T07:07:14,113 ECT WARN  [fastfood-api] [] [HikariPool-1 housekeeper] c.z.h.p.HikariPool$HouseKeeper [line: 797] HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=8m36s490ms).
+2025-09-29T07:23:14,833 ECT WARN  [fastfood-api] [] [HikariPool-1 housekeeper] c.z.h.p.HikariPool$HouseKeeper [line: 797] HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=15m30s687ms).
+2025-09-29T07:34:13,638 ECT WARN  [fastfood-api] [] [HikariPool-1 housekeeper] c.z.h.p.HikariPool$HouseKeeper [line: 797] HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=10m58s781ms).
+2025-09-29T07:41:04,618 ECT INFO  [fastfood-api] [] [SpringApplicationShutdownHook] o.s.o.j.AbstractEntityManagerFactoryBean [line: 650] Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-09-29T23:19:07,011 ECT INFO  [fastfood-api] [] [background-preinit] o.h.v.i.u.Version [line: 21] HV000001: Hibernate Validator 8.0.2.Final
+2025-09-29T23:19:07,064 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.StartupInfoLogger [line: 50] Starting FastfoodApplication using Java 17.0.6 with PID 16196 (/Users/eduardoromero/ERsys/proyectos/negsotel/fastfood-api/fastfood/bootstrap/target/classes started by eduardoromero in /Users/eduardoromero/ERsys/proyectos/negsotel/fastfood-api/fastfood)
+2025-09-29T23:19:07,066 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.SpringApplication [line: 660] The following 1 profile is active: "dev"
+2025-09-29T23:19:07,129 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.l.DeferredLog [line: 252] Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2025-09-29T23:19:07,130 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.l.DeferredLog [line: 252] For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2025-09-29T23:19:09,428 ECT INFO  [fastfood-api] [] [restartedMain] o.s.d.r.c.RepositoryConfigurationDelegate [line: 143] Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-09-29T23:19:09,506 ECT INFO  [fastfood-api] [] [restartedMain] o.s.d.r.c.RepositoryConfigurationDelegate [line: 211] Finished Spring Data repository scanning in 58 ms. Found 0 JPA repository interfaces.
+2025-09-29T23:19:11,554 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.w.e.t.TomcatWebServer [line: 111] Tomcat initialized with port 8081 (http)
+2025-09-29T23:19:11,563 ECT INFO  [fastfood-api] [] [restartedMain] o.a.j.l.DirectJDKLog [line: 173] Initializing ProtocolHandler ["http-nio-8081"]
+2025-09-29T23:19:11,565 ECT INFO  [fastfood-api] [] [restartedMain] o.a.j.l.DirectJDKLog [line: 173] Starting service [Tomcat]
+2025-09-29T23:19:11,565 ECT INFO  [fastfood-api] [] [restartedMain] o.a.j.l.DirectJDKLog [line: 173] Starting Servlet engine: [Apache Tomcat/10.1.39]
+2025-09-29T23:19:11,601 ECT INFO  [fastfood-api] [] [restartedMain] o.a.j.l.DirectJDKLog [line: 173] Initializing Spring embedded WebApplicationContext
+2025-09-29T23:19:11,602 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.w.s.c.ServletWebServerApplicationContext [line: 301] Root WebApplicationContext: initialization completed in 4471 ms
+2025-09-29T23:19:11,798 ECT INFO  [fastfood-api] [] [restartedMain] o.h.j.i.u.LogHelper [line: 31] HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-09-29T23:19:11,849 ECT INFO  [fastfood-api] [] [restartedMain] o.h.Version [line: 44] HHH000412: Hibernate ORM core version 6.5.3.Final
+2025-09-29T23:19:11,881 ECT INFO  [fastfood-api] [] [restartedMain] o.h.c.i.RegionFactoryInitiator [line: 50] HHH000026: Second-level cache disabled
+2025-09-29T23:19:12,112 ECT INFO  [fastfood-api] [] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo [line: 87] No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-09-29T23:19:12,135 ECT INFO  [fastfood-api] [] [restartedMain] c.z.h.HikariDataSource [line: 109] HikariPool-1 - Starting...
+2025-09-29T23:19:12,294 ECT INFO  [fastfood-api] [] [restartedMain] c.z.h.HikariDataSource [line: 122] HikariPool-1 - Start completed.
+2025-09-29T23:19:12,717 ECT WARN  [fastfood-api] [] [restartedMain] o.h.m.RootClass [line: 344] HHH000038: Composite-id class does not override equals(): ec.com.erre.fastfood.infrastructure.api.entities.RecetaItemPK
+2025-09-29T23:19:12,717 ECT WARN  [fastfood-api] [] [restartedMain] o.h.m.RootClass [line: 347] HHH000039: Composite-id class does not override hashCode(): ec.com.erre.fastfood.infrastructure.api.entities.RecetaItemPK
+2025-09-29T23:19:13,301 ECT INFO  [fastfood-api] [] [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator [line: 59] HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-09-29T23:19:13,374 ECT INFO  [fastfood-api] [] [restartedMain] o.s.o.j.AbstractEntityManagerFactoryBean [line: 437] Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-09-29T23:19:13,517 ECT WARN  [fastfood-api] [] [restartedMain] o.s.c.s.AbstractApplicationContext [line: 633] Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'inventarioController' defined in file [/Users/eduardoromero/ERsys/proyectos/negsotel/fastfood-api/fastfood/infrastructure/target/classes/ec/com/erre/fastfood/infrastructure/api/in/rest/InventarioController.class]: Unsatisfied dependency expressed through constructor parameter 0: No qualifying bean of type 'ec.com.erre.fastfood.domain.api.services.InventarioService' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {}
+2025-09-29T23:19:13,518 ECT INFO  [fastfood-api] [] [restartedMain] o.s.o.j.AbstractEntityManagerFactoryBean [line: 650] Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-09-29T23:19:13,521 ECT INFO  [fastfood-api] [] [restartedMain] o.a.j.l.DirectJDKLog [line: 173] Stopping service [Tomcat]
+2025-09-29T23:19:13,540 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.a.l.ConditionEvaluationReportLogger [line: 82] 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2025-09-29T23:19:13,557 ECT ERROR [fastfood-api] [] [restartedMain] o.s.b.d.LoggingFailureAnalysisReporter [line: 40] 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Parameter 0 of constructor in ec.com.erre.fastfood.infrastructure.api.in.rest.InventarioController required a bean of type 'ec.com.erre.fastfood.domain.api.services.InventarioService' that could not be found.
+
+
+Action:
+
+Consider defining a bean of type 'ec.com.erre.fastfood.domain.api.services.InventarioService' in your configuration.
+
+2025-09-29T23:20:55,965 ECT INFO  [fastfood-api] [] [background-preinit] o.h.v.i.u.Version [line: 21] HV000001: Hibernate Validator 8.0.2.Final
+2025-09-29T23:20:55,995 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.StartupInfoLogger [line: 50] Starting FastfoodApplication using Java 17.0.6 with PID 16773 (/Users/eduardoromero/ERsys/proyectos/negsotel/fastfood-api/fastfood/bootstrap/target/classes started by eduardoromero in /Users/eduardoromero/ERsys/proyectos/negsotel/fastfood-api/fastfood)
+2025-09-29T23:20:55,995 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.SpringApplication [line: 660] The following 1 profile is active: "dev"
+2025-09-29T23:20:56,032 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.l.DeferredLog [line: 252] Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2025-09-29T23:20:56,032 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.l.DeferredLog [line: 252] For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2025-09-29T23:20:56,692 ECT INFO  [fastfood-api] [] [restartedMain] o.s.d.r.c.RepositoryConfigurationDelegate [line: 143] Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-09-29T23:20:56,712 ECT INFO  [fastfood-api] [] [restartedMain] o.s.d.r.c.RepositoryConfigurationDelegate [line: 211] Finished Spring Data repository scanning in 15 ms. Found 0 JPA repository interfaces.
+2025-09-29T23:20:57,796 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.w.e.t.TomcatWebServer [line: 111] Tomcat initialized with port 8081 (http)
+2025-09-29T23:20:57,805 ECT INFO  [fastfood-api] [] [restartedMain] o.a.j.l.DirectJDKLog [line: 173] Initializing ProtocolHandler ["http-nio-8081"]
+2025-09-29T23:20:57,806 ECT INFO  [fastfood-api] [] [restartedMain] o.a.j.l.DirectJDKLog [line: 173] Starting service [Tomcat]
+2025-09-29T23:20:57,807 ECT INFO  [fastfood-api] [] [restartedMain] o.a.j.l.DirectJDKLog [line: 173] Starting Servlet engine: [Apache Tomcat/10.1.39]
+2025-09-29T23:20:57,844 ECT INFO  [fastfood-api] [] [restartedMain] o.a.j.l.DirectJDKLog [line: 173] Initializing Spring embedded WebApplicationContext
+2025-09-29T23:20:57,845 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.w.s.c.ServletWebServerApplicationContext [line: 301] Root WebApplicationContext: initialization completed in 1813 ms
+2025-09-29T23:20:58,048 ECT INFO  [fastfood-api] [] [restartedMain] o.h.j.i.u.LogHelper [line: 31] HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-09-29T23:20:58,092 ECT INFO  [fastfood-api] [] [restartedMain] o.h.Version [line: 44] HHH000412: Hibernate ORM core version 6.5.3.Final
+2025-09-29T23:20:58,117 ECT INFO  [fastfood-api] [] [restartedMain] o.h.c.i.RegionFactoryInitiator [line: 50] HHH000026: Second-level cache disabled
+2025-09-29T23:20:58,337 ECT INFO  [fastfood-api] [] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo [line: 87] No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-09-29T23:20:58,360 ECT INFO  [fastfood-api] [] [restartedMain] c.z.h.HikariDataSource [line: 109] HikariPool-1 - Starting...
+2025-09-29T23:20:58,529 ECT INFO  [fastfood-api] [] [restartedMain] c.z.h.HikariDataSource [line: 122] HikariPool-1 - Start completed.
+2025-09-29T23:20:58,976 ECT WARN  [fastfood-api] [] [restartedMain] o.h.m.RootClass [line: 344] HHH000038: Composite-id class does not override equals(): ec.com.erre.fastfood.infrastructure.api.entities.RecetaItemPK
+2025-09-29T23:20:58,976 ECT WARN  [fastfood-api] [] [restartedMain] o.h.m.RootClass [line: 347] HHH000039: Composite-id class does not override hashCode(): ec.com.erre.fastfood.infrastructure.api.entities.RecetaItemPK
+2025-09-29T23:20:59,569 ECT INFO  [fastfood-api] [] [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator [line: 59] HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-09-29T23:20:59,656 ECT INFO  [fastfood-api] [] [restartedMain] o.s.o.j.AbstractEntityManagerFactoryBean [line: 437] Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-09-29T23:21:01,067 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.a.e.w.EndpointLinksResolver [line: 60] Exposing 3 endpoints beneath base path '/actuator'
+2025-09-29T23:21:01,761 ECT INFO  [fastfood-api] [] [restartedMain] o.a.j.l.DirectJDKLog [line: 173] Starting ProtocolHandler ["http-nio-8081"]
+2025-09-29T23:21:01,776 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.w.e.t.TomcatWebServer [line: 243] Tomcat started on port 8081 (http) with context path '/fastfood/api'
+2025-09-29T23:21:01,801 ECT INFO  [fastfood-api] [] [restartedMain] o.s.b.StartupInfoLogger [line: 56] Started FastfoodApplication in 6.129 seconds (process running for 7.08)
+2025-09-29T23:21:02,193 ECT INFO  [fastfood-api] [] [RMI TCP Connection(2)-127.0.0.1] o.a.j.l.DirectJDKLog [line: 173] Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-09-29T23:21:02,194 ECT INFO  [fastfood-api] [] [RMI TCP Connection(2)-127.0.0.1] o.s.w.s.FrameworkServlet [line: 532] Initializing Servlet 'dispatcherServlet'
+2025-09-29T23:21:02,195 ECT INFO  [fastfood-api] [] [RMI TCP Connection(2)-127.0.0.1] o.s.w.s.FrameworkServlet [line: 554] Completed initialization in 1 ms
+2025-09-29T23:21:09,478 ECT INFO  [fastfood-api] [] [SpringApplicationShutdownHook] o.s.o.j.AbstractEntityManagerFactoryBean [line: 650] Closing JPA EntityManagerFactory for persistence unit 'default'

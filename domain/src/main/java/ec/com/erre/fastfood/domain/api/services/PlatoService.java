@@ -3,6 +3,10 @@ package ec.com.erre.fastfood.domain.api.services;
 import ec.com.erre.fastfood.domain.api.models.api.Plato;
 import ec.com.erre.fastfood.domain.commons.exceptions.EntidadNoEncontradaException;
 import ec.com.erre.fastfood.domain.commons.exceptions.RegistroDuplicadoException;
+import ec.com.erre.fastfood.domain.commons.exceptions.ReglaDeNegocioException;
+import ec.com.erre.fastfood.share.commons.CriterioBusqueda;
+import ec.com.erre.fastfood.share.commons.PagerAndSortDto;
+import ec.com.erre.fastfood.share.commons.Pagina;
 
 import java.util.List;
 
@@ -13,16 +17,15 @@ import java.util.List;
  * @version $1.0$
  */
 public interface PlatoService {
+	void crear(Plato p) throws RegistroDuplicadoException, ReglaDeNegocioException, EntidadNoEncontradaException;
 
-	List<Plato> buscarTodos();
+	void actualizar(Plato p) throws EntidadNoEncontradaException, RegistroDuplicadoException, ReglaDeNegocioException;
 
-	Plato buscarPorId(Long platoId);
+	void eliminarPorId(Long id) throws EntidadNoEncontradaException;
 
-	List<Plato> buscarPorGrupoId(Long grupoId) throws EntidadNoEncontradaException;
+	Plato buscarPorId(Long id) throws EntidadNoEncontradaException;
 
-	Plato buscarPorNombre(String nombre);
+	List<Plato> activos();
 
-	void crear(Plato plato) throws RegistroDuplicadoException;
-
-	void actualizar(Plato plato);
+	Pagina<Plato> obtenerPaginadoPorFiltros(PagerAndSortDto pager, List<CriterioBusqueda> filters);
 }

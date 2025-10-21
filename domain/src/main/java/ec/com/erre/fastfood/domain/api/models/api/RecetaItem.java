@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Builder
 public class RecetaItem {
-
+	private Long id;
 	private Long platoId;
 	private Long ingredienteId;
 	private BigDecimal cantidad;

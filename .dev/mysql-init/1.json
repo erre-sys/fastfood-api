@@ -1,0 +1,345 @@
+{
+  "info": {
+    "name": "FastFood API - Casos de Uso (MVP)",
+    "_postman_id": "8fb9e4a1-aaaa-4444-bbbb-ccccddddeeee",
+    "description": "Colección alineada a los 20 casos de uso. Usa {{baseUrl}} y {{token}}. Todos los endpoints heredan Bearer Auth.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      { "key": "token", "value": "{{token}}", "type": "string" }
+    ]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8081/fastfood/api" },
+    { "key": "token", "value": "" },
+    { "key": "platoId", "value": "" },
+    { "key": "ingredienteId", "value": "" },
+    { "key": "pedidoId", "value": "" },
+    { "key": "itemId", "value": "" },
+    { "key": "extraId", "value": "" },
+    { "key": "compraId", "value": "" },
+    { "key": "proveedorId", "value": "" },
+    { "key": "promoId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Docs - OpenAPI",
+      "request": { "method": "GET", "url": "{{baseUrl}}/v3/api-docs" }
+    },
+
+    {
+      "name": "1) Grupos Ingrediente - Listar",
+      "request": { "method": "GET", "url": "{{baseUrl}}/grupos-ingrediente?page=0&size=50&q=" }
+    },
+    {
+      "name": "1) Grupos Ingrediente - Crear",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/grupos-ingrediente",
+        "body": { "mode": "raw", "raw": "{\n  \"nombre\":\"Vegetales\",\n  \"estado\":\"A\"\n}" }
+      }
+    },
+    {
+      "name": "1) Grupos Ingrediente - Obtener por ID",
+      "request": { "method": "GET", "url": "{{baseUrl}}/grupos-ingrediente/{{id}}" }
+    },
+    {
+      "name": "1) Grupos Ingrediente - Actualizar",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/grupos-ingrediente/{{id}}",
+        "body": { "mode": "raw", "raw": "{\n  \"nombre\":\"Vegetales Frescos\",\n  \"estado\":\"A\"\n}" }
+      }
+    },
+    {
+      "name": "1) Grupos Ingrediente - Cambiar estado",
+      "request": {
+        "method": "PATCH",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/grupos-ingrediente/{{id}}/estado",
+        "body": { "mode": "raw", "raw": "{ \"estado\":\"I\" }" }
+      }
+    },
+
+    {
+      "name": "2) Ingredientes - Listar",
+      "request": { "method": "GET", "url": "{{baseUrl}}/ingredientes?page=0&size=50&codigo=&nombre=&activo=&esExtra=" }
+    },
+    {
+      "name": "2) Ingredientes - Crear",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/ingredientes",
+        "body": { "mode": "raw", "raw": "{\n  \"grupoIngredienteId\": 1,\n  \"codigo\":\"PAPAS\",\n  \"nombre\":\"Papas\",\n  \"unidad\":\"gr\",\n  \"esExtra\":\"N\",\n  \"precioExtra\": null,\n  \"stockMinimo\": 500,\n  \"activo\":\"S\"\n}" }
+      }
+    },
+    {
+      "name": "2) Ingredientes - Obtener por ID",
+      "request": { "method": "GET", "url": "{{baseUrl}}/ingredientes/{{ingredienteId}}" }
+    },
+    {
+      "name": "2) Ingredientes - Actualizar",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/ingredientes/{{ingredienteId}}",
+        "body": { "mode": "raw", "raw": "{\n  \"grupoIngredienteId\": 1,\n  \"codigo\":\"PAPAS\",\n  \"nombre\":\"Papas Russet\",\n  \"unidad\":\"gr\",\n  \"esExtra\":\"N\",\n  \"precioExtra\": null,\n  \"stockMinimo\": 600,\n  \"activo\":\"S\"\n}" }
+      }
+    },
+    {
+      "name": "2) Ingredientes - Configurar Extra (S/N + precio)",
+      "request": {
+        "method": "PATCH",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/ingredientes/{{ingredienteId}}/extra",
+        "body": { "mode": "raw", "raw": "{ \"esExtra\":\"S\", \"precioExtra\":0.50 }" }
+      }
+    },
+    {
+      "name": "2) Ingredientes - Cambiar Activo",
+      "request": {
+        "method": "PATCH",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/ingredientes/{{ingredienteId}}/activo",
+        "body": { "mode": "raw", "raw": "{ \"activo\":\"N\" }" }
+      }
+    },
+
+    {
+      "name": "3) Inventario - Snapshot",
+      "request": { "method": "GET", "url": "{{baseUrl}}/inventario?page=0&size=50&codigo=&nombre=&bajoMinimo=" }
+    },
+    {
+      "name": "3) Inventario - Por Ingrediente",
+      "request": { "method": "GET", "url": "{{baseUrl}}/inventario/{{ingredienteId}}" }
+    },
+
+    {
+      "name": "4) Kardex - Movimientos",
+      "request": { "method": "GET", "url": "{{baseUrl}}/inventario/movimientos?ingredienteId={{ingredienteId}}&tipo=&from=&to=&page=0&size=50" }
+    },
+    {
+      "name": "5) Inventario - Ajuste (SP)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/inventario/ajustes",
+        "body": { "mode": "raw", "raw": "{\n  \"ingredienteId\": {{ingredienteId}},\n  \"cantidad\": -10.000,\n  \"referencia\": \"merma\",\n  \"permitirNeg\": \"N\"\n}" }
+      }
+    },
+
+    {
+      "name": "6) Grupos Plato - Listar",
+      "request": { "method": "GET", "url": "{{baseUrl}}/grupos-plato?page=0&size=50&q=" }
+    },
+    {
+      "name": "6) Grupos Plato - Crear",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/grupos-plato",
+        "body": { "mode": "raw", "raw": "{ \"nombre\":\"Hamburguesas\" }" }
+      }
+    },
+
+    {
+      "name": "7) Platos - Listar",
+      "request": { "method": "GET", "url": "{{baseUrl}}/platos?page=0&size=50&codigo=&nombre=&activo=&enPromocion=" }
+    },
+    {
+      "name": "7) Platos - Crear",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/platos",
+        "body": { "mode": "raw", "raw": "{\n  \"codigo\":\"HB_CLASICA\",\n  \"nombre\":\"Hamburguesa Clásica\",\n  \"grupoPlatoId\": 1,\n  \"precioBase\": 2.00,\n  \"activo\":\"S\"\n}" }
+      }
+    },
+    {
+      "name": "7) Platos - Cambiar Activo",
+      "request": {
+        "method": "PATCH",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/platos/{{platoId}}/activo",
+        "body": { "mode": "raw", "raw": "{ \"activo\":\"N\" }" }
+      }
+    },
+
+    {
+      "name": "8) Receta - Listar",
+      "request": { "method": "GET", "url": "{{baseUrl}}/platos/{{platoId}}/receta" }
+    },
+    {
+      "name": "8) Receta - Reemplazar Completa",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/platos/{{platoId}}/receta",
+        "body": { "mode": "raw", "raw": "[\n  {\"ingredienteId\": {{ingredienteId}}, \"cantidad\": 0.150}\n]" }
+      }
+    },
+    {
+      "name": "8) Receta - Upsert Ítem",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/platos/{{platoId}}/receta",
+        "body": { "mode": "raw", "raw": "{ \"platoId\": {{platoId}}, \"ingredienteId\": {{ingredienteId}}, \"cantidad\": 0.020 }" }
+      }
+    },
+    {
+      "name": "8) Receta - Actualizar Cantidad",
+      "request": {
+        "method": "PATCH",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/platos/{{platoId}}/receta/{{ingredienteId}}",
+        "body": { "mode": "raw", "raw": "{ \"cantidad\": 0.025 }" }
+      }
+    },
+    {
+      "name": "8) Receta - Eliminar Ítem",
+      "request": { "method": "DELETE", "url": "{{baseUrl}}/platos/{{platoId}}/receta/{{ingredienteId}}" }
+    },
+    {
+      "name": "8) Receta - Eliminar Todo",
+      "request": { "method": "DELETE", "url": "{{baseUrl}}/platos/{{platoId}}/receta" }
+    },
+
+    {
+      "name": "10) Compras - Crear (con ítems)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/compras",
+        "body": { "mode": "raw", "raw": "{\n  \"proveedorId\": {{proveedorId}},\n  \"referencia\": \"FAC-1001\",\n  \"creadoPorSub\": \"sub-postman\",\n  \"items\": [\n    {\"ingredienteId\": {{ingredienteId}}, \"cantidad\": 5.000, \"costoUnitario\": 1.25}\n  ]\n}" }
+      }
+    },
+    {
+      "name": "10) Compras - Listar",
+      "request": { "method": "GET", "url": "{{baseUrl}}/compras?from=&to=&proveedorId=&ref=&page=0&size=50" }
+    },
+    {
+      "name": "10) Compras - Obtener por ID",
+      "request": { "method": "GET", "url": "{{baseUrl}}/compras/{{compraId}}" }
+    },
+
+    {
+      "name": "12) Pedidos - Crear",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/pedidos",
+        "body": { "mode": "raw", "raw": "{\n  \"estado\":\"CREADO\",\n  \"totalBruto\":0,\n  \"totalExtras\":0,\n  \"totalNeto\":0,\n  \"creadoPorSub\":\"sub-postman\"\n}" }
+      }
+    },
+    {
+      "name": "12) Pedidos - Agregar Ítem",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/pedidos/{{pedidoId}}/items",
+        "body": { "mode": "raw", "raw": "{\n  \"platoId\": {{platoId}},\n  \"cantidad\": 2,\n  \"precioUnitario\": 2.00,\n  \"descuentoPct\": 0,\n  \"descuentoMonto\": 0,\n  \"subtotal\": 4.00\n}" }
+      }
+    },
+    {
+      "name": "12) Pedidos - Agregar Extra",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/pedidos/{{pedidoId}}/items/{{itemId}}/extras",
+        "body": { "mode": "raw", "raw": "{ \"ingredienteId\": {{ingredienteId}}, \"cantidad\": 0.010, \"precioExtra\": 0.50 }" }
+      }
+    },
+    {
+      "name": "13) Pedidos - Cambiar Estado (no entrega)",
+      "request": {
+        "method": "PATCH",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/pedidos/{{pedidoId}}/estado",
+        "body": { "mode": "raw", "raw": "{ \"estado\":\"EN_COCINA\" }" }
+      }
+    },
+    {
+      "name": "14) Pedidos - Entregar (SP)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/pedidos/{{pedidoId}}/entregar",
+        "body": { "mode": "raw", "raw": "{}" }
+      }
+    },
+
+    {
+      "name": "16) Pagos Cliente - Registrar",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/pagos/clientes",
+        "body": { "mode": "raw", "raw": "{\n  \"pedidoId\": {{pedidoId}},\n  \"montoTotal\": 4.00,\n  \"metodo\": \"EFECTIVO\",\n  \"referencia\": \"caja-01\",\n  \"creadoPorSub\": \"sub-postman\"\n}" }
+      }
+    },
+    {
+      "name": "16) Pagos Cliente - Listar",
+      "request": { "method": "GET", "url": "{{baseUrl}}/pagos/clientes?from=&to=&metodo=&page=0&size=50" }
+    },
+
+    {
+      "name": "11) Pagos Proveedor - Registrar",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/pagos/proveedores",
+        "body": { "mode": "raw", "raw": "{\n  \"proveedorId\": {{proveedorId}},\n  \"montoTotal\": 10.00,\n  \"metodo\": \"TRANSFERENCIA\",\n  \"referencia\": \"pag-001\",\n  \"creadoPorSub\": \"sub-postman\"\n}" }
+      }
+    },
+    {
+      "name": "11) Pagos Proveedor - Listar",
+      "request": { "method": "GET", "url": "{{baseUrl}}/pagos/proveedores?from=&to=&metodo=&proveedorId=&page=0&size=50" }
+    },
+
+    {
+      "name": "9) Promos - Crear",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/promos",
+        "body": { "mode": "raw", "raw": "{\n  \"platoId\": {{platoId}},\n  \"descuentoPct\": 20.0,\n  \"fechaInicio\": \"2025-09-01T00:00:00\",\n  \"fechaFin\": \"2025-09-30T23:59:59\",\n  \"estado\": \"A\",\n  \"creadoPorSub\": \"sub-postman\"\n}" }
+      }
+    },
+    {
+      "name": "9) Promos - Listar",
+      "request": { "method": "GET", "url": "{{baseUrl}}/promos?platoId=&estado=&from=&to=&page=0&size=50" }
+    },
+    {
+      "name": "9) Promos - Refresh (SP)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/admin/promos/refresh",
+        "body": { "mode": "raw", "raw": "{}" }
+      }
+    },
+
+    {
+      "name": "17) Reporte - Ventas",
+      "request": { "method": "GET", "url": "{{baseUrl}}/reportes/ventas?from=&to=" }
+    },
+    {
+      "name": "18) Reporte - Consumos por Ingrediente",
+      "request": { "method": "GET", "url": "{{baseUrl}}/reportes/consumos?from=&to=&ingredienteId=" }
+    },
+    {
+      "name": "19) Reporte - Stock Bajo",
+      "request": { "method": "GET", "url": "{{baseUrl}}/reportes/stock-bajo" }
+    },
+    {
+      "name": "20) Reporte - Caja",
+      "request": { "method": "GET", "url": "{{baseUrl}}/reportes/caja?from=&to=" }
+    }
+  ]
+}

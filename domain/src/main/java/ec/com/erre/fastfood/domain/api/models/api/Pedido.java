@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,14 +18,17 @@ import java.util.List;
 @Builder
 public class Pedido {
 	private Long id;
-	private Long pedidoId;
-	private Long platoId;
-	private Integer cantidad;
-	private BigDecimal precioUnitario;
-	private BigDecimal descuentoPct;
-	private BigDecimal descuentoMonto;
-	private BigDecimal subtotal;
+	private String estado; // 'C','P','L','E','X'
+	private BigDecimal totalBruto; // escala 2
+	private BigDecimal totalExtras; // escala 2
+	private BigDecimal totalNeto; // escala 2
+	private String observaciones;
+	private String creadoPorSub;
+	private String entregadoPorSub;
+	private LocalDateTime creadoEn;
+	private LocalDateTime actualizadoEn;
+	private LocalDateTime entregadoEn;
 
-	private List<PedidoItemExtra> extras = new ArrayList<>();
-
+	@Builder.Default
+	private List<PedidoItem> items = new ArrayList<>(); // detalle (se carga aparte)
 }

@@ -9,15 +9,15 @@ import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface GrupoIngredienteMapper {
-	GrupoIngredienteDto domainToDto(GrupoIngrediente domain);
+	GrupoIngredienteDto domainToDto(GrupoIngrediente d);
 
 	GrupoIngrediente dtoToDomain(GrupoIngredienteDto dto);
 
-	List<GrupoIngredienteDto> domainsToDtos(List<GrupoIngrediente> domain);
+	List<GrupoIngredienteDto> domainsToDtos(List<GrupoIngrediente> d);
 
-	GrupoIngredienteEntity domainToEntity(GrupoIngrediente domain);
+	GrupoIngrediente entityToDomain(GrupoIngredienteEntity e);
 
-	GrupoIngrediente entityToDomain(GrupoIngredienteEntity entity);
+	GrupoIngredienteEntity domainToEntity(GrupoIngrediente d);
 
-	List<GrupoIngrediente> entitiesToDomains(List<GrupoIngredienteEntity> entity);
+	List<GrupoIngrediente> entitiesToDomains(List<GrupoIngredienteEntity> e);
 }

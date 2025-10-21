@@ -13,9 +13,9 @@ import ec.com.erre.fastfood.infrastructure.api.entities.GrupoPlatoEntity;
 import ec.com.erre.fastfood.infrastructure.api.entities.QGrupoPlatoEntity;
 import ec.com.erre.fastfood.infrastructure.api.mappers.GrupoPlatoMapper;
 import ec.com.erre.fastfood.infrastructure.commons.repositories.*;
-import ec.com.erre.fastfood.infrastructure.commons.repositories.CriterioBusqueda;
-import ec.com.erre.fastfood.infrastructure.commons.repositories.PagerAndSortDto;
-import ec.com.erre.fastfood.infrastructure.commons.repositories.Pagina;
+import ec.com.erre.fastfood.share.commons.CriterioBusqueda;
+import ec.com.erre.fastfood.share.commons.PagerAndSortDto;
+import ec.com.erre.fastfood.share.commons.Pagina;
 import jakarta.persistence.EntityManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -62,25 +62,6 @@ public class GrupoPlatoRepositoryImpl extends JPABaseRepository<GrupoPlatoEntity
 	}
 
 	@Override
-	public Pagina<GrupoPlato> obtenerGrupoPlatoPaginadoPorFiltros(PagerAndSortDto pager,
-			List<CriterioBusqueda> filters) {
-		Pageable pageable = PageRequest.of(pager.getPage(), pager.getSize());
-		JPQLQuery<GrupoPlato> jpqlQuery = getQueryFactory().selectFrom(grupoPlatoEntity)
-				.select(Projections.bean(GrupoPlato.class, grupoPlatoEntity.nombre, grupoPlatoEntity.estado))
-				.where(buildQuery(filters));
-
-		if (pager.datosOrdenamientoCompleto()) {
-			jpqlQuery.orderBy(buildOrder(pager));
-		}
-
-		Page<GrupoPlato> pageData = this.findPageData(jpqlQuery, pageable);
-
-		return Pagina.<GrupoPlato> builder().paginaActual(pager.getPage()).totalpaginas(pageData.getTotalPages())
-				.totalRegistros(pageData.getTotalElements()).contenido(pageData.stream().toList()).build();
-
-	}
-
-	@Override
 	public List<GrupoPlato> buscarActivos() {
 		List<GrupoPlatoEntity> entities = getQueryFactory().selectFrom(grupoPlatoEntity)
 				.orderBy(grupoPlatoEntity.nombre.desc()).fetch();
@@ -98,24 +79,48 @@ public class GrupoPlatoRepositoryImpl extends JPABaseRepository<GrupoPlatoEntity
 		this.save(grupoPlatoMapper.domainToEntity(update));
 	}
 
+	@Override
+	@Transactional(readOnly = true)
+	public Pagina<GrupoPlato> obtenerGrupoPlatoPaginadoPorFiltros(PagerAndSortDto pager,
+			List<CriterioBusqueda> filters) {
+
+		Pageable pageable = PageRequest.of(pager.getPage(), pager.getSize());
+		Predicate where = buildQuery(filters);
+
+		JPQLQuery<GrupoPlato> q = getQueryFactory()
+				.select(Projections.bean(GrupoPlato.class, grupoPlatoEntity.id.as("id"),
+						grupoPlatoEntity.nombre.as("nombre"), grupoPlatoEntity.estado.as("estado")))
+				.from(grupoPlatoEntity).where(where);
+
+		if (pager.datosOrdenamientoCompleto())
+			q.orderBy(buildOrder(pager));
+		else
+			q.orderBy(grupoPlatoEntity.nombre.asc());
+
+		Page<GrupoPlato> pageData = this.findPageData(q, pageable);
+
+		return Pagina.<GrupoPlato> builder().paginaActual(pager.getPage()).totalpaginas(pageData.getTotalPages())
+				.totalRegistros(pageData.getTotalElements()).contenido(pageData.getContent()).build();
+	}
+
+	/* ===== helpers QueryDSL ===== */
 	/**
 	 * Builder query
 	 *
 	 * @param criterios Query
 	 * @return Builder boolean query
 	 */
-
 	private Predicate buildQuery(List<CriterioBusqueda> criterios) {
 		BooleanBuilder builder = new BooleanBuilder();
-		PathBuilder<QGrupoPlatoEntity> pathBuilder = new PathBuilder<>(QGrupoPlatoEntity.class, "grupoPlatoEntity");
-		criterios.forEach(criterio -> builder.and(getPredicate(criterio.getLlave(), criterio.getOperacion(),
-				criterio.getValor(), pathBuilder, GrupoPlatoEntity.class)));
+		PathBuilder<QGrupoPlatoEntity> pb = new PathBuilder<>(QGrupoPlatoEntity.class, "grupoPlatoEntity");
+		criterios.forEach(c -> builder
+				.and(getPredicate(c.getLlave(), c.getOperacion(), c.getValor(), pb, QGrupoPlatoEntity.class)));
 		return builder;
 	}
 
 	private OrderSpecifier<?> buildOrder(PagerAndSortDto paging) {
-		PathBuilder<QGrupoPlatoEntity> pathBuilder = new PathBuilder<>(QGrupoPlatoEntity.class, "grupoPlatoEntity");
-		return getOrderSpecifier(pathBuilder, new CriterioOrden(paging.getOrderBy(), paging.getDirection()),
+		PathBuilder<QGrupoPlatoEntity> pb = new PathBuilder<>(QGrupoPlatoEntity.class, "grupoPlatoEntity");
+		return getOrderSpecifier(pb, new CriterioOrden(paging.getOrderBy(), paging.getDirection()),
 				GrupoPlatoEntity.class);
 	}
 

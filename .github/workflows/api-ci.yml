@@ -117,11 +117,10 @@ jobs:
             set -e
 
             # 1) Login a GHCR (token con read:packages)
-            echo '${{ secrets.GHCR_PAT }}' | docker login ghcr.io -u '${{ github.repository_owner }}' --password-stdin
 
             # 2) Actualizar el tag inmutable en el .env de compose
             COMPOSE_ENV="/opt/apps/stack/.compose.env"
-            TAG='${{ needs.build-push.outputs.tag_sha }}'   # p.ej. ghcr.io/owner/fastfood-api:sha-abc1234
+            TAG='${{ needs.build-push.outputs.tag_sha }}'   
             mkdir -p /opt/apps/stack
             if [ -f "$COMPOSE_ENV" ]; then
               sed -i "s|^IMAGE_TAG=.*|IMAGE_TAG=${TAG##*:}|" "$COMPOSE_ENV"

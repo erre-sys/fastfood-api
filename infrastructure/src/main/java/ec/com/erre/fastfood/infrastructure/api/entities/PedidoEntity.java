@@ -28,24 +28,28 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class PedidoEntity implements Serializable {
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "pedido_id")
 	private Long id;
 
-	@Column(name = "estado", nullable = false, length = 12) // CREADO/EN_COCINA/LISTO/ENTREGADO/CANCELADO
+	@Column(name = "estado", length = 1, nullable = false) // C,P,L,E,X
 	private String estado;
 
-	@Column(name = "total_bruto", precision = 12, scale = 2, nullable = false)
+	@Column(name = "total_bruto", precision = 14, scale = 2, nullable = false)
 	private BigDecimal totalBruto;
 
-	@Column(name = "total_extras", precision = 12, scale = 2, nullable = false)
+	@Column(name = "total_extras", precision = 14, scale = 2, nullable = false)
 	private BigDecimal totalExtras;
 
-	@Column(name = "total_neto", precision = 12, scale = 2, nullable = false)
+	@Column(name = "total_neto", precision = 14, scale = 2, nullable = false)
 	private BigDecimal totalNeto;
 
-	@Column(name = "creado_por_sub", nullable = false, length = 64)
+	@Column(name = "observaciones", length = 255)
+	private String observaciones;
+
+	@Column(name = "creado_por_sub", length = 64)
 	private String creadoPorSub;
 
 	@Column(name = "entregado_por_sub", length = 64)
@@ -57,6 +61,6 @@ public class PedidoEntity implements Serializable {
 	@Column(name = "actualizado_en", nullable = false)
 	private LocalDateTime actualizadoEn;
 
-	@OneToMany(mappedBy = "pedido", fetch = FetchType.LAZY)
-	private List<PedidoItemEntity> items = new ArrayList<>();
+	@Column(name = "entregado_en")
+	private LocalDateTime entregadoEn;
 }

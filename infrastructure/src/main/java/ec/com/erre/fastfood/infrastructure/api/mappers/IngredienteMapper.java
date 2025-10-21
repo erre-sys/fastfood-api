@@ -15,9 +15,7 @@ public interface IngredienteMapper {
 
 	List<IngredienteDto> domainsToDtos(List<Ingrediente> domain);
 
-	IngredienteEntity domainToEntity(Ingrediente domain);
-
 	Ingrediente entityToDomain(IngredienteEntity entity);
 
-	List<Ingrediente> entitiesToDomains(List<IngredienteEntity> entities);
+	IngredienteEntity domainToEntity(Ingrediente domain);
 }

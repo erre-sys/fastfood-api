@@ -8,8 +8,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @Setter
@@ -17,33 +15,35 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class PlatoDto {
+
 	@Null(groups = Crear.class)
 	@NotNull(groups = Actualizar.class)
 	private Long id;
 
-	@NotNull(groups = { Crear.class, Actualizar.class })
-	private Long grupoPlatoId;
-
-	@NotBlank(groups = { Crear.class })
+	@NotBlank(groups = { Crear.class, Actualizar.class })
 	@Size(max = 40)
 	private String codigo;
 
 	@NotBlank(groups = { Crear.class, Actualizar.class })
+	@Size(max = 120)
 	private String nombre;
 
 	@NotNull(groups = { Crear.class, Actualizar.class })
-	@Digits(integer = 10, fraction = 2)
+	private Long grupoPlatoId;
+
+	@NotNull(groups = { Crear.class, Actualizar.class })
+	@Digits(integer = 14, fraction = 2)
+	@DecimalMin(value = "0.00", inclusive = true)
 	private BigDecimal precioBase;
 
+	@NotBlank(groups = { Crear.class, Actualizar.class })
+	@Size(max = 1) // 'A'/'I'
 	private String estado;
 
+	// Solo lectura (el sistema los define vía SP de promociones)
 	private String enPromocion;
-
 	private BigDecimal descuentoPct;
 
-	private List<RecetaItemDto> recetas = new ArrayList<>();
-
-	// Interfaces para definir grupos
 	public interface Crear {
 	}
 

@@ -1,5 +1,6 @@
 package ec.com.erre.fastfood.share.api.dtos;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,34 +24,32 @@ public class PedidoDto {
 	@NotNull(groups = Actualizar.class)
 	private Long id;
 
-	@NotBlank(groups = { Crear.class, Actualizar.class })
-	@Size(max = 12)
+	@Size(max = 1)
 	private String estado;
 
-	@NotNull(groups = { Crear.class, Actualizar.class })
-	@Digits(integer = 10, fraction = 2)
+	@Digits(integer = 14, fraction = 2)
 	private BigDecimal totalBruto;
 
-	@NotNull(groups = { Crear.class, Actualizar.class })
-	@Digits(integer = 10, fraction = 2)
+	@Digits(integer = 14, fraction = 2)
 	private BigDecimal totalExtras;
 
-	@NotNull(groups = { Crear.class, Actualizar.class })
-	@Digits(integer = 10, fraction = 2)
+	@Digits(integer = 14, fraction = 2)
 	private BigDecimal totalNeto;
 
-	@NotBlank(groups = { Crear.class, Actualizar.class })
-	@Size(max = 64)
-	private String creadoPorSub;
+	@Size(max = 255)
+	private String observaciones;
 
-	@Size(max = 64)
 	private String entregadoPorSub;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd' 'HH:mm:ss")
+	private LocalDateTime creadoEn;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd' 'HH:mm:ss")
+	private LocalDateTime actualizadoEn;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd' 'HH:mm:ss")
 	private LocalDateTime entregadoEn;
 
 	@Builder.Default
 	private List<PedidoItemDto> items = new ArrayList<>();
 
-	// Interfaces para definir grupos
 	public interface Crear {
 	}
 
