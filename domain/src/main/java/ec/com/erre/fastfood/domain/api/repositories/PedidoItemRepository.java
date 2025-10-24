@@ -1,5 +1,6 @@
 package ec.com.erre.fastfood.domain.api.repositories;
 
+import ec.com.erre.fastfood.domain.api.models.api.Pedido;
 import ec.com.erre.fastfood.domain.api.models.api.PedidoItem;
 import ec.com.erre.fastfood.domain.commons.exceptions.EntidadNoEncontradaException;
 
@@ -17,4 +18,5 @@ public interface PedidoItemRepository {
 	List<PedidoItem> listarPorPedido(Long pedidoId);
 
 	PedidoItem buscarPorId(Long id) throws EntidadNoEncontradaException;
+
 }

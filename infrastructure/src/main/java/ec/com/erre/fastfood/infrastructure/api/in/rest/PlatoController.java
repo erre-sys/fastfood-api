@@ -6,6 +6,7 @@ import ec.com.erre.fastfood.domain.commons.exceptions.EntidadNoEncontradaExcepti
 import ec.com.erre.fastfood.domain.commons.exceptions.RegistroDuplicadoException;
 import ec.com.erre.fastfood.domain.commons.exceptions.ReglaDeNegocioException;
 import ec.com.erre.fastfood.infrastructure.api.mappers.PlatoMapper;
+import ec.com.erre.fastfood.infrastructure.commons.mappers.PaginaMapper;
 import ec.com.erre.fastfood.share.commons.CriterioBusqueda;
 import ec.com.erre.fastfood.share.commons.PagerAndSortDto;
 import ec.com.erre.fastfood.share.commons.Pagina;
@@ -38,9 +39,8 @@ public class PlatoController {
 	@Operation(summary = "Crear plato")
 	public ResponseEntity<Map<String, Long>> crear(@Validated(PlatoDto.Crear.class) @RequestBody PlatoDto dto)
 			throws RegistroDuplicadoException, ReglaDeNegocioException, EntidadNoEncontradaException {
-		Plato p = mapper.dtoToDomain(dto);
-		service.crear(p);
-		// si necesitas devolver id, puedes hacer que el repo lo retorne; aquí asumimos 201 sin body
+		Plato plato = mapper.dtoToDomain(dto);
+		service.crear(plato);
 		return ResponseEntity.status(HttpStatus.CREATED).build();
 	}
 
@@ -48,28 +48,30 @@ public class PlatoController {
 	@Operation(summary = "Actualizar plato")
 	public ResponseEntity<Void> actualizar(@Validated(PlatoDto.Actualizar.class) @RequestBody PlatoDto dto)
 			throws EntidadNoEncontradaException, RegistroDuplicadoException, ReglaDeNegocioException {
-		service.actualizar(mapper.dtoToDomain(dto));
-		return new ResponseEntity<>(HttpStatus.OK);
+		Plato plato = mapper.dtoToDomain(dto);
+		service.actualizar(plato);
+		return ResponseEntity.ok().build();
 	}
 
 	@GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "Buscar plato por id")
-	public ResponseEntity<PlatoDto> buscarPorId(@PathVariable Long id) throws EntidadNoEncontradaException {
-		return ResponseEntity.ok(mapper.domainToDto(service.buscarPorId(id)));
+	@Operation(summary = "Obtener plato por id")
+	public ResponseEntity<PlatoDto> obtenerPorId(@PathVariable Long id) throws EntidadNoEncontradaException {
+		Plato plato = service.buscarPorId(id);
+		return ResponseEntity.ok(mapper.domainToDto(plato));
 	}
 
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "Listar platos activos")
 	public ResponseEntity<List<PlatoDto>> listarActivos() {
-		return ResponseEntity.ok(service.activos().stream().map(mapper::domainToDto).toList());
+		List<Plato> platos = service.activos();
+		List<PlatoDto> platosDto = platos.stream().map(mapper::domainToDto).toList();
+		return ResponseEntity.ok(platosDto);
 	}
 
 	@PostMapping(value = "/search", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "Buscar platos (paginado por filtros)")
-	public Pagina<PlatoDto> search(PagerAndSortDto pager, @RequestBody List<CriterioBusqueda> filters) {
-		Pagina<Plato> page = service.obtenerPaginadoPorFiltros(pager, filters);
-		return Pagina.<PlatoDto> builder().contenido(page.getContenido().stream().map(mapper::domainToDto).toList())
-				.totalRegistros(page.getTotalRegistros()).paginaActual(page.getPaginaActual())
-				.totalpaginas(page.getTotalpaginas()).build();
+	public Pagina<PlatoDto> buscar(PagerAndSortDto pager, @RequestBody List<CriterioBusqueda> filters) {
+		Pagina<Plato> paginaPlatos = service.obtenerPaginadoPorFiltros(pager, filters);
+		return PaginaMapper.map(paginaPlatos, mapper::domainToDto);
 	}
 }

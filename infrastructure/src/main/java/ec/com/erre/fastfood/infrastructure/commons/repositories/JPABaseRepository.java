@@ -2,6 +2,9 @@ package ec.com.erre.fastfood.infrastructure.commons.repositories;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -15,6 +18,7 @@ import org.springframework.data.support.PageableExecutionUtils;
 
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.core.types.dsl.PathBuilderFactory;
@@ -142,6 +146,12 @@ public class JPABaseRepository<T, ID extends Serializable> {
 		case "String":
 			StringPath stringPath = entityPath.getString(key);
 			return getStringPredicate(stringPath, operator, value, entityPath);
+		case "LocalDateTime":
+			DateTimePath<LocalDateTime> dateTimePath = entityPath.getDateTime(key, LocalDateTime.class);
+			return getDateTimePredicate(dateTimePath, operator, value);
+		case "LocalDate":
+			DateTimePath<LocalDate> datePath = entityPath.getDateTime(key, LocalDate.class);
+			return getDatePredicate(datePath, operator, value);
 		default:
 			String message = String.format("Tipo de dato no soportado: %s", propertyType.getSimpleName());
 			throw new ServiceException(message);
@@ -164,6 +174,13 @@ public class JPABaseRepository<T, ID extends Serializable> {
 		case "String":
 			StringPath stringPath = pathBuilder.getString(criterioOrden.getCampo());
 			return criterioOrden.isAscendente() ? stringPath.asc() : stringPath.desc();
+		case "LocalDateTime":
+			DateTimePath<LocalDateTime> dateTimePath = pathBuilder.getDateTime(criterioOrden.getCampo(),
+					LocalDateTime.class);
+			return criterioOrden.isAscendente() ? dateTimePath.asc() : dateTimePath.desc();
+		case "LocalDate":
+			DateTimePath<LocalDate> datePath = pathBuilder.getDateTime(criterioOrden.getCampo(), LocalDate.class);
+			return criterioOrden.isAscendente() ? datePath.asc() : datePath.desc();
 		default:
 			String message = String.format("Tipo de dato no soportado: %s", propertyType.getSimpleName());
 			throw new ServiceException(message);
@@ -213,6 +230,68 @@ public class JPABaseRepository<T, ID extends Serializable> {
 			return path.notIn(value);
 		default:
 			String message = String.format("Operador no soportado: %s", operator);
+			throw new ServiceException(message);
+		}
+	}
+
+	private BooleanExpression getDateTimePredicate(DateTimePath<LocalDateTime> path, String operator, String value) {
+		try {
+			// Formato esperado: "yyyy-MM-dd HH:mm:ss" o "yyyy-MM-dd"
+			LocalDateTime dateTime;
+			if (value.length() == 10) {
+				// Solo fecha, asumir inicio del día
+				dateTime = LocalDate.parse(value, DateTimeFormatter.ISO_LOCAL_DATE).atStartOfDay();
+			} else {
+				dateTime = LocalDateTime.parse(value, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+			}
+
+			switch (operator) {
+			case "=":
+				return path.eq(dateTime);
+			case ">":
+				return path.gt(dateTime);
+			case "<":
+				return path.lt(dateTime);
+			case ">=":
+				return path.goe(dateTime);
+			case "<=":
+				return path.loe(dateTime);
+			case "!=":
+				return path.ne(dateTime);
+			default:
+				String message = String.format("Operador no soportado para LocalDateTime: %s", operator);
+				throw new ServiceException(message);
+			}
+		} catch (Exception e) {
+			String message = String.format("Formato de fecha inválido: %s. Use 'yyyy-MM-dd HH:mm:ss' o 'yyyy-MM-dd'",
+					value);
+			throw new ServiceException(message);
+		}
+	}
+
+	private BooleanExpression getDatePredicate(DateTimePath<LocalDate> path, String operator, String value) {
+		try {
+			LocalDate date = LocalDate.parse(value, DateTimeFormatter.ISO_LOCAL_DATE);
+
+			switch (operator) {
+			case "=":
+				return path.eq(date);
+			case ">":
+				return path.gt(date);
+			case "<":
+				return path.lt(date);
+			case ">=":
+				return path.goe(date);
+			case "<=":
+				return path.loe(date);
+			case "!=":
+				return path.ne(date);
+			default:
+				String message = String.format("Operador no soportado para LocalDate: %s", operator);
+				throw new ServiceException(message);
+			}
+		} catch (Exception e) {
+			String message = String.format("Formato de fecha inválido: %s. Use 'yyyy-MM-dd'", value);
 			throw new ServiceException(message);
 		}
 	}

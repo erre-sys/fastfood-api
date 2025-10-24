@@ -5,6 +5,7 @@ import ec.com.erre.fastfood.domain.api.services.PagoClienteService;
 import ec.com.erre.fastfood.domain.commons.exceptions.EntidadNoEncontradaException;
 import ec.com.erre.fastfood.domain.commons.exceptions.ReglaDeNegocioException;
 import ec.com.erre.fastfood.infrastructure.api.mappers.PagoClienteMapper;
+import ec.com.erre.fastfood.infrastructure.commons.mappers.PaginaMapper;
 import ec.com.erre.fastfood.share.commons.CriterioBusqueda;
 import ec.com.erre.fastfood.share.commons.PagerAndSortDto;
 import ec.com.erre.fastfood.share.commons.Pagina;
@@ -38,29 +39,38 @@ public class PagoClienteController {
 	public ResponseEntity<Map<String, Long>> crear(
 			@Validated(PagoClienteDto.Crear.class) @RequestBody PagoClienteDto dto)
 			throws EntidadNoEncontradaException, ReglaDeNegocioException {
-		Long id = service.registrarPago(mapper.dtoToDomain(dto));
-		return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("id", id));
+		PagoCliente pago = mapper.dtoToDomain(dto);
+		Long pagoId = service.registrarPago(pago);
+		return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("id", pagoId));
 	}
 
 	@GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "Buscar pago por id")
-	public ResponseEntity<PagoClienteDto> buscarPorId(@PathVariable Long id) throws EntidadNoEncontradaException {
-		return ResponseEntity.ok(mapper.domainToDto(service.buscarPorId(id)));
+	@Operation(summary = "Obtener pago por id")
+	public ResponseEntity<PagoClienteDto> obtenerPorId(@PathVariable Long id) throws EntidadNoEncontradaException {
+		PagoCliente pago = service.buscarPorId(id);
+		return ResponseEntity.ok(mapper.domainToDto(pago));
 	}
 
 	@GetMapping(value = "/pedidos/{pedidoId}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "Listar pagos por pedido")
 	public ResponseEntity<List<PagoClienteDto>> listarPorPedido(@PathVariable Long pedidoId) {
-		return ResponseEntity.ok(service.listarPorPedido(pedidoId).stream().map(mapper::domainToDto).toList());
+		List<PagoCliente> pagos = service.listarPorPedido(pedidoId);
+		List<PagoClienteDto> pagosDto = pagos.stream().map(mapper::domainToDto).toList();
+		return ResponseEntity.ok(pagosDto);
+	}
+
+	@PutMapping(value = "/{id}/cambiar-estado", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(summary = "Cambiar estado del pago (S=SOLICITADO, P=PAGADO, F=FIADO)")
+	public ResponseEntity<Void> cambiarEstado(@PathVariable Long id, @RequestParam String estado)
+			throws EntidadNoEncontradaException, ReglaDeNegocioException {
+		service.cambiarEstado(id, estado);
+		return ResponseEntity.ok().build();
 	}
 
 	@PostMapping(value = "/search", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "Buscar pagos (paginado + filtros)")
-	public Pagina<PagoClienteDto> search(PagerAndSortDto pager, @RequestBody List<CriterioBusqueda> filters) {
-		Pagina<PagoCliente> page = service.paginado(pager, filters);
-		return Pagina.<PagoClienteDto> builder()
-				.contenido(page.getContenido().stream().map(mapper::domainToDto).toList())
-				.totalRegistros(page.getTotalRegistros()).paginaActual(page.getPaginaActual())
-				.totalpaginas(page.getTotalpaginas()).build();
+	public Pagina<PagoClienteDto> buscar(PagerAndSortDto pager, @RequestBody List<CriterioBusqueda> filters) {
+		Pagina<PagoCliente> paginaPagos = service.paginado(pager, filters);
+		return PaginaMapper.map(paginaPagos, mapper::domainToDto);
 	}
 }

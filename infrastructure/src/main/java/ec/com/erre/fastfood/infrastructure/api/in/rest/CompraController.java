@@ -8,6 +8,7 @@ import ec.com.erre.fastfood.domain.commons.exceptions.ReglaDeNegocioException;
 import ec.com.erre.fastfood.infrastructure.api.mappers.CompraItemMapper;
 import ec.com.erre.fastfood.infrastructure.api.mappers.CompraMapper;
 import ec.com.erre.fastfood.infrastructure.commons.exceptions.ErrorResponse;
+import ec.com.erre.fastfood.infrastructure.commons.mappers.PaginaMapper;
 import ec.com.erre.fastfood.share.commons.CriterioBusqueda;
 import ec.com.erre.fastfood.share.commons.PagerAndSortDto;
 import ec.com.erre.fastfood.share.commons.Pagina;
@@ -18,6 +19,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -46,20 +48,20 @@ public class CompraController {
 	@ApiResponses({ @ApiResponse(responseCode = "201", description = "Compra creada"),
 			@ApiResponse(responseCode = "404", description = "Proveedor/Ingrediente no existe", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
 			@ApiResponse(responseCode = "409", description = "Regla de negocio violada", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))) })
-	public ResponseEntity<Map<String, Long>> crear(@RequestBody CompraDto dto)
+	public ResponseEntity<Map<String, Long>> crear(@Valid @RequestBody CompraDto dto)
 			throws EntidadNoEncontradaException, ReglaDeNegocioException {
 
-		Compra cab = compraMapper.dtoToDomain(dto);
+		Compra compra = compraMapper.dtoToDomain(dto);
 		List<CompraItem> items = dto.getItems() == null ? List.of()
 				: dto.getItems().stream().map(itemMapper::dtoToDomain).toList();
 
-		Long id = service.crear(cab, items);
-		return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("id", id));
+		Long compraId = service.crear(compra, items);
+		return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("id", compraId));
 	}
 
 	@GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "Buscar compra por id (incluye ítems)")
-	public ResponseEntity<CompraDto> buscarPorId(@PathVariable Long id) throws EntidadNoEncontradaException {
+	@Operation(summary = "Obtener compra por id (incluye ítems)")
+	public ResponseEntity<CompraDto> obtenerPorId(@PathVariable Long id) throws EntidadNoEncontradaException {
 		Compra compra = service.buscarPorId(id);
 		CompraDto dto = compraMapper.domainToDto(compra);
 		dto.setItems(compra.getItems().stream().map(itemMapper::domainToDto).toList());
@@ -68,17 +70,14 @@ public class CompraController {
 
 	@PostMapping(value = "/search", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "Buscar compras con paginado por filtros (incluye items y total)")
-	public Pagina<CompraDto> search(PagerAndSortDto pager, @RequestBody List<CriterioBusqueda> filters) {
-		Pagina<Compra> page = service.buscarPaginado(pager, filters);
+	public Pagina<CompraDto> buscar(PagerAndSortDto pager, @RequestBody List<CriterioBusqueda> filters) {
+		Pagina<Compra> paginaCompras = service.buscarPaginado(pager, filters);
 
-		List<CompraDto> comprasDto = page.getContenido().stream().map(compra -> {
+		return PaginaMapper.map(paginaCompras, compra -> {
 			CompraDto dto = compraMapper.domainToDto(compra);
 			dto.setItems(compra.getItems().stream().map(itemMapper::domainToDto).toList());
 			dto.setTotal(compra.getTotal());
 			return dto;
-		}).toList();
-
-		return Pagina.<CompraDto> builder().contenido(comprasDto).totalRegistros(page.getTotalRegistros())
-				.paginaActual(page.getPaginaActual()).totalpaginas(page.getTotalpaginas()).build();
+		});
 	}
 }

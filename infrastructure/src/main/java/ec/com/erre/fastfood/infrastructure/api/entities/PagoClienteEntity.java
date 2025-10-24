@@ -28,6 +28,8 @@ public class PagoClienteEntity implements Serializable {
 	private String metodo;
 	@Column(length = 40)
 	private String referencia;
+	@Column(length = 1, nullable = false)
+	private String estado; // S=SOLICITADO, P=PAGADO, F=FIADO
 	@Column(name = "creado_por_sub", length = 64)
 	private String creadoPorSub;
 }

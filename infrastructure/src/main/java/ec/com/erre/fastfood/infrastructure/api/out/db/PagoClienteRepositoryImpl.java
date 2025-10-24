@@ -80,10 +80,11 @@ public class PagoClienteRepositoryImpl extends JPABaseRepository<PagoClienteEnti
 		Pageable pageable = PageRequest.of(pager.getPage(), pager.getSize());
 		Predicate where = buildQuery(filters);
 
-		JPQLQuery<PagoCliente> q = getQueryFactory().select(Projections.bean(PagoCliente.class,
-				pagoClienteEntity.id.as("id"), pagoClienteEntity.pedidoId.as("pedidoId"),
-				pagoClienteEntity.montoTotal.as("montoTotal"), pagoClienteEntity.metodo.as("metodo"),
-				pagoClienteEntity.referencia.as("referencia"), pagoClienteEntity.fecha.as("fecha")))
+		JPQLQuery<PagoCliente> q = getQueryFactory()
+				.select(Projections.bean(PagoCliente.class, pagoClienteEntity.id.as("id"),
+						pagoClienteEntity.pedidoId.as("pedidoId"), pagoClienteEntity.montoTotal.as("montoTotal"),
+						pagoClienteEntity.metodo.as("metodo"), pagoClienteEntity.referencia.as("referencia"),
+						pagoClienteEntity.estado.as("estado"), pagoClienteEntity.fecha.as("fecha")))
 				.from(pagoClienteEntity).where(where);
 
 		if (pager.datosOrdenamientoCompleto())
@@ -103,6 +104,13 @@ public class PagoClienteRepositoryImpl extends JPABaseRepository<PagoClienteEnti
 		BigDecimal sum = getQueryFactory().select(pagoClienteEntity.montoTotal.sum()).from(pagoClienteEntity)
 				.where(pagoClienteEntity.pedidoId.eq(pedidoId)).fetchFirst();
 		return sum == null ? BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP) : sum.setScale(2, RoundingMode.HALF_UP);
+	}
+
+	@Override
+	public boolean actualizarEstado(Long pagoId, String nuevoEstado) {
+		long updated = getQueryFactory().update(pagoClienteEntity).where(pagoClienteEntity.id.eq(pagoId))
+				.set(pagoClienteEntity.estado, nuevoEstado).execute();
+		return updated > 0;
 	}
 
 	/* ==== helpers QueryDSL ==== */

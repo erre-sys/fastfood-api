@@ -1,13 +1,17 @@
 package ec.com.erre.fastfood.infrastructure.commons.exceptions;
 
 import ec.com.erre.fastfood.domain.commons.exceptions.EntidadNoEncontradaException;
+import ec.com.erre.fastfood.domain.commons.exceptions.ReglaDeNegocioException;
 import ec.com.erre.fastfood.domain.commons.exceptions.ServiceException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import lombok.extern.log4j.Log4j2;
+
+import java.sql.SQLException;
 
 @ControllerAdvice
 @Log4j2
@@ -17,6 +21,13 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ErrorResponse> handleEntidadNoEncontrada(EntidadNoEncontradaException e) {
 		ErrorResponse error = new ErrorResponse(HttpStatus.NOT_FOUND.value(), e.getMessage());
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+	}
+
+	@ExceptionHandler(ReglaDeNegocioException.class)
+	public ResponseEntity<ErrorResponse> handleReglaDeNegocio(ReglaDeNegocioException e) {
+		log.warn("Regla de negocio violada: {}", e.getMessage());
+		ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
 	}
 
 	@ExceptionHandler(RemoteExecutionException.class)
@@ -32,12 +43,98 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.status(HttpStatus.CONFLICT.value()).body(error);
 	}
 
+	@ExceptionHandler(DataIntegrityViolationException.class)
+	public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(DataIntegrityViolationException e) {
+		log.error("Error de integridad de datos: {}", e.getMessage(), e);
+
+		String message = extractMeaningfulMessage(e);
+
+		ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), message);
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+	}
+
+	@ExceptionHandler(SQLException.class)
+	public ResponseEntity<ErrorResponse> handleSQLException(SQLException e) {
+		log.error("Error SQL: {}", e.getMessage(), e);
+
+		String message = extractMeaningfulMessage(e);
+
+		ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), message);
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+	}
+
 	@ExceptionHandler(RuntimeException.class)
 	public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException e) {
-		log.error(e.getMessage(), e);
-		ErrorResponse error = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
-				"Error en el servidor, por favor contacte al administrador: ".concat(e.getMessage()));
-		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR.value()).body(error);
+		log.error("Error inesperado: {}", e.getMessage(), e);
+
+		// Intentar extraer mensaje significativo de errores SQL embebidos
+		String message = extractMeaningfulMessage(e);
+
+		ErrorResponse error = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), message);
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+	}
+
+	/**
+	 * Extrae mensajes significativos de excepciones SQL anidadas
+	 */
+	private String extractMeaningfulMessage(Throwable e) {
+		String message = e.getMessage();
+
+		// Buscar mensajes específicos en la cadena de excepciones
+		Throwable cause = e;
+		while (cause != null) {
+			String causeMessage = cause.getMessage();
+			if (causeMessage != null) {
+				// Errores de stored procedures
+				if (causeMessage.contains("Stock insuficiente")) {
+					return "Stock insuficiente para completar la operación";
+				}
+				if (causeMessage.contains("Pedido no existe")) {
+					return "El pedido no existe";
+				}
+				if (causeMessage.contains("Pedido ya finalizado")) {
+					return "El pedido ya fue finalizado y no se puede modificar";
+				}
+				if (causeMessage.contains("Usa sp_pedido_cambiar_estado")) {
+					return "No se puede cambiar el estado del pedido directamente. Use el endpoint correspondiente";
+				}
+				// Errores de constraints
+				if (causeMessage.contains("Duplicate entry")) {
+					return "El registro ya existe en el sistema";
+				}
+				if (causeMessage.contains("cannot be null")) {
+					String field = extractFieldName(causeMessage);
+					return "El campo '" + field + "' es obligatorio";
+				}
+				if (causeMessage.contains("foreign key constraint fails")) {
+					return "No se puede completar la operación porque hay referencias a otros registros";
+				}
+			}
+			cause = cause.getCause();
+		}
+
+		// Si no se encontró un mensaje específico, retornar mensaje genérico pero limpio
+		if (message != null && message.length() > 200) {
+			return "Error en el servidor. Por favor contacte al administrador";
+		}
+
+		return message != null ? message : "Error inesperado en el servidor";
+	}
+
+	/**
+	 * Extrae el nombre del campo de un mensaje de error "cannot be null"
+	 */
+	private String extractFieldName(String message) {
+		try {
+			// Formato típico: "Column 'field_name' cannot be null"
+			int start = message.indexOf("'") + 1;
+			int end = message.indexOf("'", start);
+			if (start > 0 && end > start) {
+				return message.substring(start, end);
+			}
+		} catch (Exception ignored) {
+		}
+		return "desconocido";
 	}
 
 }

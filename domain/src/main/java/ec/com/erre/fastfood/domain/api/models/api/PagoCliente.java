@@ -17,5 +17,6 @@ public class PagoCliente {
 	private BigDecimal montoTotal;
 	private String metodo;
 	private String referencia;
+	private String estado; // S=SOLICITADO, P=PAGADO, F=FIADO
 	private String creadoPorSub;
 }

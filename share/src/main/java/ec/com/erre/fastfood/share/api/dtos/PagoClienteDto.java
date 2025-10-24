@@ -29,6 +29,9 @@ public class PagoClienteDto {
 	private String metodo;
 	@Size(max = 40)
 	private String referencia;
+	@Size(max = 1)
+	@Pattern(regexp = "[SPF]", message = "Estado debe ser S (SOLICITADO), P (PAGADO) o F (FIADO)")
+	private String estado; // S=SOLICITADO, P=PAGADO, F=FIADO
 	private String creadoPorSub;
 
 	public interface Crear {

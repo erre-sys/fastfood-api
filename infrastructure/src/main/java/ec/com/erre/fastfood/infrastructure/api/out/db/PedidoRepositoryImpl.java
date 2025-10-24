@@ -72,7 +72,7 @@ public class PedidoRepositoryImpl extends JPABaseRepository<PedidoEntity, Long> 
 	@Override
 	public boolean cambiarEstadoSimple(Long pedidoId, String nuevoEstado) {
 		long upd = getQueryFactory().update(pedidoEntity)
-				.where(pedidoEntity.id.eq(pedidoId), pedidoEntity.estado.in("C", "P", "L"))
+				.where(pedidoEntity.id.eq(pedidoId), pedidoEntity.estado.in("C", "L"))
 				.set(pedidoEntity.estado, nuevoEstado).set(pedidoEntity.actualizadoEn, java.time.LocalDateTime.now())
 				.execute();
 		return upd > 0;

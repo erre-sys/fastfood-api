@@ -25,4 +25,6 @@ public interface PagoClienteRepository {
 	Pagina<PagoCliente> paginado(PagerAndSortDto pager, List<CriterioBusqueda> filters);
 
 	BigDecimal totalPagadoPorPedido(Long pedidoId);
+
+	boolean actualizarEstado(Long pagoId, String nuevoEstado);
 }

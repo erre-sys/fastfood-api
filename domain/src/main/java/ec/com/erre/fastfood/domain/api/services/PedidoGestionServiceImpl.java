@@ -116,11 +116,14 @@ public class PedidoGestionServiceImpl implements PedidoGestionService {
 
 		BigDecimal factor = BigDecimal.ONE.subtract(desc.divide(new BigDecimal("100"), 4, RoundingMode.HALF_UP));
 		BigDecimal precioUnitario = scale2(precioBase.multiply(factor));
+		BigDecimal descuentoMonto = scale2(precioBase.subtract(precioUnitario));
 		BigDecimal subtotal = scale2(precioUnitario.multiply(BigDecimal.valueOf(item.getCantidad())));
 
 		// El sistema calcula precios y subtotales
 		item.setPedidoId(pedidoId);
 		item.setPrecioUnitario(precioUnitario);
+		item.setDescuentoPct(desc);
+		item.setDescuentoMonto(descuentoMonto);
 		item.setSubtotal(subtotal);
 
 		return itemRepo.agregar(item);
@@ -140,9 +143,8 @@ public class PedidoGestionServiceImpl implements PedidoGestionService {
 			throw new ReglaDeNegocioException("Pedido finalizado: no se puede cambiar estado");
 		}
 
-		// Solo permitir C -> L (CREADO -> LISTO) || L -> E (ENTREGADO -> PAGADO)
+		// Solo permitir C -> L (CREADO -> LISTO)
 		boolean ok = ("C".equalsIgnoreCase(estadoActual) && "L".equals(estadoNuevo))
-				|| ("E".equalsIgnoreCase(estadoActual) && "P".equals(estadoNuevo))
 				|| estadoActual.equalsIgnoreCase(estadoNuevo); // Idempotencia
 
 		if (!ok) {

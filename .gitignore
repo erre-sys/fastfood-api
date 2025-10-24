@@ -31,3 +31,49 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### macOS ###
+.DS_Store
+.AppleDouble
+.LSOverride
+
+### Logs ###
+*.log
+logs/
+logging.destination.folder_IS_UNDEFINED/
+
+### Archivos sensibles ###
+# Configuraciones locales y de entorno
+application-local.properties
+application-local.yml
+application-dev.properties
+application-dev.yml
+.env
+.env.local
+.env.*.local
+
+# Credenciales y secretos
+**/credentials.json
+**/secrets.yml
+**/secrets.properties
+**/*.key
+**/*.pem
+**/*.p12
+**/*.jks
+**/*.keystore
+
+# Carpetas de desarrollo
+.dev/
+
+# Base de datos local
+*.db
+*.sqlite
+*.sqlite3
+h2/
+data/
+
+# Archivos temporales
+*.tmp
+*.bak
+*.swp
+*~

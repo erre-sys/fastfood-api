@@ -151,7 +151,7 @@ BEGIN
         ROLLBACK; SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Pedido no existe';
     END IF;
 
-    IF v_estado_actual IN ('C','E') THEN
+    IF v_estado_actual IN ('E','A') THEN
         ROLLBACK; SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Pedido ya finalizado';
     END IF;
 

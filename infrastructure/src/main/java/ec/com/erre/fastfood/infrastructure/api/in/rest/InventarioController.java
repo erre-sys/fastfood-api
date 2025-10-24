@@ -2,13 +2,16 @@ package ec.com.erre.fastfood.infrastructure.api.in.rest;
 
 import ec.com.erre.fastfood.domain.api.models.api.Inventario;
 import ec.com.erre.fastfood.domain.api.models.api.InventarioMov;
+import ec.com.erre.fastfood.domain.api.services.InventarioProcesoService;
 import ec.com.erre.fastfood.domain.api.services.InventarioService;
 import ec.com.erre.fastfood.domain.commons.exceptions.ReglaDeNegocioException;
 import ec.com.erre.fastfood.infrastructure.api.mappers.InventarioMapper;
 import ec.com.erre.fastfood.infrastructure.api.mappers.KardexMapper;
 import ec.com.erre.fastfood.infrastructure.commons.exceptions.ErrorResponse;
+import ec.com.erre.fastfood.infrastructure.commons.mappers.PaginaMapper;
 import ec.com.erre.fastfood.share.commons.PagerAndSortDto;
 import ec.com.erre.fastfood.share.commons.Pagina;
+import ec.com.erre.fastfood.share.api.dtos.AjusteInventarioDto;
 import ec.com.erre.fastfood.share.api.dtos.InventarioDto;
 import ec.com.erre.fastfood.share.api.dtos.InventarioMovDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,8 +20,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -29,56 +35,56 @@ import java.time.LocalDateTime;
 public class InventarioController {
 
 	private final InventarioService inventarioService;
+	private final InventarioProcesoService inventarioProcesoService;
 	private final InventarioMapper inventarioMapper;
 	private final KardexMapper kardexMapper;
 
-	public InventarioController(InventarioService inventarioService, InventarioMapper inventarioMapper,
-			KardexMapper kardexMapper) {
+	public InventarioController(InventarioService inventarioService, InventarioProcesoService inventarioProcesoService,
+			InventarioMapper inventarioMapper, KardexMapper kardexMapper) {
 		this.inventarioService = inventarioService;
+		this.inventarioProcesoService = inventarioProcesoService;
 		this.inventarioMapper = inventarioMapper;
 		this.kardexMapper = kardexMapper;
 	}
 
-	/**
-	 * Kardex de inventario (paginado) con filtro opcional por texto y bandera de "bajo mínimo".
-	 */
 	@PostMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "Buscar el inventario paginado")
 	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Listado obtenido") })
-	public Pagina<InventarioDto> search(PagerAndSortDto pager, @RequestParam(required = false) String q,
+	public Pagina<InventarioDto> buscar(PagerAndSortDto pager, @RequestParam(required = false) String q,
 			@RequestParam(defaultValue = "false") boolean soloBajoMinimo) {
 
-		Pagina<Inventario> page = inventarioService.listarInventario(pager, q, soloBajoMinimo);
-
-		return Pagina.<InventarioDto> builder().paginaActual(page.getPaginaActual())
-				.totalpaginas(page.getTotalpaginas()).totalRegistros(page.getTotalRegistros())
-				.contenido(page.getContenido().stream().map(inventarioMapper::domaintoDto).toList()).build();
+		Pagina<Inventario> paginaInventario = inventarioService.listarInventario(pager, q, soloBajoMinimo);
+		return PaginaMapper.map(paginaInventario, inventarioMapper::domaintoDto);
 	}
 
-	/**
-	 * Kardex (movimientos) paginado por ingrediente y rango de fechas opcional.
-	 */
 	@PostMapping(value = "/kardex/search", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "Kardex (movimientos) paginado")
 	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Listado obtenido"),
 			@ApiResponse(responseCode = "400", description = "Parámetros inválidos", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))) })
-	public Pagina<InventarioMovDto> kardexSearch(PagerAndSortDto pager, @RequestParam @NotNull Long ingredienteId,
-			@RequestParam(required = false) String desde, // ISO-8601 (yyyy-MM-dd'T'HH:mm:ss)
-			@RequestParam(required = false) String hasta, // ISO-8601
-			@RequestParam(required = false) String tipo // COMPRA/CONSUMO/AJUSTE
-	) throws ReglaDeNegocioException {
+	public Pagina<InventarioMovDto> buscarKardex(PagerAndSortDto pager, @RequestParam @NotNull Long ingredienteId,
+			@RequestParam(required = false) String desde, @RequestParam(required = false) String hasta,
+			@RequestParam(required = false) String tipo) throws ReglaDeNegocioException {
 
-		LocalDateTime fDesde = desde != null && !desde.isBlank() ? LocalDateTime.parse(desde) : null;
-		LocalDateTime fHasta = hasta != null && !hasta.isBlank() ? LocalDateTime.parse(hasta) : null;
+		LocalDateTime fechaDesde = desde != null && !desde.isBlank() ? LocalDateTime.parse(desde) : null;
+		LocalDateTime fechaHasta = hasta != null && !hasta.isBlank() ? LocalDateTime.parse(hasta) : null;
 
-		if (fDesde != null && fHasta != null && fDesde.isAfter(fHasta)) {
+		if (fechaDesde != null && fechaHasta != null && fechaDesde.isAfter(fechaHasta)) {
 			throw new ReglaDeNegocioException("El parámetro 'desde' no puede ser mayor que 'hasta'");
 		}
 
-		Pagina<InventarioMov> page = inventarioService.listarKardex(ingredienteId, fDesde, fHasta, tipo, pager);
+		Pagina<InventarioMov> paginaKardex = inventarioService.listarKardex(ingredienteId, fechaDesde, fechaHasta, tipo,
+				pager);
+		return PaginaMapper.map(paginaKardex, kardexMapper::domaintoDto);
+	}
 
-		return Pagina.<InventarioMovDto> builder().paginaActual(page.getPaginaActual())
-				.totalpaginas(page.getTotalpaginas()).totalRegistros(page.getTotalRegistros())
-				.contenido(page.getContenido().stream().map(kardexMapper::domaintoDto).toList()).build();
+	@PostMapping(value = "/ajustar", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(summary = "Ajustar inventario manualmente (entrada/salida)", description = "Permite sumar o restar stock de un ingrediente. Cantidad positiva = entrada, cantidad negativa = salida.")
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Ajuste realizado exitosamente"),
+			@ApiResponse(responseCode = "400", description = "Error de validación o stock insuficiente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))) })
+	public ResponseEntity<Void> ajustar(@Valid @RequestBody AjusteInventarioDto dto) throws ReglaDeNegocioException {
+		boolean permitirNegativo = dto.getPermitirNegativo() != null ? dto.getPermitirNegativo() : false;
+		inventarioProcesoService.ajustar(dto.getIngredienteId(), dto.getCantidad(), dto.getReferencia(), "USUARIO",
+				permitirNegativo);
+		return ResponseEntity.ok().build();
 	}
 }

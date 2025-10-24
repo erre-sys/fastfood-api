@@ -23,4 +23,6 @@ public interface PagoClienteService {
 	List<PagoCliente> listarPorPedido(Long pedidoId);
 
 	Pagina<PagoCliente> paginado(PagerAndSortDto pager, List<CriterioBusqueda> filters);
+
+	void cambiarEstado(Long pagoId, String nuevoEstado) throws EntidadNoEncontradaException, ReglaDeNegocioException;
 }

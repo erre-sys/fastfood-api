@@ -1,5 +1,6 @@
 package ec.com.erre.fastfood.infrastructure.api.out.db;
 
+import ec.com.erre.fastfood.domain.api.models.api.Pedido;
 import ec.com.erre.fastfood.domain.api.models.api.PedidoItem;
 import ec.com.erre.fastfood.domain.api.repositories.PedidoItemRepository;
 import ec.com.erre.fastfood.domain.commons.exceptions.EntidadNoEncontradaException;

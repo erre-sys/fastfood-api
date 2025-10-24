@@ -6,6 +6,7 @@ import ec.com.erre.fastfood.domain.commons.exceptions.EntidadNoEncontradaExcepti
 import ec.com.erre.fastfood.domain.commons.exceptions.RegistroDuplicadoException;
 import ec.com.erre.fastfood.domain.commons.exceptions.ReglaDeNegocioException;
 import ec.com.erre.fastfood.infrastructure.api.mappers.IngredienteMapper;
+import ec.com.erre.fastfood.infrastructure.commons.mappers.PaginaMapper;
 import ec.com.erre.fastfood.share.commons.CriterioBusqueda;
 import ec.com.erre.fastfood.share.commons.PagerAndSortDto;
 import ec.com.erre.fastfood.share.commons.Pagina;
@@ -37,7 +38,8 @@ public class IngredienteController {
 	@Operation(summary = "Crear ingrediente")
 	public ResponseEntity<Void> crear(@Validated(IngredienteDto.Crear.class) @RequestBody IngredienteDto dto)
 			throws RegistroDuplicadoException, ReglaDeNegocioException, EntidadNoEncontradaException {
-		service.crear(mapper.dtoToDomain(dto));
+		Ingrediente ingrediente = mapper.dtoToDomain(dto);
+		service.crear(ingrediente);
 		return ResponseEntity.status(HttpStatus.CREATED).build();
 	}
 
@@ -45,20 +47,24 @@ public class IngredienteController {
 	@Operation(summary = "Actualizar ingrediente")
 	public ResponseEntity<Void> actualizar(@Validated(IngredienteDto.Actualizar.class) @RequestBody IngredienteDto dto)
 			throws EntidadNoEncontradaException, RegistroDuplicadoException, ReglaDeNegocioException {
-		service.actualizar(mapper.dtoToDomain(dto));
-		return new ResponseEntity<>(HttpStatus.OK);
+		Ingrediente ingrediente = mapper.dtoToDomain(dto);
+		service.actualizar(ingrediente);
+		return ResponseEntity.ok().build();
 	}
 
 	@GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "Buscar ingrediente por id")
-	public ResponseEntity<IngredienteDto> buscarPorId(@PathVariable Long id) throws EntidadNoEncontradaException {
-		return ResponseEntity.ok(mapper.domainToDto(service.buscarPorId(id)));
+	@Operation(summary = "Obtener ingrediente por id")
+	public ResponseEntity<IngredienteDto> obtenerPorId(@PathVariable Long id) throws EntidadNoEncontradaException {
+		Ingrediente ingrediente = service.buscarPorId(id);
+		return ResponseEntity.ok(mapper.domainToDto(ingrediente));
 	}
 
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "Listar ingredientes activos")
-	public ResponseEntity<List<IngredienteDto>> activos() {
-		return ResponseEntity.ok(service.activos().stream().map(mapper::domainToDto).toList());
+	public ResponseEntity<List<IngredienteDto>> listarActivos() {
+		List<Ingrediente> ingredientes = service.activos();
+		List<IngredienteDto> ingredientesDto = ingredientes.stream().map(mapper::domainToDto).toList();
+		return ResponseEntity.ok(ingredientesDto);
 	}
 
 	@DeleteMapping(value = "/{id}")
@@ -66,16 +72,13 @@ public class IngredienteController {
 	public ResponseEntity<Void> eliminar(@PathVariable Long id)
 			throws EntidadNoEncontradaException, ReglaDeNegocioException {
 		service.eliminarPorId(id);
-		return new ResponseEntity<>(HttpStatus.OK);
+		return ResponseEntity.ok().build();
 	}
 
 	@PostMapping(value = "/search", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "Buscar ingredientes (paginado por filtros)")
-	public Pagina<IngredienteDto> search(PagerAndSortDto pager, @RequestBody List<CriterioBusqueda> filters) {
-		Pagina<Ingrediente> page = service.paginado(pager, filters);
-		return Pagina.<IngredienteDto> builder()
-				.contenido(page.getContenido().stream().map(mapper::domainToDto).toList())
-				.totalRegistros(page.getTotalRegistros()).paginaActual(page.getPaginaActual())
-				.totalpaginas(page.getTotalpaginas()).build();
+	public Pagina<IngredienteDto> buscar(PagerAndSortDto pager, @RequestBody List<CriterioBusqueda> filters) {
+		Pagina<Ingrediente> paginaIngredientes = service.paginado(pager, filters);
+		return PaginaMapper.map(paginaIngredientes, mapper::domainToDto);
 	}
 }
