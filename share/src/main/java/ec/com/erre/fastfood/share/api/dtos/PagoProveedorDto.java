@@ -34,7 +34,7 @@ public class PagoProveedorDto {
 	private BigDecimal montoTotal;
 
 	@NotBlank(groups = { Crear.class })
-	@Size(max = 20) // EFECTIVO/TRANSFERENCIA/TARJETA/CHEQUE/OTRO
+	@Size(max = 20)
 	private String metodo;
 
 	@Size(max = 80)

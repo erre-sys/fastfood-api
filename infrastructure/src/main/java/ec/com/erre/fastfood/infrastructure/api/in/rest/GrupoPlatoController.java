@@ -44,7 +44,7 @@ public class GrupoPlatoController {
 	 * @param grupoPlatoDto
 	 * @return ResponseEntity
 	 */
-	@PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "Crea un nuevo grupo de plato")
 	@ApiResponses(value = { @ApiResponse(responseCode = "201", description = "Grupo de plato creado"),
 			@ApiResponse(responseCode = "400", description = "Entrada incorrecta"),

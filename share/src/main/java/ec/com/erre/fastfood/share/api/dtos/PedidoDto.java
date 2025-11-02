@@ -31,15 +31,15 @@ public class PedidoDto {
 	@Size(max = 1)
 	private String estado;
 
-	@Schema(description = "Total bruto del pedido (suma de items sin extras)", example = "25.50")
+	@Schema(description = "Total bruto del pedido (suma de items sin extras)", example = "25.50", accessMode = Schema.AccessMode.READ_ONLY)
 	@Digits(integer = 14, fraction = 2)
 	private BigDecimal totalBruto;
 
-	@Schema(description = "Total de extras agregados al pedido", example = "3.00")
+	@Schema(description = "Total de extras agregados al pedido", example = "3.00", accessMode = Schema.AccessMode.READ_ONLY)
 	@Digits(integer = 14, fraction = 2)
 	private BigDecimal totalExtras;
 
-	@Schema(description = "Total neto del pedido (bruto + extras - descuentos)", example = "28.50")
+	@Schema(description = "Total neto del pedido (bruto + extras - descuentos)", example = "28.50", accessMode = Schema.AccessMode.READ_ONLY)
 	@Digits(integer = 14, fraction = 2)
 	private BigDecimal totalNeto;
 
@@ -48,15 +48,21 @@ public class PedidoDto {
 	private String observaciones;
 
 	private String entregadoPorSub;
+
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd' 'HH:mm:ss")
 	private LocalDateTime creadoEn;
+
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd' 'HH:mm:ss")
 	private LocalDateTime actualizadoEn;
+
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd' 'HH:mm:ss")
 	private LocalDateTime entregadoEn;
 
 	@Builder.Default
 	private List<PedidoItemDto> items = new ArrayList<>();
+
+	@Builder.Default
+	private List<PedidoItemExtraDto> itemsExtras = new ArrayList<>();
 
 	public interface Crear {
 	}

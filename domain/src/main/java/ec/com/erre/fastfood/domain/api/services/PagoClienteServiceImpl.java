@@ -104,22 +104,9 @@ public class PagoClienteServiceImpl implements PagoClienteService {
 	 * Valida que la transición de estados sea permitida (Single Responsibility Principle)
 	 */
 	private void validarTransicionEstado(String estadoActual, String estadoNuevo) throws ReglaDeNegocioException {
-
-		// Permitir cambiar de cualquier estado a cualquier otro
-		// Si necesitas reglas más estrictas, agrégalas aquí
-		// Ejemplo de reglas estrictas:
-		// - No permitir cambiar de P a S
-		// - No permitir cambiar de F a S
-
 		if (estadoActual != null && estadoActual.equals(estadoNuevo)) {
 			throw new ReglaDeNegocioException("El pago ya está en estado " + getNombreEstado(estadoNuevo));
 		}
-
-		// Reglas de negocio opcionales (comentadas por ahora)
-		// if ("P".equals(estadoActual)) {
-		// throw new ReglaDeNegocioException("No se puede cambiar el estado de un pago
-		// ya PAGADO");
-		// }
 	}
 
 	/**

@@ -19,9 +19,11 @@ public class GrupoPlatoDto {
 	@Null(groups = Crear.class)
 	@NotNull(groups = Actualizar.class)
 	private Long id;
+
 	@NotBlank
 	@Size(max = 120)
 	private String nombre;
+
 	@NotBlank
 	private String estado;
 

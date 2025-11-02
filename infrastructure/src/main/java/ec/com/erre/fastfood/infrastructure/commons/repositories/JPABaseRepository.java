@@ -115,6 +115,17 @@ public class JPABaseRepository<T, ID extends Serializable> {
 				numValue[0] = Integer.parseInt(value);
 				return getNumberPredicate(path, operator, numValue);
 			}
+		case "Long":
+			if (isMultiValue) {
+				NumberPath<Long> path = entityPath.getNumber(key, Long.class);
+				Long[] numValue = Stream.of(value.split(",")).map(Long::parseLong).toArray(Long[]::new);
+				return getNumberPredicate(path, operator, numValue);
+			} else {
+				NumberPath<Long> path = entityPath.getNumber(key, Long.class);
+				Long[] numValue = new Long[1];
+				numValue[0] = Long.parseLong(value);
+				return getNumberPredicate(path, operator, numValue);
+			}
 		case "BigDecimal":
 			if (isMultiValue) {
 				NumberPath<BigDecimal> path = entityPath.getNumber(key, BigDecimal.class);
@@ -165,6 +176,9 @@ public class JPABaseRepository<T, ID extends Serializable> {
 		case "Integer":
 			NumberPath<Integer> numberPath = pathBuilder.getNumber(criterioOrden.getCampo(), Integer.class);
 			return criterioOrden.isAscendente() ? numberPath.asc() : numberPath.desc();
+		case "Long":
+			NumberPath<Long> longPath = pathBuilder.getNumber(criterioOrden.getCampo(), Long.class);
+			return criterioOrden.isAscendente() ? longPath.asc() : longPath.desc();
 		case "BigDecimal":
 			NumberPath<BigDecimal> bgPath = pathBuilder.getNumber(criterioOrden.getCampo(), BigDecimal.class);
 			return criterioOrden.isAscendente() ? bgPath.asc() : bgPath.desc();

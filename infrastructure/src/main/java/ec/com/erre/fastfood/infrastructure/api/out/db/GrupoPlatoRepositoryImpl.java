@@ -114,7 +114,7 @@ public class GrupoPlatoRepositoryImpl extends JPABaseRepository<GrupoPlatoEntity
 		BooleanBuilder builder = new BooleanBuilder();
 		PathBuilder<QGrupoPlatoEntity> pb = new PathBuilder<>(QGrupoPlatoEntity.class, "grupoPlatoEntity");
 		criterios.forEach(c -> builder
-				.and(getPredicate(c.getLlave(), c.getOperacion(), c.getValor(), pb, QGrupoPlatoEntity.class)));
+				.and(getPredicate(c.getLlave(), c.getOperacion(), c.getValor(), pb, GrupoPlatoEntity.class)));
 		return builder;
 	}
 

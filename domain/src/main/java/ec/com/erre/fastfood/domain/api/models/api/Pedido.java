@@ -18,10 +18,10 @@ import java.util.List;
 @Builder
 public class Pedido {
 	private Long id;
-	private String estado; // 'C','P','L','E','X'
-	private BigDecimal totalBruto; // escala 2
-	private BigDecimal totalExtras; // escala 2
-	private BigDecimal totalNeto; // escala 2
+	private String estado;
+	private BigDecimal totalBruto;
+	private BigDecimal totalExtras;
+	private BigDecimal totalNeto;
 	private String observaciones;
 	private String creadoPorSub;
 	private String entregadoPorSub;
@@ -30,5 +30,7 @@ public class Pedido {
 	private LocalDateTime entregadoEn;
 
 	@Builder.Default
-	private List<PedidoItem> items = new ArrayList<>(); // detalle (se carga aparte)
+	private List<PedidoItem> items = new ArrayList<>();
+	@Builder.Default
+	private List<PedidoItemExtra> itemsExtras = new ArrayList<>();
 }

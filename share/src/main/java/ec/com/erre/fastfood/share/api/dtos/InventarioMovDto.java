@@ -31,7 +31,7 @@ public class InventarioMovDto {
 
 	@NotBlank(groups = Crear.class)
 	@Size(max = 12)
-	private String tipo; // COMPRA / CONSUMO / AJUSTE
+	private String tipo;
 
 	@NotNull(groups = Crear.class)
 	@Digits(integer = 14, fraction = 3)

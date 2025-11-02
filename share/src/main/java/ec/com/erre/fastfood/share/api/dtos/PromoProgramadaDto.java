@@ -31,12 +31,12 @@ public class PromoProgramadaDto {
 
 	@NotNull(groups = { Crear.class })
 	@Digits(integer = 3, fraction = 2)
-	@DecimalMin(value = "0.01", inclusive = true) // > 0
-	@DecimalMax(value = "100.00", inclusive = true) // ≤ 100
+	@DecimalMin(value = "0.01", inclusive = true)
+	@DecimalMax(value = "100.00", inclusive = true)
 	private BigDecimal descuentoPct;
 
 	@NotBlank(groups = { Crear.class, Actualizar.class })
-	@Size(max = 1) // 'A' o 'I'
+	@Size(max = 1)
 	private String estado;
 
 	private String creadoPorSub;

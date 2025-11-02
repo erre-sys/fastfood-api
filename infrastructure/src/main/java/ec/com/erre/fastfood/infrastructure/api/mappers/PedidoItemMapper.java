@@ -7,7 +7,7 @@ import org.mapstruct.Mapper;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = { PedidoItemExtraMapper.class })
 public interface PedidoItemMapper {
 
 	PedidoItemDto domainToDto(PedidoItem d);

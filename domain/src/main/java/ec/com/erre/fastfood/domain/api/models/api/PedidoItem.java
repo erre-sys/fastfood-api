@@ -19,9 +19,12 @@ public class PedidoItem {
 	private Long id;
 	private Long pedidoId;
 	private Long platoId;
-	private Integer cantidad;
+	private BigDecimal cantidad;
 	private BigDecimal precioUnitario;
 	private BigDecimal descuentoPct;
 	private BigDecimal descuentoMonto;
 	private BigDecimal subtotal;
+
+	@Builder.Default
+	private List<PedidoItemExtra> extras = new ArrayList<>();
 }

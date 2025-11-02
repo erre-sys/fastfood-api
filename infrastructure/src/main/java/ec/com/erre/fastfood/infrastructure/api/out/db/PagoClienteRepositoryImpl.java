@@ -31,7 +31,7 @@ import java.util.List;
 import static ec.com.erre.fastfood.infrastructure.api.entities.QPagoClienteEntity.pagoClienteEntity;
 
 /**
- * <b>Implementacion de repositorio para PlatoRepositoryImpl </b>
+ * <b>Implementacion de repositorio para PagoClienteRepositoryImpl </b>
  *
  * @author eduardo.romero
  * @version $1.0$
@@ -51,7 +51,6 @@ public class PagoClienteRepositoryImpl extends JPABaseRepository<PagoClienteEnti
 	@Override
 	public Long crear(PagoCliente p) {
 		PagoClienteEntity e = mapper.domainToEntity(p);
-		e.setFecha(e.getFecha() == null ? LocalDateTime.now() : e.getFecha());
 		PagoClienteEntity saved = save(e);
 		return saved.getId();
 	}

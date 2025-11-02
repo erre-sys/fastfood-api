@@ -27,23 +27,20 @@ import java.util.Map;
 @Tag(name = "Promos", description = "Promociones programadas de platos")
 public class PromoProgramadaController {
 
-	private final PromoProgramadaService service;
-	private final PromosProcesoService proceso;
-	private final PromoProgramadaMapper mapper;
+	private final PromoProgramadaService promoProgramadaService;
+	private final PromoProgramadaMapper promoProgramadaMapper;
 
-	public PromoProgramadaController(PromoProgramadaService service, PromosProcesoService proceso,
-			PromoProgramadaMapper mapper) {
-		this.service = service;
-		this.proceso = proceso;
-		this.mapper = mapper;
+	public PromoProgramadaController(PromoProgramadaService service, PromoProgramadaMapper mapper) {
+		this.promoProgramadaService = service;
+		this.promoProgramadaMapper = mapper;
 	}
 
-	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "Crear promoción programada")
 	public ResponseEntity<Map<String, Long>> crear(
 			@Validated(PromoProgramadaDto.Crear.class) @RequestBody PromoProgramadaDto dto)
 			throws EntidadNoEncontradaException, ReglaDeNegocioException {
-		Long id = service.crear(mapper.dtoToDomain(dto), "USUARIO");
+		Long id = promoProgramadaService.crear(promoProgramadaMapper.dtoToDomain(dto), "USUARIO");
 		return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("id", id));
 	}
 
@@ -52,22 +49,22 @@ public class PromoProgramadaController {
 	public ResponseEntity<Void> actualizar(
 			@Validated(PromoProgramadaDto.Actualizar.class) @RequestBody PromoProgramadaDto dto)
 			throws EntidadNoEncontradaException, ReglaDeNegocioException {
-		service.actualizar(mapper.dtoToDomain(dto));
+		promoProgramadaService.actualizar(promoProgramadaMapper.dtoToDomain(dto));
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "Buscar promoción por id")
 	public ResponseEntity<PromoProgramadaDto> buscarPorId(@PathVariable Long id) throws EntidadNoEncontradaException {
-		return ResponseEntity.ok(mapper.domainToDto(service.buscarPorId(id)));
+		return ResponseEntity.ok(promoProgramadaMapper.domainToDto(promoProgramadaService.buscarPorId(id)));
 	}
 
 	@PostMapping(value = "/search", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "Buscar promociones (paginado por filtros)")
 	public Pagina<PromoProgramadaDto> search(PagerAndSortDto pager, @RequestBody List<CriterioBusqueda> filters) {
-		Pagina<PromoProgramada> page = service.paginado(pager, filters);
+		Pagina<PromoProgramada> page = promoProgramadaService.paginado(pager, filters);
 		return Pagina.<PromoProgramadaDto> builder()
-				.contenido(page.getContenido().stream().map(mapper::domainToDto).toList())
+				.contenido(page.getContenido().stream().map(promoProgramadaMapper::domainToDto).toList())
 				.totalRegistros(page.getTotalRegistros()).paginaActual(page.getPaginaActual())
 				.totalpaginas(page.getTotalpaginas()).build();
 	}
@@ -76,7 +73,25 @@ public class PromoProgramadaController {
 	@Operation(summary = "Listar promociones de un plato")
 	public ResponseEntity<List<PromoProgramadaDto>> listarPorPlato(@PathVariable Long platoId)
 			throws EntidadNoEncontradaException {
-		return ResponseEntity.ok(service.listarPorPlato(platoId).stream().map(mapper::domainToDto).toList());
+		return ResponseEntity.ok(promoProgramadaService.listarPorPlato(platoId).stream()
+				.map(promoProgramadaMapper::domainToDto).toList());
+	}
+
+	@GetMapping(value = "/vigentes", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(summary = "Listar promociones vigentes (activas y dentro del rango de fechas)")
+	public ResponseEntity<List<PromoProgramadaDto>> listarVigentes() {
+		String ahora = java.time.LocalDateTime.now().toString();
+		CriterioBusqueda estado = new CriterioBusqueda("estado", ":", "A");
+		CriterioBusqueda fechaInicio = new CriterioBusqueda("fechaInicio", "<=", ahora);
+		CriterioBusqueda fechaFin = new CriterioBusqueda("fechaFin", ">=", ahora);
+		List<CriterioBusqueda> filters = List.of(estado, fechaInicio, fechaFin);
+
+		PagerAndSortDto pager = new PagerAndSortDto();
+		pager.setSize(1000);
+		pager.setPage(0);
+
+		Pagina<PromoProgramada> page = promoProgramadaService.paginado(pager, filters);
+		return ResponseEntity.ok(page.getContenido().stream().map(promoProgramadaMapper::domainToDto).toList());
 	}
 
 	@PostMapping(value = "/aplicar")

@@ -12,15 +12,16 @@ import java.util.List;
 public interface PedidoMapper {
 
 	/* ===== DTO <-> Domain (solo cabecera) ===== */
-	PedidoDto domainToDto(Pedido d);
+	PedidoDto domainToDto(Pedido domain);
 
 	Pedido dtoToDomain(PedidoDto dto);
 
-	List<PedidoDto> domainsToDtos(List<Pedido> d);
+	List<PedidoDto> domainsToDtos(List<Pedido> domain);
 
 	/* ===== Entity <-> Domain (solo cabecera, sin items) ===== */
 	@Mapping(target = "items", ignore = true)
-	Pedido entityToDomain(PedidoEntity e);
+	@Mapping(target = "itemsExtras", ignore = true)
+	Pedido entityToDomain(PedidoEntity entity);
 
-	PedidoEntity domainToEntity(Pedido d);
+	PedidoEntity domainToEntity(Pedido domain);
 }

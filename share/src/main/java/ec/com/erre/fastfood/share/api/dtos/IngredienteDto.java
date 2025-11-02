@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 
 import java.math.BigDecimal;
 
@@ -32,15 +31,15 @@ public class IngredienteDto {
 
 	@NotBlank(groups = { Crear.class, Actualizar.class })
 	@Size(max = 12)
-	private String unidad; // validada en service: KG,G,LT,ML,UND,...
+	private String unidad;
 
 	@NotBlank(groups = { Crear.class, Actualizar.class })
 	@Size(max = 1)
-	private String esExtra; // S/N
+	private String esExtra;
 
 	@Digits(integer = 14, fraction = 2)
 	@DecimalMin(value = "0.00", inclusive = true)
-	private BigDecimal precioExtra; // requerido si esExtra='S'
+	private BigDecimal precioExtra;
 
 	@NotNull(groups = { Crear.class, Actualizar.class })
 	@Digits(integer = 14, fraction = 3)
@@ -49,11 +48,11 @@ public class IngredienteDto {
 
 	@NotBlank(groups = { Crear.class, Actualizar.class })
 	@Size(max = 1)
-	private String aplicaComida; // S/N
+	private String aplicaComida;
 
 	@NotBlank(groups = { Crear.class, Actualizar.class })
 	@Size(max = 1)
-	private String estado; // A/I
+	private String estado;
 
 	public interface Crear {
 	}

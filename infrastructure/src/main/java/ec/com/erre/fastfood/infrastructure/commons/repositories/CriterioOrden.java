@@ -11,7 +11,7 @@ public class CriterioOrden {
 
 	public CriterioOrden(String campo, String direccion) {
 		this.campo = campo;
-		this.orden = Direccion.valueOf(direccion);
+		this.orden = Direccion.valueOf(direccion.toUpperCase());
 	}
 
 	private String campo;

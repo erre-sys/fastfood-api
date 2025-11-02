@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -27,6 +28,23 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ErrorResponse> handleReglaDeNegocio(ReglaDeNegocioException e) {
 		log.warn("Regla de negocio violada: {}", e.getMessage());
 		ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+	}
+
+	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
+	public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException e) {
+		String paramName = e.getName();
+		String paramValue = e.getValue() != null ? e.getValue().toString() : "null";
+		String requiredType = e.getRequiredType() != null ? e.getRequiredType().getSimpleName() : "desconocido";
+
+		String message = String.format(
+				"El parámetro '%s' tiene un formato inválido. Valor recibido: '%s'. "
+						+ "Formato esperado para fechas: yyyy-MM-dd HH:mm:ss (ejemplo: 2025-10-24 23:59:59)",
+				paramName, paramValue);
+
+		log.warn("Error de conversión de parámetro: {} = {} (tipo esperado: {})", paramName, paramValue, requiredType);
+
+		ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), message);
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
 	}
 
@@ -87,7 +105,9 @@ public class GlobalExceptionHandler {
 			if (causeMessage != null) {
 				// Errores de stored procedures
 				if (causeMessage.contains("Stock insuficiente")) {
-					return "Stock insuficiente para completar la operación";
+					// Intentar extraer el ingrediente del mensaje si viene en formato:
+					// "Stock insuficiente para ingrediente: Queso" o similar
+					return extractStockErrorMessage(causeMessage);
 				}
 				if (causeMessage.contains("Pedido no existe")) {
 					return "El pedido no existe";
@@ -135,6 +155,28 @@ public class GlobalExceptionHandler {
 		} catch (Exception ignored) {
 		}
 		return "desconocido";
+	}
+
+	/**
+	 * Extrae un mensaje amigable de errores de stock insuficiente
+	 */
+	private String extractStockErrorMessage(String message) {
+		try {
+			// Si el mensaje del SP incluye detalles después de ":", extraerlos
+			// Ej: "Stock insuficiente: No hay suficiente Queso disponible"
+			int colonIndex = message.indexOf(":");
+			if (colonIndex > 0 && colonIndex < message.length() - 1) {
+				String detalle = message.substring(colonIndex + 1).trim();
+				// Limpiar saltos de línea y caracteres extraños
+				detalle = detalle.split("\n")[0].split("\r")[0].trim();
+				if (!detalle.isEmpty() && detalle.length() < 200) {
+					return detalle;
+				}
+			}
+		} catch (Exception ignored) {
+		}
+		// Mensaje por defecto si no se pudo extraer información adicional
+		return "No hay suficiente stock disponible para completar el pedido";
 	}
 
 }

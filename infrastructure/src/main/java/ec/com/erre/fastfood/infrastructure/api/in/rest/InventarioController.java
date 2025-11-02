@@ -27,6 +27,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
 import java.time.LocalDateTime;
 
 @RestController
@@ -62,18 +64,15 @@ public class InventarioController {
 	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Listado obtenido"),
 			@ApiResponse(responseCode = "400", description = "Parámetros inválidos", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))) })
 	public Pagina<InventarioMovDto> buscarKardex(PagerAndSortDto pager, @RequestParam @NotNull Long ingredienteId,
-			@RequestParam(required = false) String desde, @RequestParam(required = false) String hasta,
+			@RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime desde,
+			@RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime hasta,
 			@RequestParam(required = false) String tipo) throws ReglaDeNegocioException {
 
-		LocalDateTime fechaDesde = desde != null && !desde.isBlank() ? LocalDateTime.parse(desde) : null;
-		LocalDateTime fechaHasta = hasta != null && !hasta.isBlank() ? LocalDateTime.parse(hasta) : null;
-
-		if (fechaDesde != null && fechaHasta != null && fechaDesde.isAfter(fechaHasta)) {
+		if (desde != null && hasta != null && desde.isAfter(hasta)) {
 			throw new ReglaDeNegocioException("El parámetro 'desde' no puede ser mayor que 'hasta'");
 		}
 
-		Pagina<InventarioMov> paginaKardex = inventarioService.listarKardex(ingredienteId, fechaDesde, fechaHasta, tipo,
-				pager);
+		Pagina<InventarioMov> paginaKardex = inventarioService.listarKardex(ingredienteId, desde, hasta, tipo, pager);
 		return PaginaMapper.map(paginaKardex, kardexMapper::domaintoDto);
 	}
 

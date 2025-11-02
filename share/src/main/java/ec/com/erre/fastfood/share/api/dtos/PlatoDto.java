@@ -40,7 +40,6 @@ public class PlatoDto {
 	@Size(max = 1) // 'A'/'I'
 	private String estado;
 
-	// Solo lectura (el sistema los define vía SP de promociones)
 	private String enPromocion;
 	private BigDecimal descuentoPct;
 
