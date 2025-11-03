@@ -8,8 +8,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.List;
+
+import static ec.com.erre.fastfood.domain.api.services.PedidoConstants.*;
+import static ec.com.erre.fastfood.domain.api.services.PedidoUtils.*;
 
 @Service
 public class PedidoItemExtraServiceImpl implements PedidoItemExtraService {
@@ -48,22 +50,24 @@ public class PedidoItemExtraServiceImpl implements PedidoItemExtraService {
 		if (extra.getCantidad() == null || extra.getCantidad().compareTo(new BigDecimal("0.000")) <= 0)
 			throw new ReglaDeNegocioException("cantidad debe ser > 0");
 
-		extra.setCantidad(scale3(extra.getCantidad()));
+		extra.setCantidad(escalarCantidad(extra.getCantidad()));
 
 		Ingrediente ing = ingredienteRepo.buscarPorId(extra.getIngredienteId());
-		if (!"A".equalsIgnoreCase(ing.getEstado()))
-			throw new ReglaDeNegocioException("Ingrediente inactivo");
-		if (!"S".equalsIgnoreCase(ing.getEsExtra()))
-			throw new ReglaDeNegocioException("Ingrediente no es extra");
+		if (!esActivo(ing.getEstado()))
+			throw new ReglaDeNegocioException("El ingrediente '" + ing.getNombre() + "' no está disponible");
+		if (!esIndicadorAfirmativo(ing.getEsExtra()))
+			throw new ReglaDeNegocioException(
+					"El ingrediente '" + ing.getNombre() + "' no está configurado como extra");
 
 		// Validación de stock: exigir stock >= cantidad solicitada
 		BigDecimal stock = inventarioRepo.obtenerStockActual(ing.getId());
 		if (stock.compareTo(extra.getCantidad()) < 0)
-			throw new ReglaDeNegocioException("Stock insuficiente para agregar extra");
+			throw new ReglaDeNegocioException(
+					"No hay suficiente '" + ing.getNombre() + "' en inventario (disponible: " + stock + ")");
 
 		// precio unitario del extra = ingrediente.precioExtra (escala 2)
-		BigDecimal unit = scale2(ing.getPrecioExtra());
-		BigDecimal totalLinea = scale2(unit.multiply(extra.getCantidad()));
+		BigDecimal unit = escalarPrecio(ing.getPrecioExtra());
+		BigDecimal totalLinea = escalarPrecio(unit.multiply(extra.getCantidad()));
 
 		extra.setPedidoItemId(itemId);
 		extra.setPrecioExtra(totalLinea);
@@ -108,15 +112,17 @@ public class PedidoItemExtraServiceImpl implements PedidoItemExtraService {
 		Ingrediente ing = ingredienteRepo.buscarPorId(extra.getIngredienteId());
 		BigDecimal stock = inventarioRepo.obtenerStockActual(ing.getId());
 		if (stock.compareTo(nuevaCantidad) < 0)
-			throw new ReglaDeNegocioException("Stock insuficiente para actualizar extra");
+			throw new ReglaDeNegocioException("No hay suficiente '" + ing.getNombre()
+					+ "' en inventario para actualizar (disponible: " + stock + ")");
 
 		// precio unitario implícito = totalViejo / cantidadVieja
 		if (extra.getCantidad().compareTo(BigDecimal.ZERO) <= 0)
 			throw new ReglaDeNegocioException("Cantidad previa inválida");
-		BigDecimal unit = extra.getPrecioExtra().divide(extra.getCantidad(), 4, RoundingMode.HALF_UP);
-		BigDecimal nuevoTotal = scale2(unit.multiply(scale3(nuevaCantidad)));
+		BigDecimal unit = extra.getPrecioExtra().divide(extra.getCantidad(), ESCALA_DIVISION,
+				java.math.RoundingMode.HALF_UP);
+		BigDecimal nuevoTotal = escalarPrecio(unit.multiply(escalarCantidad(nuevaCantidad)));
 
-		extraRepo.actualizarCantidadYTotal(extraId, scale3(nuevaCantidad), nuevoTotal);
+		extraRepo.actualizarCantidadYTotal(extraId, escalarCantidad(nuevaCantidad), nuevoTotal);
 
 		recalcularTotalesPedido(pedidoId);
 	}
@@ -141,23 +147,32 @@ public class PedidoItemExtraServiceImpl implements PedidoItemExtraService {
 	}
 
 	/* ===== helpers ===== */
-	private boolean isFinalizado(String e) {
-		return "E".equalsIgnoreCase(e) || "X".equalsIgnoreCase(e);
+	private boolean isFinalizado(String estado) {
+		return esPedidoFinalizado(estado);
 	}
 
 	private void recalcularTotalesPedido(Long pedidoId) throws EntidadNoEncontradaException {
-		Pedido p = pedidoRepo.buscarPorId(pedidoId);
+		List<PedidoItem> items = itemRepo.listarPorPedido(pedidoId);
+
+		BigDecimal totalBrutoSinDescuento = BigDecimal.ZERO;
+		BigDecimal totalDescuentos = BigDecimal.ZERO;
+
+		for (PedidoItem item : items) {
+			BigDecimal subtotal = defaultSiNulo(item.getSubtotal());
+			BigDecimal descuentoMonto = defaultSiNulo(item.getDescuentoMonto());
+			BigDecimal cantidad = defaultSiNulo(item.getCantidad());
+
+			BigDecimal descuentoTotalItem = escalarPrecio(descuentoMonto.multiply(cantidad));
+			BigDecimal subtotalSinDescuento = subtotal.add(descuentoTotalItem);
+
+			totalBrutoSinDescuento = totalBrutoSinDescuento.add(subtotalSinDescuento);
+			totalDescuentos = totalDescuentos.add(descuentoTotalItem);
+		}
+
 		BigDecimal totalExtras = extraRepo.totalExtrasDePedido(pedidoId);
-		BigDecimal totalBruto = p.getTotalBruto() == null ? BigDecimal.ZERO : p.getTotalBruto();
-		BigDecimal totalNeto = scale2(totalBruto.add(totalExtras));
-		pedidoRepo.actualizarTotales(pedidoId, scale2(totalBruto), scale2(totalExtras), scale2(totalNeto));
-	}
+		BigDecimal totalNeto = escalarPrecio(totalBrutoSinDescuento.subtract(totalDescuentos).add(totalExtras));
 
-	private BigDecimal scale2(BigDecimal v) {
-		return v.setScale(2, RoundingMode.HALF_UP);
-	}
-
-	private BigDecimal scale3(BigDecimal v) {
-		return v.setScale(3, RoundingMode.HALF_UP);
+		pedidoRepo.actualizarTotales(pedidoId, escalarPrecio(totalBrutoSinDescuento), escalarPrecio(totalDescuentos),
+				escalarPrecio(totalExtras), escalarPrecio(totalNeto));
 	}
 }

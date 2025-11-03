@@ -40,6 +40,9 @@ public class PedidoEntity implements Serializable {
 	@Column(name = "total_bruto", precision = 14, scale = 2, nullable = false)
 	private BigDecimal totalBruto;
 
+	@Column(name = "total_descuentos", precision = 14, scale = 2, nullable = false)
+	private BigDecimal totalDescuentos;
+
 	@Column(name = "total_extras", precision = 14, scale = 2, nullable = false)
 	private BigDecimal totalExtras;
 

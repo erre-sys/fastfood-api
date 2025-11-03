@@ -18,7 +18,8 @@ import java.util.List;
 public interface PedidoRepository {
 	Pedido buscarPorId(Long id) throws EntidadNoEncontradaException;
 
-	void actualizarTotales(Long pedidoId, BigDecimal totalBruto, BigDecimal totalExtras, BigDecimal totalNeto);
+	void actualizarTotales(Long pedidoId, BigDecimal totalBruto, BigDecimal totalDescuentos, BigDecimal totalExtras,
+			BigDecimal totalNeto);
 
 	Long crear(Pedido ped);
 

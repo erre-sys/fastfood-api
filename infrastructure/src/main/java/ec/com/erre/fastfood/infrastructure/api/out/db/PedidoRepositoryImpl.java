@@ -56,11 +56,12 @@ public class PedidoRepositoryImpl extends JPABaseRepository<PedidoEntity, Long> 
 	}
 
 	@Override
-	public void actualizarTotales(Long pedidoId, BigDecimal totalBruto, BigDecimal totalExtras, BigDecimal totalNeto) {
+	public void actualizarTotales(Long pedidoId, BigDecimal totalBruto, BigDecimal totalDescuentos,
+			BigDecimal totalExtras, BigDecimal totalNeto) {
 		getQueryFactory().update(pedidoEntity).where(pedidoEntity.id.eq(pedidoId))
-				.set(pedidoEntity.totalBruto, totalBruto).set(pedidoEntity.totalExtras, totalExtras)
-				.set(pedidoEntity.totalNeto, totalNeto).set(pedidoEntity.actualizadoEn, java.time.LocalDateTime.now())
-				.execute();
+				.set(pedidoEntity.totalBruto, totalBruto).set(pedidoEntity.totalDescuentos, totalDescuentos)
+				.set(pedidoEntity.totalExtras, totalExtras).set(pedidoEntity.totalNeto, totalNeto)
+				.set(pedidoEntity.actualizadoEn, java.time.LocalDateTime.now()).execute();
 	}
 
 	@Override
@@ -95,8 +96,9 @@ public class PedidoRepositoryImpl extends JPABaseRepository<PedidoEntity, Long> 
 
 		JPQLQuery<Pedido> q = getQueryFactory()
 				.select(Projections.bean(Pedido.class, pedidoEntity.id.as("id"), pedidoEntity.estado.as("estado"),
-						pedidoEntity.totalBruto.as("totalBruto"), pedidoEntity.totalExtras.as("totalExtras"),
-						pedidoEntity.totalNeto.as("totalNeto"), pedidoEntity.observaciones.as("observaciones"),
+						pedidoEntity.totalBruto.as("totalBruto"), pedidoEntity.totalDescuentos.as("totalDescuentos"),
+						pedidoEntity.totalExtras.as("totalExtras"), pedidoEntity.totalNeto.as("totalNeto"),
+						pedidoEntity.observaciones.as("observaciones"),
 						pedidoEntity.entregadoPorSub.as("entregadoPorSub"), pedidoEntity.creadoEn.as("creadoEn"),
 						pedidoEntity.actualizadoEn.as("actualizadoEn"), pedidoEntity.entregadoEn.as("entregadoEn")))
 				.from(pedidoEntity).where(where);

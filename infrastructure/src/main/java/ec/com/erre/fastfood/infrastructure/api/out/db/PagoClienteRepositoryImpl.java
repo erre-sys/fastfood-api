@@ -106,9 +106,16 @@ public class PagoClienteRepositoryImpl extends JPABaseRepository<PagoClienteEnti
 	}
 
 	@Override
-	public boolean actualizarEstado(Long pagoId, String nuevoEstado) {
-		long updated = getQueryFactory().update(pagoClienteEntity).where(pagoClienteEntity.id.eq(pagoId))
-				.set(pagoClienteEntity.estado, nuevoEstado).execute();
+	public boolean actualizarEstado(Long pagoId, String nuevoEstado, LocalDateTime fecha) {
+		var updateQuery = getQueryFactory().update(pagoClienteEntity).where(pagoClienteEntity.id.eq(pagoId))
+				.set(pagoClienteEntity.estado, nuevoEstado);
+
+		// Si se proporciona fecha, actualizarla también
+		if (fecha != null) {
+			updateQuery.set(pagoClienteEntity.fecha, fecha);
+		}
+
+		long updated = updateQuery.execute();
 		return updated > 0;
 	}
 

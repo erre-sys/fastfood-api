@@ -16,14 +16,24 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Servicio para gestión de pagos de clientes. Flujo de estados: - SOLICITADO (S): Estado inicial al registrar un pago -
+ * PAGADO (P): Pago completado - FIADO (F): Pedido queda a crédito Transiciones permitidas: - SOLICITADO → PAGADO -
+ * SOLICITADO → FIADO - FIADO → PAGADO - PAGADO → (estado final, no permite cambios)
+ */
 @Service
 public class PagoClienteServiceImpl implements PagoClienteService {
+
+	// Estados de pago
+	private static final String ESTADO_SOLICITADO = "S";
+	private static final String ESTADO_PAGADO = "P";
+	private static final String ESTADO_FIADO = "F";
 
 	private static final java.util.Set<String> METODOS = new java.util.HashSet<>(
 			java.util.Arrays.asList("EFECTIVO", "TARJETA", "TRANSFERENCIA", "DEPOSITO"));
 
 	private static final java.util.Set<String> ESTADOS = new java.util.HashSet<>(
-			java.util.Arrays.asList("S", "P", "F")); // SOLICITADO, PAGADO, FIADO
+			java.util.Arrays.asList(ESTADO_SOLICITADO, ESTADO_PAGADO, ESTADO_FIADO));
 
 	private final PagoClienteRepository repo;
 	private final PedidoRepository pedidoRepo;
@@ -51,7 +61,7 @@ public class PagoClienteServiceImpl implements PagoClienteService {
 		}
 
 		pago.setFecha(pago.getFecha() == null ? LocalDateTime.now() : pago.getFecha());
-		pago.setEstado("S"); // Estado inicial: SOLICITADO
+		pago.setEstado(ESTADO_SOLICITADO);
 
 		return repo.crear(pago);
 	}
@@ -88,41 +98,55 @@ public class PagoClienteServiceImpl implements PagoClienteService {
 		// Buscar el pago
 		PagoCliente pago = repo.buscarPorId(pagoId);
 
-		// Validar transiciones permitidas (aplicando principio de responsabilidad única)
+		// Validar transiciones permitidas
 		validarTransicionEstado(pago.getEstado(), nuevoEstado);
 
-		// Actualizar estado
-		boolean actualizado = repo.actualizarEstado(pagoId, nuevoEstado);
+		// Si cambia a PAGADO, actualizar la fecha al momento del pago
+		LocalDateTime fechaActualizacion = nuevoEstado.equals(ESTADO_PAGADO) ? LocalDateTime.now() : null;
+
+		// Actualizar estado (y fecha si corresponde)
+		boolean actualizado = repo.actualizarEstado(pagoId, nuevoEstado, fechaActualizacion);
 		if (!actualizado) {
 			throw new ReglaDeNegocioException("No se pudo actualizar el estado del pago");
 		}
 	}
 
-	/* ==== helpers ==== */
-
 	/**
-	 * Valida que la transición de estados sea permitida (Single Responsibility Principle)
+	 * Valida que la transición de estados sea permitida según las reglas de negocio: - SOLICITADO → PAGADO ✓ -
+	 * SOLICITADO → FIADO ✓ - FIADO → PAGADO ✓ - PAGADO → (ninguno, estado final) ✗
 	 */
 	private void validarTransicionEstado(String estadoActual, String estadoNuevo) throws ReglaDeNegocioException {
+		// Verificar que no sea el mismo estado
 		if (estadoActual != null && estadoActual.equals(estadoNuevo)) {
 			throw new ReglaDeNegocioException("El pago ya está en estado " + getNombreEstado(estadoNuevo));
+		}
+
+		if (estadoActual.equals(ESTADO_SOLICITADO)) {
+			if (!estadoNuevo.equals(ESTADO_PAGADO) && !estadoNuevo.equals(ESTADO_FIADO)) {
+				throw new ReglaDeNegocioException("Desde SOLICITADO solo se puede cambiar a PAGADO o FIADO");
+			}
+		} else if (estadoActual.equals(ESTADO_FIADO)) {
+			if (!estadoNuevo.equals(ESTADO_PAGADO)) {
+				throw new ReglaDeNegocioException("Desde FIADO solo se puede cambiar a PAGADO");
+			}
+		} else if (estadoActual.equals(ESTADO_PAGADO)) {
+			throw new ReglaDeNegocioException(
+					"No se puede cambiar el estado de un pago que ya está PAGADO (estado final)");
+		} else {
+			throw new ReglaDeNegocioException("Estado actual inválido: " + estadoActual);
 		}
 	}
 
 	/**
-	 * Obtiene el nombre legible del estado (Open/Closed Principle)
+	 * Obtiene el nombre legible del estado
 	 */
 	private String getNombreEstado(String estado) {
-		switch (estado) {
-		case "S":
-			return "SOLICITADO";
-		case "P":
-			return "PAGADO";
-		case "F":
-			return "FIADO";
-		default:
-			return estado;
-		}
+		return switch (estado) {
+		case ESTADO_SOLICITADO -> "SOLICITADO";
+		case ESTADO_PAGADO -> "PAGADO";
+		case ESTADO_FIADO -> "FIADO";
+		default -> estado;
+		};
 	}
 
 	/* ==== helpers ==== */

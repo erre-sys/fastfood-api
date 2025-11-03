@@ -16,99 +16,235 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 
+/**
+ * Implementación del servicio de gestión de promociones programadas. Maneja la creación, actualización y consulta de
+ * promociones de platos.
+ */
 @Service
 public class PromoProgramadaServiceImpl implements PromoProgramadaService {
 
-	private final PromoProgramadaRepository repo;
-	private final PlatoRepository platoRepo;
+	// ===== Constantes =====
+	private static final String ESTADO_ACTIVO = "A";
+	private static final String ESTADO_INACTIVO = "I";
+	private static final BigDecimal DESCUENTO_MINIMO = BigDecimal.ZERO;
+	private static final BigDecimal DESCUENTO_MAXIMO = new BigDecimal("100.00");
+	private static final int ESCALA_DESCUENTO = 2;
 
-	public PromoProgramadaServiceImpl(PromoProgramadaRepository repo, PlatoRepository platoRepo) {
-		this.repo = repo;
-		this.platoRepo = platoRepo;
+	// ===== Mensajes de Error =====
+	private static final String MSG_PLATO_INACTIVO = "El plato no está activo";
+	private static final String MSG_ID_OBLIGATORIO = "El id es obligatorio para actualizar";
+	private static final String MSG_PLATO_ID_OBLIGATORIO = "platoId es obligatorio";
+	private static final String MSG_FECHA_INICIO_OBLIGATORIA = "fechaInicio es obligatoria";
+	private static final String MSG_FECHA_FIN_OBLIGATORIA = "fechaFin es obligatoria";
+	private static final String MSG_DESCUENTO_OBLIGATORIO = "descuentoPct es obligatorio";
+	private static final String MSG_ESTADO_OBLIGATORIO = "estado es obligatorio";
+	private static final String MSG_FECHA_FIN_INVALIDA = "fechaFin debe ser mayor a fechaInicio";
+	private static final String MSG_DESCUENTO_FUERA_RANGO = "descuentoPct debe estar en (0, 100]";
+	private static final String MSG_ESTADO_INVALIDO = "Estado inválido. Permitidos: A/I";
+
+	private final PromoProgramadaRepository promoRepository;
+	private final PlatoRepository platoRepository;
+
+	public PromoProgramadaServiceImpl(PromoProgramadaRepository promoRepository, PlatoRepository platoRepository) {
+		this.promoRepository = promoRepository;
+		this.platoRepository = platoRepository;
 	}
 
+	/**
+	 * Crea una nueva promoción programada.
+	 *
+	 * @param promocion la promoción a crear
+	 * @param usuarioSub identificador del usuario creador
+	 * @return el ID de la promoción creada
+	 * @throws EntidadNoEncontradaException si el plato no existe
+	 * @throws ReglaDeNegocioException si las validaciones de negocio fallan
+	 */
 	@Override
 	@Transactional
-	public Long crear(PromoProgramada p, String usuarioSub)
+	public Long crear(PromoProgramada promocion, String usuarioSub)
 			throws EntidadNoEncontradaException, ReglaDeNegocioException {
-		validarYNormalizar(p, true);
-		Plato plato = platoRepo.buscarPorId(p.getPlatoId());
-		if (!"A".equalsIgnoreCase(plato.getEstado())) {
-			throw new ReglaDeNegocioException("El plato no está activo");
-		}
-		p.setCreadoPorSub(usuarioSub);
-		return repo.crear(p);
+		validarCamposObligatorios(promocion);
+		validarReglasDeNegocio(promocion);
+		normalizarDatos(promocion);
+		validarPlatoActivo(promocion.getPlatoId());
+
+		promocion.setCreadoPorSub(usuarioSub);
+		return promoRepository.crear(promocion);
 	}
 
+	/**
+	 * Actualiza una promoción existente.
+	 *
+	 * @param promocion la promoción con los datos actualizados
+	 * @param usuarioSub identificador del usuario que actualiza
+	 * @throws EntidadNoEncontradaException si la promoción o el plato no existen
+	 * @throws ReglaDeNegocioException si las validaciones de negocio fallan
+	 */
 	@Override
 	@Transactional
-	public void actualizar(PromoProgramada p) throws EntidadNoEncontradaException, ReglaDeNegocioException {
-		if (p.getId() == null)
-			throw new ReglaDeNegocioException("El id es obligatorio para actualizar");
-		validarYNormalizar(p, false);
-		// verificar existencia
-		repo.buscarPorId(p.getId());
-		// si cambian platoId, validar que exista y esté activo
-		if (p.getPlatoId() != null) {
-			Plato plato = platoRepo.buscarPorId(p.getPlatoId());
-			if (!"A".equalsIgnoreCase(plato.getEstado())) {
-				throw new ReglaDeNegocioException("El plato no está activo");
-			}
+	public void actualizar(PromoProgramada promocion, String usuarioSub)
+			throws EntidadNoEncontradaException, ReglaDeNegocioException {
+		if (promocion.getId() == null) {
+			throw new ReglaDeNegocioException(MSG_ID_OBLIGATORIO);
 		}
-		repo.actualizar(p);
+
+		promoRepository.buscarPorId(promocion.getId());
+		validarReglasDeNegocio(promocion);
+		normalizarDatos(promocion);
+
+		if (promocion.getPlatoId() != null) {
+			validarPlatoActivo(promocion.getPlatoId());
+		}
+
+		promocion.setCreadoPorSub(usuarioSub);
+		promoRepository.actualizar(promocion);
 	}
 
+	/**
+	 * Busca una promoción por su ID.
+	 *
+	 * @param id el ID de la promoción
+	 * @return la promoción encontrada
+	 * @throws EntidadNoEncontradaException si no existe
+	 */
 	@Override
 	@Transactional(readOnly = true)
 	public PromoProgramada buscarPorId(Long id) throws EntidadNoEncontradaException {
-		return repo.buscarPorId(id);
+		return promoRepository.buscarPorId(id);
 	}
 
+	/**
+	 * Lista todas las promociones de un plato específico.
+	 *
+	 * @param platoId el ID del plato
+	 * @return lista de promociones del plato
+	 * @throws EntidadNoEncontradaException si el plato no existe
+	 */
 	@Override
 	@Transactional(readOnly = true)
 	public List<PromoProgramada> listarPorPlato(Long platoId) throws EntidadNoEncontradaException {
-		// coherencia: valida plato existente
-		platoRepo.buscarPorId(platoId);
-		return repo.listarPorPlato(platoId);
+		platoRepository.buscarPorId(platoId);
+		return promoRepository.listarPorPlato(platoId);
 	}
 
+	/**
+	 * Obtiene un listado paginado de promociones con filtros.
+	 *
+	 * @param pager información de paginación y ordenamiento
+	 * @param filters criterios de búsqueda
+	 * @return página de promociones
+	 */
 	@Override
+	@Transactional(readOnly = true)
 	public Pagina<PromoProgramada> paginado(PagerAndSortDto pager, List<CriterioBusqueda> filters) {
-		return repo.paginadoPorFiltros(pager, filters);
+		return promoRepository.paginadoPorFiltros(pager, filters);
 	}
 
-	/* ===== helpers ===== */
-	private void validarYNormalizar(PromoProgramada p, boolean crear) throws ReglaDeNegocioException {
-		if (crear) {
-			if (p.getPlatoId() == null)
-				throw new ReglaDeNegocioException("platoId es obligatorio");
-			if (p.getFechaInicio() == null)
-				throw new ReglaDeNegocioException("fechaInicio es obligatoria");
-			if (p.getFechaFin() == null)
-				throw new ReglaDeNegocioException("fechaFin es obligatoria");
-			if (p.getDescuentoPct() == null)
-				throw new ReglaDeNegocioException("descuentoPct es obligatorio");
-			if (p.getEstado() == null)
-				throw new ReglaDeNegocioException("estado es obligatorio");
-		}
+	/* ===== Métodos de Validación ===== */
 
-		if (p.getFechaInicio() != null && p.getFechaFin() != null) {
-			if (!p.getFechaFin().isAfter(p.getFechaInicio())) {
-				throw new ReglaDeNegocioException("fechaFin debe ser mayor a fechaInicio");
+	/**
+	 * Valida que todos los campos obligatorios estén presentes al crear.
+	 */
+	private void validarCamposObligatorios(PromoProgramada promocion) throws ReglaDeNegocioException {
+		if (promocion.getPlatoId() == null) {
+			throw new ReglaDeNegocioException(MSG_PLATO_ID_OBLIGATORIO);
+		}
+		if (promocion.getFechaInicio() == null) {
+			throw new ReglaDeNegocioException(MSG_FECHA_INICIO_OBLIGATORIA);
+		}
+		if (promocion.getFechaFin() == null) {
+			throw new ReglaDeNegocioException(MSG_FECHA_FIN_OBLIGATORIA);
+		}
+		if (promocion.getDescuentoPct() == null) {
+			throw new ReglaDeNegocioException(MSG_DESCUENTO_OBLIGATORIO);
+		}
+		if (promocion.getEstado() == null) {
+			throw new ReglaDeNegocioException(MSG_ESTADO_OBLIGATORIO);
+		}
+	}
+
+	/**
+	 * Valida las reglas de negocio de la promoción.
+	 */
+	private void validarReglasDeNegocio(PromoProgramada promocion) throws ReglaDeNegocioException {
+		validarRangoFechas(promocion);
+		validarRangoDescuento(promocion);
+		validarEstado(promocion);
+	}
+
+	/**
+	 * Valida que la fecha fin sea posterior a la fecha inicio.
+	 */
+	private void validarRangoFechas(PromoProgramada promocion) throws ReglaDeNegocioException {
+		if (promocion.getFechaInicio() != null && promocion.getFechaFin() != null) {
+			if (!promocion.getFechaFin().isAfter(promocion.getFechaInicio())) {
+				throw new ReglaDeNegocioException(MSG_FECHA_FIN_INVALIDA);
 			}
 		}
-		if (p.getDescuentoPct() != null) {
-			if (p.getDescuentoPct().compareTo(BigDecimal.ZERO) <= 0
-					|| p.getDescuentoPct().compareTo(new BigDecimal("100.00")) > 0) {
-				throw new ReglaDeNegocioException("descuentoPct debe estar en (0, 100]");
+	}
+
+	/**
+	 * Valida que el porcentaje de descuento esté en el rango (0, 100].
+	 */
+	private void validarRangoDescuento(PromoProgramada promocion) throws ReglaDeNegocioException {
+		if (promocion.getDescuentoPct() != null) {
+			BigDecimal descuento = promocion.getDescuentoPct();
+			if (descuento.compareTo(DESCUENTO_MINIMO) <= 0 || descuento.compareTo(DESCUENTO_MAXIMO) > 0) {
+				throw new ReglaDeNegocioException(MSG_DESCUENTO_FUERA_RANGO);
 			}
-			p.setDescuentoPct(p.getDescuentoPct().setScale(2, RoundingMode.HALF_UP));
 		}
-		if (p.getEstado() != null) {
-			String e = p.getEstado().trim().toUpperCase();
-			if (!"A".equals(e) && !"I".equals(e))
-				throw new ReglaDeNegocioException("Estado inválido. Permitidos: A/I");
-			p.setEstado(e);
+	}
+
+	/**
+	 * Valida que el estado sea A (Activo) o I (Inactivo).
+	 */
+	private void validarEstado(PromoProgramada promocion) throws ReglaDeNegocioException {
+		if (promocion.getEstado() != null) {
+			String estado = promocion.getEstado().trim().toUpperCase();
+			if (!ESTADO_ACTIVO.equals(estado) && !ESTADO_INACTIVO.equals(estado)) {
+				throw new ReglaDeNegocioException(MSG_ESTADO_INVALIDO);
+			}
+		}
+	}
+
+	/**
+	 * Valida que el plato exista y esté activo.
+	 */
+	private void validarPlatoActivo(Long platoId) throws EntidadNoEncontradaException, ReglaDeNegocioException {
+		Plato plato = platoRepository.buscarPorId(platoId);
+		if (!ESTADO_ACTIVO.equalsIgnoreCase(plato.getEstado())) {
+			throw new ReglaDeNegocioException(MSG_PLATO_INACTIVO);
+		}
+	}
+
+	/* ===== Métodos de Normalización ===== */
+
+	/**
+	 * Normaliza los datos de la promoción (escala de decimales, mayúsculas, etc.).
+	 */
+	private void normalizarDatos(PromoProgramada promocion) {
+		normalizarDescuento(promocion);
+		normalizarEstado(promocion);
+	}
+
+	/**
+	 * Normaliza el porcentaje de descuento a 2 decimales.
+	 */
+	private void normalizarDescuento(PromoProgramada promocion) {
+		if (promocion.getDescuentoPct() != null) {
+			BigDecimal descuentoNormalizado = promocion.getDescuentoPct().setScale(ESCALA_DESCUENTO,
+					RoundingMode.HALF_UP);
+			promocion.setDescuentoPct(descuentoNormalizado);
+		}
+	}
+
+	/**
+	 * Normaliza el estado a mayúsculas.
+	 */
+	private void normalizarEstado(PromoProgramada promocion) {
+		if (promocion.getEstado() != null) {
+			String estadoNormalizado = promocion.getEstado().trim().toUpperCase();
+			promocion.setEstado(estadoNormalizado);
 		}
 	}
 }

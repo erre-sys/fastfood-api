@@ -17,130 +17,269 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import static ec.com.erre.fastfood.domain.api.services.PedidoConstants.*;
+import static ec.com.erre.fastfood.domain.api.services.PedidoUtils.*;
+
+/**
+ * Implementación del servicio de procesamiento de pedidos. Maneja la entrega de pedidos y la coordinación con el stored
+ * procedure.
+ */
 @Service
 public class PedidosProcesoServiceImpl implements PedidosProcesoService {
 
-	private final PedidoRepository pedidoRepo;
-	private final PedidoItemRepository itemRepo;
-	private final PedidoItemExtraRepository extraRepo;
-	private final RecetaRepository recetaRepo; // para validar que cada plato tenga receta
+	private final PedidoRepository pedidoRepository;
+	private final PedidoItemRepository pedidoItemRepository;
+	private final PedidoItemExtraRepository pedidoItemExtraRepository;
+	private final RecetaRepository recetaRepository;
 
 	@PersistenceContext
-	private EntityManager em;
+	private EntityManager entityManager;
 
-	public PedidosProcesoServiceImpl(PedidoRepository pedidoRepo, PedidoItemRepository itemRepo,
-			PedidoItemExtraRepository extraRepo, RecetaRepository recetaRepo) {
-		this.pedidoRepo = pedidoRepo;
-		this.itemRepo = itemRepo;
-		this.extraRepo = extraRepo;
-		this.recetaRepo = recetaRepo;
+	public PedidosProcesoServiceImpl(PedidoRepository pedidoRepository, PedidoItemRepository pedidoItemRepository,
+			PedidoItemExtraRepository pedidoItemExtraRepository, RecetaRepository recetaRepository) {
+		this.pedidoRepository = pedidoRepository;
+		this.pedidoItemRepository = pedidoItemRepository;
+		this.pedidoItemExtraRepository = pedidoItemExtraRepository;
+		this.recetaRepository = recetaRepository;
 	}
 
+	/**
+	 * Entrega un pedido validando, calculando totales y actualizando inventario.
+	 *
+	 * @param pedidoId el ID del pedido
+	 * @param usuarioSub identificador del usuario que entrega
+	 * @throws EntidadNoEncontradaException si el pedido no existe
+	 * @throws ReglaDeNegocioException si las validaciones fallan
+	 * @throws ServiceException si ocurre un error en el stored procedure
+	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void entregar(Long pedidoId, String usuarioSub)
 			throws EntidadNoEncontradaException, ReglaDeNegocioException, ServiceException {
 
-		Pedido pedido = pedidoRepo.buscarPorId(pedidoId);
+		Pedido pedido = pedidoRepository.buscarPorId(pedidoId);
+		List<PedidoItem> items = pedidoItemRepository.listarPorPedido(pedidoId);
 
-		if (!"L".equalsIgnoreCase(pedido.getEstado())) {
-			throw new ReglaDeNegocioException("El pedido debe estar en estado LISTO para poder entregarse");
+		validarEstadoPedidoParaEntrega(pedido);
+		validarItemsDelPedido(items);
+		validarRecetasDeLosPlatos(items);
+
+		TotalesPedido totales = calcularTotalesPedido(items, pedidoId);
+		actualizarTotalesSiNecesario(pedidoId, pedido, totales);
+
+		ejecutarCambioEstadoEntregado(pedidoId, usuarioSub);
+	}
+
+	/* ===== Métodos Privados - Validaciones ===== */
+
+	/**
+	 * Valida que el pedido esté en estado LISTO.
+	 */
+	private void validarEstadoPedidoParaEntrega(Pedido pedido) throws ReglaDeNegocioException {
+		if (!ESTADO_LISTO.equalsIgnoreCase(pedido.getEstado())) {
+			throw new ReglaDeNegocioException(MSG_PEDIDO_ESTADO_LISTO_REQUERIDO);
 		}
+	}
 
-		List<PedidoItem> items = itemRepo.listarPorPedido(pedidoId);
+	/**
+	 * Valida que los items del pedido sean válidos.
+	 */
+	private void validarItemsDelPedido(List<PedidoItem> items) throws ReglaDeNegocioException {
 		if (items == null || items.isEmpty()) {
-			throw new ReglaDeNegocioException("El pedido no tiene ítems");
-		}
-		for (PedidoItem it : items) {
-			if (it.getCantidad() == null || it.getCantidad().compareTo(BigDecimal.ZERO) <= 0) {
-				throw new ReglaDeNegocioException("Todos los ítems deben tener cantidad > 0");
-			}
-			if (it.getSubtotal() != null && it.getSubtotal().compareTo(BigDecimal.ZERO) < 0) {
-				throw new ReglaDeNegocioException("Hay ítems con subtotal negativo");
-			}
+			throw new ReglaDeNegocioException(MSG_PEDIDO_SIN_ITEMS);
 		}
 
-		Set<Long> platos = items.stream().map(PedidoItem::getPlatoId).collect(java.util.stream.Collectors.toSet());
-		for (Long platoId : platos) {
-			var receta = recetaRepo.obtenerPorPlato(platoId);
-			if (receta == null || receta.isEmpty()) {
-				throw new ReglaDeNegocioException("El plato " + platoId + " no tiene receta cargada");
+		for (PedidoItem item : items) {
+			validarCantidadItem(item);
+			validarSubtotalItem(item);
+		}
+	}
+
+	/**
+	 * Valida que el item tenga cantidad positiva.
+	 */
+	private void validarCantidadItem(PedidoItem item) throws ReglaDeNegocioException {
+		if (item.getCantidad() == null || item.getCantidad().compareTo(BigDecimal.ZERO) <= 0) {
+			throw new ReglaDeNegocioException(MSG_ITEMS_CANTIDAD_MAYOR_CERO);
+		}
+	}
+
+	/**
+	 * Valida que el subtotal no sea negativo.
+	 */
+	private void validarSubtotalItem(PedidoItem item) throws ReglaDeNegocioException {
+		if (item.getSubtotal() != null && item.getSubtotal().compareTo(BigDecimal.ZERO) < 0) {
+			throw new ReglaDeNegocioException(MSG_ITEMS_SUBTOTAL_NEGATIVO);
+		}
+	}
+
+	/**
+	 * Valida que todos los platos tengan receta cargada.
+	 */
+	private void validarRecetasDeLosPlatos(List<PedidoItem> items) throws ReglaDeNegocioException {
+		Set<Long> platoIds = items.stream().map(PedidoItem::getPlatoId).collect(Collectors.toSet());
+
+		for (Long platoId : platoIds) {
+			var recetas = recetaRepository.obtenerPorPlato(platoId);
+			if (recetas == null || recetas.isEmpty()) {
+				throw new ReglaDeNegocioException(String.format(MSG_PLATO_SIN_RECETA, platoId));
 			}
 		}
+	}
 
-		BigDecimal totalBruto = items.stream().map(i -> nvl2(i.getSubtotal())).reduce(BigDecimal.ZERO, BigDecimal::add);
+	/* ===== Métodos Privados - Cálculo de Totales ===== */
 
+	/**
+	 * Calcula todos los totales del pedido.
+	 */
+	private TotalesPedido calcularTotalesPedido(List<PedidoItem> items, Long pedidoId) throws ReglaDeNegocioException {
+		TotalesPedido totales = new TotalesPedido();
+
+		calcularTotalesItems(items, totales);
+		calcularTotalesExtras(items, totales);
+		calcularTotalNeto(totales);
+
+		return totales;
+	}
+
+	/**
+	 * Calcula totalBruto y totalDescuentos desde los items.
+	 */
+	private void calcularTotalesItems(List<PedidoItem> items, TotalesPedido totales) {
+		BigDecimal totalBrutoSinDescuento = BigDecimal.ZERO;
+		BigDecimal totalDescuentos = BigDecimal.ZERO;
+
+		for (PedidoItem item : items) {
+			BigDecimal subtotal = defaultSiNulo(item.getSubtotal());
+			BigDecimal descuentoMonto = defaultSiNulo(item.getDescuentoMonto());
+			BigDecimal cantidad = defaultSiNulo(item.getCantidad());
+
+			BigDecimal descuentoTotalItem = escalarPrecio(descuentoMonto.multiply(cantidad));
+			BigDecimal subtotalSinDescuento = subtotal.add(descuentoTotalItem);
+
+			totalBrutoSinDescuento = totalBrutoSinDescuento.add(subtotalSinDescuento);
+			totalDescuentos = totalDescuentos.add(descuentoTotalItem);
+		}
+
+		totales.totalBruto = escalarPrecio(totalBrutoSinDescuento);
+		totales.totalDescuentos = escalarPrecio(totalDescuentos);
+	}
+
+	/**
+	 * Calcula y valida el total de extras.
+	 */
+	private void calcularTotalesExtras(List<PedidoItem> items, TotalesPedido totales) throws ReglaDeNegocioException {
 		BigDecimal totalExtras = BigDecimal.ZERO;
-		for (PedidoItem it : items) {
-			List<PedidoItemExtra> extras = extraRepo.listarPorItem(it.getId());
-			for (PedidoItemExtra e : extras) {
-				if (e.getCantidad() == null || e.getCantidad().compareTo(BigDecimal.ZERO) <= 0) {
-					throw new ReglaDeNegocioException("Hay extras con cantidad inválida en el ítem " + it.getId());
-				}
-				if (e.getPrecioExtra() == null || e.getPrecioExtra().compareTo(BigDecimal.ZERO) < 0) {
-					throw new ReglaDeNegocioException("Hay extras con precio inválido en el ítem " + it.getId());
-				}
-				totalExtras = totalExtras.add(scale2(nvl2(e.getCantidad()).multiply(nvl2(e.getPrecioExtra()))));
+
+		for (PedidoItem item : items) {
+			List<PedidoItemExtra> extras = pedidoItemExtraRepository.listarPorItem(item.getId());
+			for (PedidoItemExtra extra : extras) {
+				validarCantidadExtra(extra, item.getId());
+				validarPrecioExtra(extra, item.getId());
+
+				BigDecimal totalLineaExtra = defaultSiNulo(extra.getCantidad())
+						.multiply(defaultSiNulo(extra.getPrecioExtra()));
+				totalExtras = totalExtras.add(escalarPrecio(totalLineaExtra));
 			}
 		}
-		totalExtras = scale2(totalExtras);
 
-		BigDecimal totalNeto = scale2(totalBruto.add(totalExtras));
+		totales.totalExtras = escalarPrecio(totalExtras);
+	}
 
-		if (!eq2(totalNeto, scale2(nvl2(pedido.getTotalNeto())))) {
-			pedidoRepo.actualizarTotales(pedidoId, scale2(totalBruto), scale2(totalExtras), scale2(totalNeto));
+	/**
+	 * Valida que el extra tenga cantidad positiva.
+	 */
+	private void validarCantidadExtra(PedidoItemExtra extra, Long itemId) throws ReglaDeNegocioException {
+		if (extra.getCantidad() == null || extra.getCantidad().compareTo(BigDecimal.ZERO) <= 0) {
+			throw new ReglaDeNegocioException(MSG_EXTRAS_CANTIDAD_INVALIDA + itemId);
 		}
+	}
 
+	/**
+	 * Valida que el extra tenga precio no negativo.
+	 */
+	private void validarPrecioExtra(PedidoItemExtra extra, Long itemId) throws ReglaDeNegocioException {
+		if (extra.getPrecioExtra() == null || extra.getPrecioExtra().compareTo(BigDecimal.ZERO) < 0) {
+			throw new ReglaDeNegocioException(MSG_EXTRAS_PRECIO_INVALIDO + itemId);
+		}
+	}
+
+	/**
+	 * Calcula el total neto del pedido.
+	 */
+	private void calcularTotalNeto(TotalesPedido totales) {
+		totales.totalNeto = escalarPrecio(
+				totales.totalBruto.subtract(totales.totalDescuentos).add(totales.totalExtras));
+	}
+
+	/**
+	 * Actualiza los totales en la base de datos si difieren.
+	 */
+	private void actualizarTotalesSiNecesario(Long pedidoId, Pedido pedido, TotalesPedido totales) {
+		BigDecimal totalNetoActual = escalarPrecio(defaultSiNulo(pedido.getTotalNeto()));
+
+		if (!igualesConPrecision(totales.totalNeto, totalNetoActual)) {
+			pedidoRepository.actualizarTotales(pedidoId, totales.totalBruto, totales.totalDescuentos,
+					totales.totalExtras, totales.totalNeto);
+		}
+	}
+
+	/* ===== Métodos Privados - Stored Procedure ===== */
+
+	/**
+	 * Ejecuta el stored procedure para cambiar estado a ENTREGADO.
+	 */
+	private void ejecutarCambioEstadoEntregado(Long pedidoId, String usuarioSub)
+			throws ReglaDeNegocioException, EntidadNoEncontradaException {
 		try {
-			Query q = em.createNativeQuery("CALL fastfood.sp_pedido_cambiar_estado(:p_id, :p_estado, :p_sub)");
-			q.setParameter("p_id", pedidoId);
-			q.setParameter("p_estado", "E");
-			q.setParameter("p_sub", usuarioSub);
-			q.executeUpdate();
-		} catch (RuntimeException ex) {
-			String msg = deepestMessage(ex);
-			if (msg != null) {
-				String m = msg.toLowerCase();
-				if (m.contains("stock insuficiente"))
-					throw new ReglaDeNegocioException("No hay suficiente stock para completar el pedido");
-				if (m.contains("pedido ya finalizado"))
-					throw new ReglaDeNegocioException("El pedido ya fue finalizado anteriormente");
-				if (m.contains("pedido no existe"))
-					throw new EntidadNoEncontradaException("Pedido no existe");
+			Query query = entityManager.createNativeQuery(SP_PEDIDO_CAMBIAR_ESTADO);
+			query.setParameter("p_id", pedidoId);
+			query.setParameter("p_estado", ESTADO_ENTREGADO);
+			query.setParameter("p_sub", usuarioSub);
+			query.executeUpdate();
+		} catch (RuntimeException excepcion) {
+			manejarExcepcionStoredProcedure(excepcion);
+		}
+	}
+
+	/**
+	 * Maneja las excepciones lanzadas por el stored procedure.
+	 */
+	private void manejarExcepcionStoredProcedure(RuntimeException excepcion)
+			throws ReglaDeNegocioException, EntidadNoEncontradaException {
+		String mensajeError = extraerMensajeMasProfundo(excepcion);
+
+		if (mensajeError != null) {
+			String mensajeLowerCase = mensajeError.toLowerCase();
+
+			if (mensajeLowerCase.contains(SP_ERROR_STOCK_INSUFICIENTE)) {
+				throw new ReglaDeNegocioException(MSG_PEDIDO_STOCK_INSUFICIENTE);
 			}
-			// Re-lanzar la excepción original para que GlobalExceptionHandler la procese
-			throw ex;
+			if (mensajeLowerCase.contains(SP_ERROR_PEDIDO_FINALIZADO)) {
+				throw new ReglaDeNegocioException(MSG_PEDIDO_YA_FINALIZADO);
+			}
+			if (mensajeLowerCase.contains(SP_ERROR_PEDIDO_NO_EXISTE)) {
+				throw new EntidadNoEncontradaException(MSG_PEDIDO_NO_EXISTE);
+			}
 		}
+
+		// Re-lanzar la excepción original para que GlobalExceptionHandler la procese
+		throw excepcion;
 	}
 
-	private BigDecimal nvl2(BigDecimal v) {
-		return v == null ? BigDecimal.ZERO : v;
-	}
+	/* ===== Clase Interna - DTO de Totales ===== */
 
-	private BigDecimal scale2(BigDecimal v) {
-		return v.setScale(2, RoundingMode.HALF_UP);
-	}
-
-	private boolean eq2(BigDecimal a, BigDecimal b) {
-		if (a == null && b == null)
-			return true;
-		if (a == null || b == null)
-			return false;
-		return a.setScale(2, RoundingMode.HALF_UP).compareTo(b.setScale(2, RoundingMode.HALF_UP)) == 0;
-	}
-
-	private String deepestMessage(Throwable t) {
-		String last = null;
-		Throwable cur = t;
-		while (cur != null) {
-			if (cur.getMessage() != null)
-				last = cur.getMessage();
-			cur = cur.getCause();
-		}
-		return last;
+	/**
+	 * Objeto de transferencia para totales del pedido.
+	 */
+	private static class TotalesPedido {
+		BigDecimal totalBruto = BigDecimal.ZERO;
+		BigDecimal totalDescuentos = BigDecimal.ZERO;
+		BigDecimal totalExtras = BigDecimal.ZERO;
+		BigDecimal totalNeto = BigDecimal.ZERO;
 	}
 }

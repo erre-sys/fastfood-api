@@ -26,5 +26,5 @@ public interface PagoClienteRepository {
 
 	BigDecimal totalPagadoPorPedido(Long pedidoId);
 
-	boolean actualizarEstado(Long pagoId, String nuevoEstado);
+	boolean actualizarEstado(Long pagoId, String nuevoEstado, java.time.LocalDateTime fecha);
 }

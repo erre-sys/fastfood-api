@@ -15,8 +15,6 @@ import ec.com.erre.fastfood.share.commons.Pagina;
 import ec.com.erre.fastfood.share.api.dtos.PedidoDto;
 import ec.com.erre.fastfood.share.api.dtos.PedidoItemDto;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -32,15 +30,15 @@ import java.util.Map;
 @Tag(name = "Pedidos (POS)", description = "Creación y gestión de pedidos")
 public class PedidoController {
 
-	private final PedidoGestionService gestion;
-	private final PedidosProcesoService proceso;
+	private final PedidoGestionService pedidoGestionService;
+	private final PedidosProcesoService pedidosProcesoService;
 	private final PedidoMapper pedidoMapper;
 	private final PedidoItemMapper itemMapper;
 
 	public PedidoController(PedidoGestionService gestion, PedidosProcesoService proceso, PedidoMapper pedidoMapper,
 			PedidoItemMapper itemMapper) {
-		this.gestion = gestion;
-		this.proceso = proceso;
+		this.pedidoGestionService = gestion;
+		this.pedidosProcesoService = proceso;
 		this.pedidoMapper = pedidoMapper;
 		this.itemMapper = itemMapper;
 	}
@@ -51,14 +49,14 @@ public class PedidoController {
 			@Valid @org.springframework.web.bind.annotation.RequestBody PedidoDto dto)
 			throws ReglaDeNegocioException, EntidadNoEncontradaException {
 		Pedido pedido = pedidoMapper.dtoToDomain(dto);
-		Long pedidoId = gestion.crear(pedido, "Usuario");
+		Long pedidoId = pedidoGestionService.crear(pedido, "Usuario");
 		return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("id", pedidoId));
 	}
 
 	@GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "Obtener detalle de pedido")
 	public ResponseEntity<PedidoDto> obtenerPorId(@PathVariable Long id) throws EntidadNoEncontradaException {
-		Pedido pedido = gestion.obtenerDetalle(id);
+		Pedido pedido = pedidoGestionService.obtenerDetalle(id);
 		PedidoDto dto = pedidoMapper.domainToDto(pedido);
 		dto.setItems(pedido.getItems() == null ? java.util.Collections.emptyList()
 				: pedido.getItems().stream().map(itemMapper::domainToDto).toList());
@@ -69,7 +67,7 @@ public class PedidoController {
 	@Operation(summary = "Agregar ítem al pedido")
 	public ResponseEntity<Map<String, Long>> agregarItem(@PathVariable Long id, @Valid @RequestBody PedidoItemDto dto)
 			throws EntidadNoEncontradaException, ReglaDeNegocioException {
-		Long itemId = gestion.agregarItem(id, itemMapper.dtoToDomain(dto));
+		Long itemId = pedidoGestionService.agregarItem(id, itemMapper.dtoToDomain(dto));
 		return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("id", itemId));
 	}
 
@@ -77,7 +75,7 @@ public class PedidoController {
 	@Operation(summary = "Marcar pedido como LISTO (C→L)")
 	public ResponseEntity<Void> marcarListo(@PathVariable Long id)
 			throws EntidadNoEncontradaException, ReglaDeNegocioException {
-		gestion.cambiarEstado(id, "L");
+		pedidoGestionService.cambiarEstado(id, "L");
 		return ResponseEntity.ok().build();
 	}
 
@@ -85,7 +83,7 @@ public class PedidoController {
 	@Operation(summary = "Anular pedido (si no está entregado/anulado)")
 	public ResponseEntity<Void> anular(@PathVariable Long id)
 			throws EntidadNoEncontradaException, ReglaDeNegocioException {
-		gestion.cancelar(id);
+		pedidoGestionService.cancelar(id);
 		return ResponseEntity.ok().build();
 	}
 
@@ -93,14 +91,14 @@ public class PedidoController {
 	@Operation(summary = "Entregar pedido (descuenta inventario vía SP)")
 	public ResponseEntity<Void> entregar(@PathVariable Long id)
 			throws EntidadNoEncontradaException, ReglaDeNegocioException, ServiceException {
-		proceso.entregar(id, "USUARIO");
+		pedidosProcesoService.entregar(id, "USUARIO");
 		return ResponseEntity.ok().build();
 	}
 
 	@PostMapping(value = "/search", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "Buscar pedidos con paginado por filtros")
 	public Pagina<PedidoDto> buscar(PagerAndSortDto pager, @RequestBody List<CriterioBusqueda> filters) {
-		Pagina<Pedido> paginaPedidos = gestion.paginadoPorFiltros(pager, filters);
+		Pagina<Pedido> paginaPedidos = pedidoGestionService.paginadoPorFiltros(pager, filters);
 		return PaginaMapper.map(paginaPedidos, pedidoMapper::domainToDto);
 	}
 }

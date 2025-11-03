@@ -20,6 +20,7 @@ public class Pedido {
 	private Long id;
 	private String estado;
 	private BigDecimal totalBruto;
+	private BigDecimal totalDescuentos;
 	private BigDecimal totalExtras;
 	private BigDecimal totalNeto;
 	private String observaciones;

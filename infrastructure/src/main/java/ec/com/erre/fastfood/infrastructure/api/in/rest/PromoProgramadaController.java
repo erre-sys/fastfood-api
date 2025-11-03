@@ -49,7 +49,8 @@ public class PromoProgramadaController {
 	public ResponseEntity<Void> actualizar(
 			@Validated(PromoProgramadaDto.Actualizar.class) @RequestBody PromoProgramadaDto dto)
 			throws EntidadNoEncontradaException, ReglaDeNegocioException {
-		promoProgramadaService.actualizar(promoProgramadaMapper.dtoToDomain(dto));
+		// TODO: Obtener usuarioSub del contexto de seguridad (JWT)
+		promoProgramadaService.actualizar(promoProgramadaMapper.dtoToDomain(dto), "USUARIO");
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
@@ -78,13 +79,10 @@ public class PromoProgramadaController {
 	}
 
 	@GetMapping(value = "/vigentes", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "Listar promociones vigentes (activas y dentro del rango de fechas)")
+	@Operation(summary = "Listar promociones vigentes activas")
 	public ResponseEntity<List<PromoProgramadaDto>> listarVigentes() {
-		String ahora = java.time.LocalDateTime.now().toString();
-		CriterioBusqueda estado = new CriterioBusqueda("estado", ":", "A");
-		CriterioBusqueda fechaInicio = new CriterioBusqueda("fechaInicio", "<=", ahora);
-		CriterioBusqueda fechaFin = new CriterioBusqueda("fechaFin", ">=", ahora);
-		List<CriterioBusqueda> filters = List.of(estado, fechaInicio, fechaFin);
+		CriterioBusqueda estado = new CriterioBusqueda("estado", "=", "A");
+		List<CriterioBusqueda> filters = List.of(estado);
 
 		PagerAndSortDto pager = new PagerAndSortDto();
 		pager.setSize(1000);
