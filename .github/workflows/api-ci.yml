@@ -128,8 +128,14 @@ jobs:
           # Pull de la nueva imagen
           docker compose -f /opt/apps/stack/docker-compose.yml --env-file "$COMPOSE_ENV" pull api-fastfood
 
-          # Levantar el servicio
-          docker compose -f /opt/apps/stack/docker-compose.yml --env-file "$COMPOSE_ENV" up -d api-fastfood
+          # Bajar el contenedor viejo
+          docker compose -f /opt/apps/stack/docker-compose.yml --env-file "$COMPOSE_ENV" down api-fastfood || true
+
+          # Levantar el servicio con la nueva imagen (forzar recreación)
+          docker compose -f /opt/apps/stack/docker-compose.yml --env-file "$COMPOSE_ENV" up -d --force-recreate api-fastfood
+
+          # Limpiar imágenes viejas
+          docker image prune -f
 
           # Health check: esperar que el contenedor esté healthy
           echo "Esperando que el servicio levante..."
