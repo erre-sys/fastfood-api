@@ -1,6 +1,7 @@
 package ec.com.erre.fastfood.infrastructure.commons.security;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -12,6 +13,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Configuration
@@ -19,6 +21,9 @@ import java.util.Arrays;
 public class SecurityConfig {
 
 	private final JwtConverter jwtConverter;
+
+	@Value("${app.cors.allowed-origins:http://localhost:4200,https://app.erre.com}")
+	private String allowedOrigins;
 
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -32,13 +37,18 @@ public class SecurityConfig {
 
 		// Deshabilitar CSRF, no es necesario ya que el API es stateless
 		http.csrf(csrf -> csrf.disable());
+
 		// Configure CORS
 		http.cors(cors -> {
 			CorsConfigurationSource source = request -> {
 				CorsConfiguration config = new CorsConfiguration();
-				config.setAllowedOrigins(Arrays.asList("http://localhost:4200"));
+				// Permitir múltiples orígenes desde variable de entorno
+				List<String> origins = Arrays.asList(allowedOrigins.split(","));
+				config.setAllowedOrigins(origins);
 				config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
 				config.setAllowedHeaders(Arrays.asList("*"));
+				config.setAllowCredentials(true);
+				config.setMaxAge(3600L); // Cache preflight por 1 hora
 				return config;
 			};
 			cors.configurationSource(source);
