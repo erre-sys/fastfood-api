@@ -117,10 +117,11 @@ jobs:
             set -e
 
             # 1) Login a GHCR (token con read:packages)
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
 
             # 2) Actualizar el tag inmutable en el .env de compose
             COMPOSE_ENV="/opt/apps/stack/.compose.env"
-            TAG='${{ needs.build-push.outputs.tag_sha }}'   
+            TAG='${{ needs.build-push.outputs.tag_sha }}'
             mkdir -p /opt/apps/stack
             if [ -f "$COMPOSE_ENV" ]; then
               sed -i "s|^IMAGE_TAG=.*|IMAGE_TAG=${TAG##*:}|" "$COMPOSE_ENV"
@@ -129,11 +130,22 @@ jobs:
             fi
             echo "Desplegando imagen: $TAG"
 
-            # 3) Pull + Up
+            # 3) Pull de la nueva imagen
             docker compose -f /opt/apps/stack/docker-compose.yml --env-file "$COMPOSE_ENV" pull api-fastfood
+
+            # 4) Levantar el servicio
             docker compose -f /opt/apps/stack/docker-compose.yml --env-file "$COMPOSE_ENV" up -d api-fastfood
 
+            # 5) Health check: esperar que el contenedor esté healthy
+            echo "Esperando que el servicio levante..."
+            sleep 10
 
-            echo "Health FAIL. Logs del contenedor:"
-            docker compose -f /opt/apps/stack/docker-compose.yml logs --tail=200 api-fastfood || true
-            exit 1
+            # Verificar que el contenedor está corriendo
+            if ! docker compose -f /opt/apps/stack/docker-compose.yml ps api-fastfood | grep -q "Up"; then
+              echo "❌ Health FAIL. El contenedor no está corriendo."
+              echo "Logs del contenedor:"
+              docker compose -f /opt/apps/stack/docker-compose.yml logs --tail=200 api-fastfood || true
+              exit 1
+            fi
+
+            echo "✅ Despliegue exitoso de $TAG"

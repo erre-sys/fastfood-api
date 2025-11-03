@@ -40,15 +40,9 @@ ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75 -XX:InitialRAMPe
 ENV LOG_DIR=/opt/app/logs
 RUN mkdir -p "$LOG_DIR" && chown -R 1000:1000 "$LOG_DIR"
 
-# OJO con el health: si mantienes context-path /fastfood/api, el health es:
-HEALTHCHECK --interval=15s --timeout=5s --retries=20 \
-  CMD wget -qO- http://127.0.0.1:8080/fastfood/api/actuator/health | grep -q '"status":"UP"' || exit 1
-
-
 # copiamos el jar compilado del módulo elegido
 ARG MODULE=bootstrap
 COPY --from=build /app/${MODULE}/target/*.jar /opt/app/app.jar
-COPY --from=build /app/infrastructure/target/*.jar /opt/app/app.jar
 
 # usuario no root
 RUN useradd -r -u 1000 appuser
@@ -56,10 +50,7 @@ USER 1000:1000
 
 EXPOSE 8080
 
-# OJO: si en producción usas context-path (/fastfood/api),
-# ajusta la ruta del healthcheck acorde.
-
-# si usas context-path /fastfood/api:
+# Health check con context-path /fastfood/api
 HEALTHCHECK --interval=15s --timeout=5s --retries=20 \
   CMD wget -qO- http://127.0.0.1:8080/fastfood/api/actuator/health | grep -q '"status":"UP"' || exit 1
 
