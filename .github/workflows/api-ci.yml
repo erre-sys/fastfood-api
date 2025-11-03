@@ -107,45 +107,40 @@ jobs:
     needs: build-push
     runs-on: self-hosted
     steps:
-      - name: Deploy over SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            set -e
+      - name: Login a GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
 
-            # 1) Login a GHCR (token con read:packages)
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+      - name: Deploy to server
+        run: |
+          set -e
 
-            # 2) Actualizar el tag inmutable en el .env de compose
-            COMPOSE_ENV="/opt/apps/stack/.compose.env"
-            TAG='${{ needs.build-push.outputs.tag_sha }}'
-            mkdir -p /opt/apps/stack
-            if [ -f "$COMPOSE_ENV" ]; then
-              sed -i "s|^IMAGE_TAG=.*|IMAGE_TAG=${TAG##*:}|" "$COMPOSE_ENV"
-            else
-              echo "IMAGE_TAG=${TAG##*:}" > "$COMPOSE_ENV"
-            fi
-            echo "Desplegando imagen: $TAG"
+          # Actualizar el tag inmutable en el .env de compose
+          COMPOSE_ENV="/opt/apps/stack/.compose.env"
+          TAG='${{ needs.build-push.outputs.tag_sha }}'
+          mkdir -p /opt/apps/stack
+          if [ -f "$COMPOSE_ENV" ]; then
+            sed -i "s|^IMAGE_TAG=.*|IMAGE_TAG=${TAG##*:}|" "$COMPOSE_ENV"
+          else
+            echo "IMAGE_TAG=${TAG##*:}" > "$COMPOSE_ENV"
+          fi
+          echo "Desplegando imagen: $TAG"
 
-            # 3) Pull de la nueva imagen
-            docker compose -f /opt/apps/stack/docker-compose.yml --env-file "$COMPOSE_ENV" pull api-fastfood
+          # Pull de la nueva imagen
+          docker compose -f /opt/apps/stack/docker-compose.yml --env-file "$COMPOSE_ENV" pull api-fastfood
 
-            # 4) Levantar el servicio
-            docker compose -f /opt/apps/stack/docker-compose.yml --env-file "$COMPOSE_ENV" up -d api-fastfood
+          # Levantar el servicio
+          docker compose -f /opt/apps/stack/docker-compose.yml --env-file "$COMPOSE_ENV" up -d api-fastfood
 
-            # 5) Health check: esperar que el contenedor esté healthy
-            echo "Esperando que el servicio levante..."
-            sleep 10
+          # Health check: esperar que el contenedor esté healthy
+          echo "Esperando que el servicio levante..."
+          sleep 10
 
-            # Verificar que el contenedor está corriendo
-            if ! docker compose -f /opt/apps/stack/docker-compose.yml ps api-fastfood | grep -q "Up"; then
-              echo "Health FAIL. El contenedor no está corriendo."
-              echo "Logs del contenedor:"
-              docker compose -f /opt/apps/stack/docker-compose.yml logs --tail=200 api-fastfood || true
-              exit 1
-            fi
+          # Verificar que el contenedor está corriendo
+          if ! docker compose -f /opt/apps/stack/docker-compose.yml ps api-fastfood | grep -q "Up"; then
+            echo "❌ Health FAIL. El contenedor no está corriendo."
+            echo "Logs del contenedor:"
+            docker compose -f /opt/apps/stack/docker-compose.yml logs --tail=200 api-fastfood || true
+            exit 1
+          fi
 
-            echo "Despliegue exitoso de $TAG"
+          echo "✅ Despliegue exitoso de $TAG"
