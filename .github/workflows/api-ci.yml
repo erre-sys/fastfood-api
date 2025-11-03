@@ -2,7 +2,7 @@ name: api-ci
 
 on:
   push:
-    branches: [ main ]      # despliega solo en main
+    branches: [ main ]
   workflow_dispatch:
 
 permissions:
@@ -142,10 +142,10 @@ jobs:
 
             # Verificar que el contenedor está corriendo
             if ! docker compose -f /opt/apps/stack/docker-compose.yml ps api-fastfood | grep -q "Up"; then
-              echo "❌ Health FAIL. El contenedor no está corriendo."
+              echo "Health FAIL. El contenedor no está corriendo."
               echo "Logs del contenedor:"
               docker compose -f /opt/apps/stack/docker-compose.yml logs --tail=200 api-fastfood || true
               exit 1
             fi
 
-            echo "✅ Despliegue exitoso de $TAG"
+            echo "Despliegue exitoso de $TAG"
