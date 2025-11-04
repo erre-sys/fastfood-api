@@ -27,10 +27,13 @@ public class SecurityConfig {
 
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		http.authorizeHttpRequests((authz) -> authz.requestMatchers(HttpMethod.GET, "/actuator/**").permitAll()
-				.requestMatchers(HttpMethod.GET, "/swagger-ui.html").permitAll()
-				.requestMatchers(HttpMethod.GET, "/v3/api-docs/**").permitAll()
-				.requestMatchers(HttpMethod.GET, "/swagger-ui/**").permitAll().anyRequest().authenticated());
+		http.authorizeHttpRequests((authz) -> authz
+				// Actuator
+				.requestMatchers("/actuator/**").permitAll()
+				// Swagger UI (permitir todos los métodos y recursos)
+				.requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll()
+				// Todo lo demás requiere autenticación
+				.anyRequest().authenticated());
 
 		http.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 		http.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtConverter)));

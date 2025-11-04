@@ -48,10 +48,11 @@ COPY --from=build /app/${MODULE}/target/*.jar /opt/app/app.jar
 RUN useradd -r -u 1000 appuser
 USER 1000:1000
 
-EXPOSE 8080
+EXPOSE 8080 8090
 
 # Health check con context-path /fastfood/api
+# Usa SERVER_PORT variable de entorno, fallback a 8080
 HEALTHCHECK --interval=15s --timeout=5s --retries=20 \
-  CMD wget -qO- http://127.0.0.1:8080/fastfood/api/actuator/health | grep -q '"status":"UP"' || exit 1
+  CMD wget -qO- http://127.0.0.1:${SERVER_PORT:-8080}/fastfood/api/actuator/health | grep -q '"status":"UP"' || exit 1
 
 ENTRYPOINT ["sh","-c","exec java $JAVA_OPTS -jar /opt/app/app.jar"]
