@@ -33,9 +33,7 @@ public class SecurityConfig {
 				// Swagger UI (permitir todos los métodos y recursos)
 				.requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**",
 						"/webjars/**")
-				.permitAll()
-				// Todo lo demás requiere autenticación
-				.anyRequest().authenticated());
+				.permitAll().anyRequest().authenticated());
 
 		http.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 		http.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtConverter)));
