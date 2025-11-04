@@ -25,36 +25,39 @@ public class SecurityConfig {
 	@Value("${app.cors.allowed-origins:http://localhost:4200,https://app.erre.com}")
 	private String allowedOrigins;
 
+	// Nuevo: leemos el context-path dinámicamente
+	@Value("${server.servlet.context-path:/}")
+	private String contextPath;
+
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http.authorizeHttpRequests((authz) -> authz
-				// Actuator (Prometheus y health endpoints)
-				.requestMatchers("/fastfood/api/actuator/**", "/actuator/**").permitAll()
+				// Actuator (Prometheus, health, etc.)
+				.requestMatchers(contextPath + "/actuator/**").permitAll()
 
-				// Swagger UI (permitir todos los métodos y recursos)
-				.requestMatchers("/fastfood/api/swagger-ui.html", "/fastfood/api/swagger-ui/**",
-						"/fastfood/api/v3/api-docs/**", "/fastfood/api/swagger-resources/**",
-						"/fastfood/api/webjars/**", "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**",
-						"/swagger-resources/**", "/webjars/**")
+				// Swagger UI y documentación
+				.requestMatchers(contextPath + "/swagger-ui.html", contextPath + "/swagger-ui/**",
+						contextPath + "/v3/api-docs/**", contextPath + "/swagger-resources/**",
+						contextPath + "/webjars/**")
 				.permitAll()
 
-				// Todo lo demás requiere autenticación
+				// Cualquier otro endpoint requiere autenticación
 				.anyRequest().authenticated());
 
 		http.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 		http.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtConverter)));
 
-		// Deshabilitar CSRF (stateless)
+		// API sin estado → deshabilitamos CSRF
 		http.csrf(csrf -> csrf.disable());
 
-		// Configurar CORS
+		// Configuración de CORS
 		http.cors(cors -> {
 			CorsConfigurationSource source = request -> {
 				CorsConfiguration config = new CorsConfiguration();
 				List<String> origins = Arrays.asList(allowedOrigins.split(","));
 				config.setAllowedOrigins(origins);
 				config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-				config.setAllowedHeaders(Arrays.asList("*"));
+				config.setAllowedHeaders(List.of("*"));
 				config.setAllowCredentials(true);
 				config.setMaxAge(3600L);
 				return config;
@@ -64,5 +67,4 @@ public class SecurityConfig {
 
 		return http.build();
 	}
-
 }
