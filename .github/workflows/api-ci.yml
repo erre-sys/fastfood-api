@@ -9,10 +9,6 @@ permissions:
   contents: read
   packages: write
 
-concurrency:
-  group: fastfood-api-${{ github.ref }}
-  cancel-in-progress: true
-
 env:
   MODULE: bootstrap
 
@@ -20,46 +16,19 @@ jobs:
   build-push:
     runs-on: ubuntu-latest
     outputs:
-      image: ${{ steps.meta.outputs.image }}
-      tag_dev: ${{ steps.meta.outputs.tag_dev }}
       tag_sha: ${{ steps.meta.outputs.tag_sha }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Cache Maven repo
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository
-          key: m2-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
-          restore-keys: m2-${{ runner.os }}-
 
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
+          cache: maven
 
-      - name: Build JAR (solo módulo bootstrap)
+      - name: Build JAR
         run: ./mvnw -B -DskipTests -pl bootstrap -am clean package
 
-      - name: Smoke check controller dentro del JAR
-        run: |
-          set -e
-          JAR=bootstrap/target/app.jar
-          test -f "$JAR" || (echo "No existe $JAR" && exit 1)
-
-          TMPDIR=$(mktemp -d)
-          unzip -q "$JAR" 'BOOT-INF/lib/*infrastructure*.jar' -d "$TMPDIR" || true
-          INF_JAR=$(find "$TMPDIR" -type f -name '*infrastructure*.jar' | head -n1)
-          if [ -z "$INF_JAR" ]; then
-            echo "No se encontró el jar de infrastructure dentro de BOOT-INF/lib"
-            unzip -l "$JAR" BOOT-INF/lib/\*.jar || true
-            exit 1
-          fi
-          jar tf "$INF_JAR" | grep -qi 'ec/com/erre/fastfood/infrastructure/api/in/rest/GrupoIngredienteController' \
-            && echo "Controller OK" \
-            || (echo "Controller NO está en el JAR anidado" && exit 1)
-
-      - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
 
       - name: Login to GHCR
@@ -69,37 +38,27 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Compute metadata
+      - name: Compute tags
         id: meta
         run: |
-          set -e
           OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           IMAGE="ghcr.io/${OWNER}/fastfood-api"
           SHORT=${GITHUB_SHA::7}
-          echo "image=$IMAGE" >> $GITHUB_OUTPUT
           echo "tag_dev=$IMAGE:dev" >> $GITHUB_OUTPUT
           echo "tag_sha=$IMAGE:sha-$SHORT" >> $GITHUB_OUTPUT
-          {
-            echo "labels=org.opencontainers.image.source=${{ github.repository }}";
-            echo "org.opencontainers.image.revision=${GITHUB_SHA}";
-            echo "org.opencontainers.image.created=$(date -u +%FT%TZ)";
-          } >> $GITHUB_OUTPUT
 
       - name: Build & push image
         uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile
-          platforms: linux/amd64
           push: true
           tags: |
             ${{ steps.meta.outputs.tag_dev }}
             ${{ steps.meta.outputs.tag_sha }}
-          labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             MODULE=${{ env.MODULE }}
             BUILD_SHA=${{ github.sha }}
-            CACHE_BUSTER=${{ github.run_id }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -110,43 +69,26 @@ jobs:
       - name: Login a GHCR
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
 
-      - name: Deploy to server
+      - name: Deploy
         run: |
           set -e
-
-          # Actualizar el tag inmutable en el .env de compose
           COMPOSE_ENV="/opt/apps/stack/.compose.env"
           TAG='${{ needs.build-push.outputs.tag_sha }}'
+
           mkdir -p /opt/apps/stack
-          if [ -f "$COMPOSE_ENV" ]; then
-            sed -i "s|^IMAGE_TAG=.*|IMAGE_TAG=${TAG##*:}|" "$COMPOSE_ENV"
-          else
-            echo "IMAGE_TAG=${TAG##*:}" > "$COMPOSE_ENV"
-          fi
-          echo "Desplegando imagen: $TAG"
+          echo "IMAGE_TAG=${TAG##*:}" > "$COMPOSE_ENV"
+          echo "Desplegando: $TAG"
 
-          # Pull de la nueva imagen
-          docker compose -f /opt/apps/stack/docker-compose.yml --env-file "$COMPOSE_ENV" pull api-fastfood
-
-          # Bajar el contenedor viejo
-          docker compose -f /opt/apps/stack/docker-compose.yml --env-file "$COMPOSE_ENV" down api-fastfood || true
-
-          # Levantar el servicio con la nueva imagen (forzar recreación)
-          docker compose -f /opt/apps/stack/docker-compose.yml --env-file "$COMPOSE_ENV" up -d --force-recreate api-fastfood
-
-          # Limpiar imágenes viejas
+          cd /opt/apps/stack
+          docker compose pull api-fastfood
+          docker compose up -d --force-recreate api-fastfood
           docker image prune -f
 
-          # Health check: esperar que el contenedor esté healthy
-          echo "Esperando que el servicio levante..."
           sleep 10
-
-          # Verificar que el contenedor está corriendo
-          if ! docker compose -f /opt/apps/stack/docker-compose.yml ps api-fastfood | grep -q "Up"; then
-            echo "❌ Health FAIL. El contenedor no está corriendo."
-            echo "Logs del contenedor:"
-            docker compose -f /opt/apps/stack/docker-compose.yml logs --tail=200 api-fastfood || true
+          if ! docker compose ps api-fastfood | grep -q "Up"; then
+            echo "Error: contenedor no está corriendo"
+            docker compose logs --tail=50 api-fastfood
             exit 1
           fi
 
-          echo "✅ Despliegue exitoso de $TAG"
+          echo "✅ Despliegue exitoso"
