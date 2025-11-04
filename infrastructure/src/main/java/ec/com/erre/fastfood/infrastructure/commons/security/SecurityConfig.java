@@ -34,7 +34,6 @@ public class SecurityConfig {
 				.requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**",
 						"/webjars/**")
 				.permitAll()
-				// Todo lo demás requiere autenticación
 				.anyRequest().authenticated());
 
 		http.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
