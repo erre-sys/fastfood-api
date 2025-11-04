@@ -66,14 +66,14 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ secrets.GHCR_USER }}
+          username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Compute metadata
         id: meta
         run: |
           set -e
-          OWNER="${{ secrets.GHCR_USER }}"
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           IMAGE="ghcr.io/${OWNER}/fastfood-api"
           SHORT=${GITHUB_SHA::7}
           echo "image=$IMAGE" >> $GITHUB_OUTPUT
