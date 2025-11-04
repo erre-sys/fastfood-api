@@ -28,20 +28,26 @@ public class SecurityConfig {
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http.authorizeHttpRequests((authz) -> authz
-				// Actuator
-				.requestMatchers("/actuator/**").permitAll()
+				// Actuator (Prometheus y health endpoints)
+				.requestMatchers("/fastfood/api/actuator/**", "/actuator/**").permitAll()
+
 				// Swagger UI (permitir todos los métodos y recursos)
-				.requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**",
-						"/webjars/**")
-				.permitAll().anyRequest().authenticated());
+				.requestMatchers("/fastfood/api/swagger-ui.html", "/fastfood/api/swagger-ui/**",
+						"/fastfood/api/v3/api-docs/**", "/fastfood/api/swagger-resources/**",
+						"/fastfood/api/webjars/**", "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**",
+						"/swagger-resources/**", "/webjars/**")
+				.permitAll()
+
+				// Todo lo demás requiere autenticación
+				.anyRequest().authenticated());
 
 		http.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 		http.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtConverter)));
 
-		// Deshabilitar CSRF, no es necesario ya que el API es stateless
+		// Deshabilitar CSRF (stateless)
 		http.csrf(csrf -> csrf.disable());
 
-		// Configure CORS
+		// Configurar CORS
 		http.cors(cors -> {
 			CorsConfigurationSource source = request -> {
 				CorsConfiguration config = new CorsConfiguration();
@@ -55,8 +61,8 @@ public class SecurityConfig {
 			};
 			cors.configurationSource(source);
 		});
-		return http.build();
 
+		return http.build();
 	}
 
 }
