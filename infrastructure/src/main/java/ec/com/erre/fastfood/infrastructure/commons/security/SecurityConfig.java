@@ -45,13 +45,12 @@ public class SecurityConfig {
 		http.cors(cors -> {
 			CorsConfigurationSource source = request -> {
 				CorsConfiguration config = new CorsConfiguration();
-				// Permitir múltiples orígenes desde variable de entorno
 				List<String> origins = Arrays.asList(allowedOrigins.split(","));
 				config.setAllowedOrigins(origins);
 				config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
 				config.setAllowedHeaders(Arrays.asList("*"));
 				config.setAllowCredentials(true);
-				config.setMaxAge(3600L); // Cache preflight por 1 hora
+				config.setMaxAge(3600L);
 				return config;
 			};
 			cors.configurationSource(source);
