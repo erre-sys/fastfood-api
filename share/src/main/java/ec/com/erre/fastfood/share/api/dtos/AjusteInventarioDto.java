@@ -28,6 +28,9 @@ public class AjusteInventarioDto {
 	@Size(max = 80, message = "referencia no puede exceder 80 caracteres")
 	private String referencia;
 
+	@Size(max = 80, message = "referencia no puede exceder 80 caracteres")
+	private String usuario;
+
 	@Builder.Default
 	private Boolean permitirNegativo = false;
 }

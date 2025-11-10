@@ -19,6 +19,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import static ec.com.erre.fastfood.domain.api.services.PedidoConstants.*;
 import static ec.com.erre.fastfood.domain.api.services.PedidoUtils.*;
@@ -50,13 +51,12 @@ public class PedidoGestionServiceImpl implements PedidoGestionService {
 	 * Crea un nuevo pedido en estado CREADO.
 	 *
 	 * @param pedido el pedido a crear (puede incluir items)
-	 * @param usuarioSub identificador del usuario creador
 	 * @return el ID del pedido creado
 	 */
 	@Override
 	@Transactional
-	public Long crear(Pedido pedido, String usuarioSub) throws ReglaDeNegocioException, EntidadNoEncontradaException {
-		inicializarPedido(pedido, usuarioSub);
+	public Long crear(Pedido pedido) throws ReglaDeNegocioException, EntidadNoEncontradaException {
+		inicializarPedido(pedido, pedido.getCreadoPorSub());
 
 		Long pedidoId = pedidoRepository.crear(pedido);
 

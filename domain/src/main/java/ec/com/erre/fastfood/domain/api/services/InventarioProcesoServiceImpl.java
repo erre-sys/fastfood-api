@@ -1,6 +1,7 @@
 package ec.com.erre.fastfood.domain.api.services;
 
 import ec.com.erre.fastfood.domain.commons.exceptions.ReglaDeNegocioException;
+import ec.com.erre.fastfood.share.api.dtos.AjusteInventarioDto;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
@@ -25,36 +26,31 @@ public class InventarioProcesoServiceImpl implements InventarioProcesoService {
 
 	@Override
 	@Transactional
-	public void ajustar(Long ingredienteId, BigDecimal cantidad, String referencia, String usuarioSub,
-			boolean permitirNeg) throws ReglaDeNegocioException {
+	public void ajustar(AjusteInventarioDto dto) throws ReglaDeNegocioException {
 
-		// Validaciones
-		if (ingredienteId == null) {
+		if (dto.getIngredienteId() == null) {
 			throw new ReglaDeNegocioException("ingredienteId es obligatorio");
 		}
-		if (cantidad == null || cantidad.compareTo(BigDecimal.ZERO) == 0) {
+		if (dto.getCantidad() == null || dto.getCantidad().compareTo(BigDecimal.ZERO) == 0) {
 			throw new ReglaDeNegocioException("cantidad no puede ser cero");
 		}
 
 		try {
-			String permitirNegStr = permitirNeg ? "S" : "N";
-
 			Query q = em.createNativeQuery(
 					"CALL fastfood.sp_inventario_ajustar(:p_ingrediente, :p_cantidad, :p_ref, :p_sub, :p_neg)");
-			q.setParameter("p_ingrediente", ingredienteId);
-			q.setParameter("p_cantidad", cantidad);
-			q.setParameter("p_ref", referencia != null ? referencia : "Ajuste manual");
-			q.setParameter("p_sub", usuarioSub != null ? usuarioSub : "SISTEMA");
-			q.setParameter("p_neg", permitirNegStr);
+			q.setParameter("p_ingrediente", dto.getIngredienteId());
+			q.setParameter("p_cantidad", dto.getCantidad());
+			q.setParameter("p_ref", dto.getReferencia() != null ? dto.getReferencia() : "Ajuste manual");
+			q.setParameter("p_sub", dto.getUsuario() != null ? dto.getUsuario() : "SISTEMA");
+			q.setParameter("p_neg", "N");
 			q.executeUpdate();
 
-			log.info("Ajuste de inventario realizado: ingredienteId={}, cantidad={}, ref={}", ingredienteId, cantidad,
-					referencia);
+			log.info("Ajuste de inventario realizado: ingredienteId={}, cantidad={}, ref={}", dto.getIngredienteId(),
+					dto.getCantidad(), dto.getReferencia());
 
 		} catch (RuntimeException ex) {
 			String msg = deepestMessage(ex);
 
-			// Traducir errores del SP a mensajes más amigables
 			if (msg.contains("Stock insuficiente")) {
 				throw new ReglaDeNegocioException(
 						"Stock insuficiente para realizar el ajuste. Use permitirNegativo=true si desea forzar.");

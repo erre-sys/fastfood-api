@@ -82,8 +82,7 @@ public class InventarioController {
 			@ApiResponse(responseCode = "400", description = "Error de validación o stock insuficiente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))) })
 	public ResponseEntity<Void> ajustar(@Valid @RequestBody AjusteInventarioDto dto) throws ReglaDeNegocioException {
 		boolean permitirNegativo = dto.getPermitirNegativo() != null ? dto.getPermitirNegativo() : false;
-		inventarioProcesoService.ajustar(dto.getIngredienteId(), dto.getCantidad(), dto.getReferencia(), "USUARIO",
-				permitirNegativo);
+		inventarioProcesoService.ajustar(dto);
 		return ResponseEntity.ok().build();
 	}
 }

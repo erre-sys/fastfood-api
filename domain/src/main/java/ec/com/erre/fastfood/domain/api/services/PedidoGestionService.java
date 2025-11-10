@@ -9,6 +9,7 @@ import ec.com.erre.fastfood.share.commons.PagerAndSortDto;
 import ec.com.erre.fastfood.share.commons.Pagina;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * <b>Servicio de ingredientes </b>
@@ -17,7 +18,7 @@ import java.util.List;
  * @version $1.0$
  */
 public interface PedidoGestionService {
-	Long crear(Pedido pedido, String usuarioSub) throws ReglaDeNegocioException, EntidadNoEncontradaException;
+	Long crear(Pedido pedido) throws ReglaDeNegocioException, EntidadNoEncontradaException;
 
 	Pedido obtenerDetalle(Long pedidoId) throws EntidadNoEncontradaException;
 
@@ -28,4 +29,5 @@ public interface PedidoGestionService {
 	void cancelar(Long pedidoId) throws EntidadNoEncontradaException, ReglaDeNegocioException;
 
 	Pagina<Pedido> paginadoPorFiltros(PagerAndSortDto pager, List<CriterioBusqueda> filters);
+
 }

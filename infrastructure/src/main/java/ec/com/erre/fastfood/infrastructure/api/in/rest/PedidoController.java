@@ -30,6 +30,7 @@ import java.util.Map;
 @Tag(name = "Pedidos (POS)", description = "Creación y gestión de pedidos")
 public class PedidoController {
 
+	public static final String ESTADO_LISTO = "L";
 	private final PedidoGestionService pedidoGestionService;
 	private final PedidosProcesoService pedidosProcesoService;
 	private final PedidoMapper pedidoMapper;
@@ -49,7 +50,7 @@ public class PedidoController {
 			@Valid @org.springframework.web.bind.annotation.RequestBody PedidoDto dto)
 			throws ReglaDeNegocioException, EntidadNoEncontradaException {
 		Pedido pedido = pedidoMapper.dtoToDomain(dto);
-		Long pedidoId = pedidoGestionService.crear(pedido, "Usuario");
+		Long pedidoId = pedidoGestionService.crear(pedido);
 		return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("id", pedidoId));
 	}
 
@@ -75,7 +76,7 @@ public class PedidoController {
 	@Operation(summary = "Marcar pedido como LISTO (C→L)")
 	public ResponseEntity<Void> marcarListo(@PathVariable Long id)
 			throws EntidadNoEncontradaException, ReglaDeNegocioException {
-		pedidoGestionService.cambiarEstado(id, "L");
+		pedidoGestionService.cambiarEstado(id, ESTADO_LISTO);
 		return ResponseEntity.ok().build();
 	}
 
@@ -89,9 +90,9 @@ public class PedidoController {
 
 	@PostMapping(value = "/{id}/entregar", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "Entregar pedido (descuenta inventario vía SP)")
-	public ResponseEntity<Void> entregar(@PathVariable Long id)
+	public ResponseEntity<Void> entregar(@PathVariable Long id, @RequestParam String entregadoPor)
 			throws EntidadNoEncontradaException, ReglaDeNegocioException, ServiceException {
-		pedidosProcesoService.entregar(id, "USUARIO");
+		pedidosProcesoService.entregar(id, entregadoPor);
 		return ResponseEntity.ok().build();
 	}
 
@@ -101,4 +102,5 @@ public class PedidoController {
 		Pagina<Pedido> paginaPedidos = pedidoGestionService.paginadoPorFiltros(pager, filters);
 		return PaginaMapper.map(paginaPedidos, pedidoMapper::domainToDto);
 	}
+
 }

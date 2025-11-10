@@ -25,7 +25,10 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static ec.com.erre.fastfood.infrastructure.api.entities.QPedidoEntity.pedidoEntity;
 
@@ -129,4 +132,5 @@ public class PedidoRepositoryImpl extends JPABaseRepository<PedidoEntity, Long> 
 		PathBuilder<QPedidoEntity> pb = new PathBuilder<>(QPedidoEntity.class, "pedidoEntity");
 		return getOrderSpecifier(pb, new CriterioOrden(paging.getOrderBy(), paging.getDirection()), PedidoEntity.class);
 	}
+
 }
