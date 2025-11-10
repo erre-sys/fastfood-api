@@ -46,8 +46,7 @@ public class PedidoController {
 
 	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "Crear pedido con items y extras")
-	public ResponseEntity<Map<String, Long>> crear(
-			@Valid @org.springframework.web.bind.annotation.RequestBody PedidoDto dto)
+	public ResponseEntity<Map<String, Long>> crear(@Valid @RequestBody PedidoDto dto)
 			throws ReglaDeNegocioException, EntidadNoEncontradaException {
 		Pedido pedido = pedidoMapper.dtoToDomain(dto);
 		Long pedidoId = pedidoGestionService.crear(pedido);

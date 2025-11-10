@@ -47,6 +47,8 @@ public class PedidoDto {
 	@Size(max = 255)
 	private String observaciones;
 
+	private String creadoPorSub;
+
 	private String entregadoPorSub;
 
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd' 'HH:mm:ss")
