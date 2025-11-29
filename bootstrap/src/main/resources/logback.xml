@@ -14,7 +14,7 @@
 
     <appender name="RollingFile"
         class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_DIR:-/opt/app/logs}/spring-boot-logger.log</file>
+        <file>${LOG_DIR:-/opt/palaspapas/data/logs}/spring-boot-logger.log</file>
         <encoder
             class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <Pattern>%d{"yyyy-MM-dd'T'HH:mm:ss,SSS z"} %-5level [${logging.application.name}] [%X{correlationId}] [%t] %C{1} [line: %L] %msg%n%throwable</Pattern>
@@ -23,7 +23,7 @@
         <rollingPolicy
             class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- rollover daily and when the file reaches 10 MegaBytes -->
-            <fileNamePattern>${LOG_DIR:-/opt/app/logs}/archived/spring-boot-logger-%d{yyyy-MM-dd}.%i.log
+            <fileNamePattern>${LOG_DIR:-/opt/palaspapas/data/logs}/archived/spring-boot-logger-%d{yyyy-MM-dd}.%i.log
             </fileNamePattern>
             <timeBasedFileNamingAndTriggeringPolicy
                 class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
@@ -37,11 +37,5 @@
         <appender-ref ref="RollingFile" />
         <appender-ref ref="Console" />
     </root>
-
-    <!-- LOG "com.baeldung*" at TRACE level -->
-    <logger name="ec.com.centric.cobranza" level="trace" additivity="false">
-        <appender-ref ref="RollingFile" />
-        <appender-ref ref="Console" />
-    </logger>
 
 </configuration>
