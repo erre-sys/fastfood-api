@@ -76,7 +76,8 @@ jobs:
           set -e
 
           APP_DIR="/opt/palaspapas/apps/api"
-          ENV_FILE="$APP_DIR/.env"
+          INFRA_DIR="/opt/palaspapas/infra"
+          ENV_FILE="$APP_DIR/.compose.env-api"
 
           TAG='${{ needs.build-push.outputs.tag_sha }}'
           TAG_VALUE="${TAG##*:}"
@@ -84,16 +85,14 @@ jobs:
           echo "Desplegando imagen: $TAG"
 
           mkdir -p "$APP_DIR"
-
           echo "IMAGE_TAG=$TAG_VALUE" > "$ENV_FILE"
 
-          cd "$APP_DIR"
+          cd "$INFRA_DIR"
 
           docker compose pull api
           docker compose up -d --force-recreate api
 
           sleep 8
-
           if ! docker compose ps api | grep -q "Up"; then
             echo "Error: el contenedor no está corriendo"
             docker compose logs --tail=100 api
@@ -101,5 +100,4 @@ jobs:
           fi
 
           docker image prune -f
-
           echo "Despliegue completado con éxito"
