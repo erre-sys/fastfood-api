@@ -2,7 +2,6 @@ package ec.com.erre.fastfood.infrastructure.commons.security;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.sql.DataSource;
 
@@ -41,20 +40,11 @@ public class DataSourceConfig {
 	DataSource createHikariDataSource(String username) {
 		HikariDataSource dataSource = new HikariDataSource();
 		dataSource.setJdbcUrl(dataSourceUrl);
-		String userName = dataSourceUsername.concat("[").concat(username).concat("]");
-		if (dataSourceUsername.equals(username)) {
-			userName = dataSourceUsername;
-		}
-		dataSource.setUsername(userName);
+		dataSource.setUsername(username);
 		dataSource.setPassword(dataSourcePassword);
 		dataSource.setMaximumPoolSize(dataSourcePoolSize == null ? 1 : dataSourcePoolSize);
 		dataSource.setMinimumIdle(minimumIdle);
 		dataSource.setIdleTimeout(idleTimeout);
-
-		Properties connectionProperties = new Properties();
-		connectionProperties.put("oracle.jdbc.timezoneAsRegion", "false");
-		connectionProperties.put("oracle.jdbc.timezone", "America/Guayaquil");
-		dataSource.setDataSourceProperties(connectionProperties);
 
 		return dataSource;
 	}
