@@ -40,8 +40,8 @@ public class DataSourceConfig {
 	DataSource createHikariDataSource(String username) {
 		HikariDataSource dataSource = new HikariDataSource();
 		dataSource.setJdbcUrl(dataSourceUrl);
-		dataSource.setUsername(username);
-		dataSource.setPassword(dataSourcePassword);
+		//dataSource.setUsername(username);
+		//dataSource.setPassword(dataSourcePassword);
 		dataSource.setMaximumPoolSize(dataSourcePoolSize == null ? 1 : dataSourcePoolSize);
 		dataSource.setMinimumIdle(minimumIdle);
 		dataSource.setIdleTimeout(idleTimeout);
