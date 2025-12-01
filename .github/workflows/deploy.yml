@@ -17,6 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       tag_sha: ${{ steps.meta.outputs.tag_sha }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -65,30 +66,38 @@ jobs:
   deploy-dev:
     needs: build-push
     runs-on: self-hosted
+
     steps:
       - name: Login a GHCR
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
 
-      - name: Deploy
+      - name: Deploy API
         run: |
           set -e
-          COMPOSE_ENV="/opt/apps/stack/.compose.env"
+
+          APP_DIR="/opt/palaspapas/apps/api"
+          INFRA_DIR="/opt/palaspapas/infra"
+          ENV_FILE="$APP_DIR/.compose.env-api"
+
           TAG='${{ needs.build-push.outputs.tag_sha }}'
+          TAG_VALUE="${TAG##*:}"
 
-          mkdir -p /opt/apps/stack
-          echo "IMAGE_TAG=${TAG##*:}" > "$COMPOSE_ENV"
-          echo "Desplegando: $TAG"
+          echo "Desplegando imagen: $TAG"
 
-          cd /opt/apps/stack
-          docker compose pull api-fastfood
-          docker compose up -d --force-recreate api-fastfood
-          docker image prune -f
+          mkdir -p "$APP_DIR"
+          echo "IMAGE_TAG=$TAG_VALUE" > "$ENV_FILE"
 
-          sleep 10
-          if ! docker compose ps api-fastfood | grep -q "Up"; then
-            echo "Error: contenedor no está corriendo"
-            docker compose logs --tail=50 api-fastfood
+          cd "$INFRA_DIR"
+
+          docker compose pull api
+          docker compose up -d --force-recreate api
+
+          sleep 8
+          if ! docker compose ps api | grep -q "Up"; then
+            echo "Error: el contenedor no está corriendo"
+            docker compose logs --tail=100 api
             exit 1
           fi
 
-          echo "✅ Despliegue exitoso"
+          docker image prune -f
+          echo "Despliegue completado con éxito"
