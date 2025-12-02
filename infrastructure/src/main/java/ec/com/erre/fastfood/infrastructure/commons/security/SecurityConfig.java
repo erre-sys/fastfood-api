@@ -1,18 +1,21 @@
 package ec.com.erre.fastfood.infrastructure.commons.security;
 
-import lombok.RequiredArgsConstructor;
+import java.util.Arrays;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
 
-import java.util.Arrays;
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Configuration
@@ -24,9 +27,29 @@ public class SecurityConfig {
 	@Value("${app.cors.allowed-origins:http://localhost:4200,https://app.erre.cloud}")
 	private String allowedOrigins;
 
+	/**
+	 * 1) Actuator chain (solo health/info/prometheus; lo demás denegado)
+	 */
 	@Bean
-	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+	@Order(1)
+	SecurityFilterChain actuatorSecurity(HttpSecurity http) throws Exception {
+		http.securityMatcher(EndpointRequest.toAnyEndpoint());
 
+		http.csrf(csrf -> csrf.disable());
+		http.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+		http.authorizeHttpRequests(authz -> authz.requestMatchers(EndpointRequest.to("health", "info", "prometheus"))
+				.permitAll().anyRequest().denyAll());
+
+		return http.build();
+	}
+
+	/**
+	 * 2) App chain (Swagger público + el resto con JWT)
+	 */
+	@Bean
+	@Order(2)
+	SecurityFilterChain appSecurity(HttpSecurity http) throws Exception {
 		http.csrf(csrf -> csrf.disable());
 
 		http.cors(cors -> cors.configurationSource(request -> {
@@ -41,20 +64,13 @@ public class SecurityConfig {
 
 		http.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-		http.authorizeHttpRequests(authz -> authz
-				// Preflight
-				.requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+		http.authorizeHttpRequests(authz -> authz.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-				// Actuator: SOLO lo necesario (esto permite /fastfood/api/actuator/... automáticamente)
-				.requestMatchers("/actuator/health/**").permitAll().requestMatchers("/actuator/prometheus").permitAll()
-				.requestMatchers("/actuator/info").permitAll()
-
-				// Swagger / OpenAPI
+				// Swagger
 				.requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**",
 						"/webjars/**")
 				.permitAll()
 
-				// Todo lo demás → JWT
 				.anyRequest().authenticated());
 
 		http.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtConverter)));
