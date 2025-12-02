@@ -29,7 +29,7 @@ public final class PedidoConstants {
 	public static final int ESCALA_DIVISION = 4;
 
 	// ===== Stored Procedures =====
-	public static final String SP_PEDIDO_CAMBIAR_ESTADO = "CALL fastfood.sp_pedido_cambiar_estado(:p_id, :p_estado, :p_sub)";
+	public static final String SP_PEDIDO_CAMBIAR_ESTADO = "CALL palaspapas_db.sp_pedido_cambiar_estado(:p_id, :p_estado, :p_sub)";
 
 	// ===== Mensajes de Error - Pedido =====
 	public static final String MSG_PEDIDO_FINALIZADO = "Pedido finalizado: no se puede modificar";

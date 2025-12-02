@@ -37,7 +37,7 @@ public class InventarioProcesoServiceImpl implements InventarioProcesoService {
 
 		try {
 			Query q = em.createNativeQuery(
-					"CALL fastfood.sp_inventario_ajustar(:p_ingrediente, :p_cantidad, :p_ref, :p_sub, :p_neg)");
+					"CALL palaspapas_db.sp_inventario_ajustar(:p_ingrediente, :p_cantidad, :p_ref, :p_sub, :p_neg)");
 			q.setParameter("p_ingrediente", dto.getIngredienteId());
 			q.setParameter("p_cantidad", dto.getCantidad());
 			q.setParameter("p_ref", dto.getReferencia() != null ? dto.getReferencia() : "Ajuste manual");

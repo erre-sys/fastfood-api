@@ -16,7 +16,7 @@ public class PromosProcesoServiceImpl implements PromosProcesoService {
 	@Transactional
 	public void aplicar() throws ServiceException {
 		try {
-			jakarta.persistence.Query q = em.createNativeQuery("CALL fastfood.sp_promos_aplicar(NOW())");
+			jakarta.persistence.Query q = em.createNativeQuery("CALL palaspapas_db.sp_promos_aplicar(NOW())");
 			q.executeUpdate();
 		} catch (RuntimeException ex) {
 			throw new ServiceException("Error al aplicar promociones: " + deepestMessage(ex));
