@@ -24,11 +24,9 @@ public class SecurityConfig {
 	@Value("${app.cors.allowed-origins:http://localhost:4200,https://app.erre.cloud}")
 	private String allowedOrigins;
 
-	@Value("${server.servlet.context-path:/}")
-	private String contextPath;
-
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
 		http.csrf(csrf -> csrf.disable());
 
 		http.cors(cors -> cors.configurationSource(request -> {
@@ -43,17 +41,24 @@ public class SecurityConfig {
 
 		http.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-		http.authorizeHttpRequests(authz -> authz.requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**")
+		http.authorizeHttpRequests(authz -> authz
+				// Preflight
+				.requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+
+				// Actuator: SOLO lo necesario (esto permite /fastfood/api/actuator/... automáticamente)
+				.requestMatchers("/actuator/health/**").permitAll().requestMatchers("/actuator/prometheus").permitAll()
+				.requestMatchers("/actuator/info").permitAll()
+
+				// Swagger / OpenAPI
+				.requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**",
+						"/webjars/**")
 				.permitAll()
-				.requestMatchers("/actuator/**", "/fastfood/api/actuator/**", "/swagger-ui.html", "/swagger-ui/**",
-						"/v3/api-docs/**", "/swagger-resources/**", "/webjars/**", "/fastfood/api/swagger-ui.html",
-						"/fastfood/api/swagger-ui/**", "/fastfood/api/v3/api-docs/**",
-						"/fastfood/api/swagger-resources/**", "/fastfood/api/webjars/**")
-				.permitAll().anyRequest().authenticated());
+
+				// Todo lo demás → JWT
+				.anyRequest().authenticated());
 
 		http.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtConverter)));
 
 		return http.build();
 	}
-
 }
