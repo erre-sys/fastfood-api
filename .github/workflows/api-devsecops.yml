@@ -1,0 +1,281 @@
+name: api-devsecops
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+concurrency:
+  group: api-devsecops-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE: ghcr.io/${{ github.repository }}
+  SECURITY_GATE: ${{ vars.SECURITY_GATE || 'false' }}
+
+jobs:
+  ci-security:
+    name: CI + Security (SAST/SCA/Secrets)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Build & Unit Tests
+        run: mvn -B -ntp clean verify
+
+      # -------------------------
+      # SAST / Code quality (Sonar)
+      # -------------------------
+      - name: Sonar analysis (optional)
+        if: ${{ secrets.SONAR_TOKEN != '' }}
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL || 'https://sonarcloud.io' }}
+          SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
+          SONAR_ORG: ${{ vars.SONAR_ORG }}
+        run: |
+          EXTRA=""
+          if [ -n "${SONAR_ORG}" ]; then
+            EXTRA="${EXTRA} -Dsonar.organization=${SONAR_ORG}"
+          fi
+          mvn -B -ntp sonar:sonar \
+            -Dsonar.host.url="${SONAR_HOST_URL}" \
+            -Dsonar.projectKey="${SONAR_PROJECT_KEY}" \
+            ${EXTRA}
+
+      # -------------------------
+      # Secrets (Gitleaks) + evidencia SARIF
+      # -------------------------
+      - name: Gitleaks (dir scan) -> SARIF
+        env:
+          EXIT_CODE: ${{ env.SECURITY_GATE == 'true' && '1' || '0' }}
+        run: |
+          docker run --rm -v "$PWD:/repo" -w /repo ghcr.io/gitleaks/gitleaks:v8.24.2 \
+            dir /repo \
+            --redact \
+            --report-format sarif \
+            --report-path gitleaks.sarif \
+            --exit-code ${EXIT_CODE}
+
+      - name: Upload Gitleaks report
+        uses: actions/upload-artifact@v4
+        with:
+          name: gitleaks-sarif
+          path: gitleaks.sarif
+          if-no-files-found: error
+
+      # -------------------------
+      # SCA (Dependency-Check)
+      # -------------------------
+      - name: OWASP Dependency-Check
+        env:
+          FAIL_CVSS: ${{ env.SECURITY_GATE == 'true' && '7' || '11' }}
+          # setup-java cambia JAVA_HOME; este action recomienda resetearlo para el contenedor
+          JAVA_HOME: /opt/jdk
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: "fastfood-api"
+          path: "."
+          format: "HTML"
+          out: "reports"
+          args: >
+            --failOnCVSS ${{ env.FAIL_CVSS }}
+            --enableRetired
+
+      - name: Upload Dependency-Check report
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-check-report
+          path: reports
+          if-no-files-found: error
+
+      # -------------------------
+      # Resumen amigable (por si no hay Code Scanning en repo privado)
+      # -------------------------
+      - name: Publish quick summary
+        if: always()
+        run: |
+          {
+            echo "### CI/Security Summary"
+            echo "- SECURITY_GATE: **${SECURITY_GATE}**"
+            echo "- Artifacts: gitleaks-sarif, dependency-check-report"
+          } >> $GITHUB_STEP_SUMMARY
+
+  build-push:
+    name: Build & Push Image (GHCR) + Trivy
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: [ ci-security ]
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      image_sha: ${{ steps.out.outputs.image_sha }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & Push
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:dev
+            ${{ env.IMAGE }}:sha-${{ github.sha }}
+          build-args: |
+            BUILD_SHA=${{ github.sha }}
+            MODULE=bootstrap
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: mode=min
+
+      - name: Output image ref
+        id: out
+        run: |
+          echo "image_sha=${IMAGE}:sha-${GITHUB_SHA}" >> $GITHUB_OUTPUT
+
+      # --- Trivy: 1) SARIF como evidencia (no gate) ---
+      - name: Trivy image scan -> SARIF (evidence)
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          image-ref: ${{ steps.out.outputs.image_sha }}
+          format: sarif
+          output: trivy-image.sarif
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          limit-severities-for-sarif: true
+          exit-code: "0"
+
+      - name: Upload Trivy SARIF
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-image-sarif
+          path: trivy-image.sarif
+          if-no-files-found: error
+
+      # --- Trivy: 2) Gate (table) ---
+      - name: Trivy image scan (gate)
+        env:
+          EXIT_CODE: ${{ env.SECURITY_GATE == 'true' && '1' || '0' }}
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          image-ref: ${{ steps.out.outputs.image_sha }}
+          format: table
+          output: trivy-image.txt
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: ${{ env.EXIT_CODE }}
+          hide-progress: true
+
+      - name: Publish Trivy output to Summary
+        if: always()
+        run: |
+          if [[ -s trivy-image.txt ]]; then
+            {
+              echo "### Trivy (image) output"
+              echo "<details><summary>Click to expand</summary>"
+              echo ""
+              echo '```'
+              cat trivy-image.txt
+              echo '```'
+              echo "</details>"
+            } >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload Trivy text report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-image-txt
+          path: trivy-image.txt
+          if-no-files-found: warn
+
+  deploy:
+    name: Deploy (self-hosted runner)
+    runs-on: self-hosted
+    needs: [ build-push ]
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    timeout-minutes: 20
+
+    steps:
+      - name: Deploy via SSH (compose pull/up)
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            set -euo pipefail
+            cd /opt/palaspapas/infra
+            echo "IMAGE_TAG=sha-${{ github.sha }}" > .compose.env
+            docker compose --env-file .compose.env pull api
+            docker compose --env-file .compose.env up -d api
+            docker image prune -f || true
+
+            # Smoke check (ajusta URL/puerto si tu health es diferente)
+            curl -fsS http://127.0.0.1:8090/fastfood/api/actuator/health | head -c 300
+            echo ""
+
+  dast:
+    name: DAST (OWASP ZAP baseline)
+    runs-on: ubuntu-latest
+    needs: [ deploy ]
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.DAST_TARGET_API != '' }}
+    timeout-minutes: 20
+    permissions:
+      contents: read
+
+    steps:
+      - name: ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.15.0
+        with:
+          target: ${{ vars.DAST_TARGET_API }}
+          allow_issue_writing: false
+          fail_action: ${{ env.SECURITY_GATE == 'true' }}
+          cmd_options: "-a -J zap.json -r zap.html"
+
+      - name: Upload ZAP reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-reports
+          path: |
+            zap.html
+            zap.json
+          if-no-files-found: warn
