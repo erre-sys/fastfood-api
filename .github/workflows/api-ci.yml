@@ -95,9 +95,9 @@ jobs:
           java-version: "17"
           cache: maven
 
-      - name: Run OWASP Dependency-Check (Maven plugin)
+      - name: Run OWASP Dependency-Check (build + report)
         run: |
-          ./mvnw -B -ntp -DskipTests=true \
+          ./mvnw -B -ntp -DskipTests=true clean package \
             org.owasp:dependency-check-maven:check \
             -Dformat=HTML \
             -DoutputDirectory=dependency-check-report
