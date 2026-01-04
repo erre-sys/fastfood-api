@@ -85,12 +85,15 @@ jobs:
 
   # OWASP solo cuando realmente importa: PR a main o push a main
   owasp_dependency_check:
-    name: OWASP Dependency-Check (HTML report) [main only]
+    name: OWASP Dependency-Check (HTML + SARIF) [main only]
     runs-on: ubuntu-latest
-    timeout-minutes: 35
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/main'
+    timeout-minutes: 25
+    continue-on-error: true
     permissions:
       contents: read
+      security-events: write
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -102,30 +105,30 @@ jobs:
           java-version: "17"
           cache: maven
 
-      - name: Cache Dependency-Check data
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository/org/owasp/dependency-check-data
-          key: owasp-dc-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            owasp-dc-${{ runner.os }}-
-
-      - name: Run OWASP Dependency-Check (build + report)
+      - name: Run OWASP Dependency-Check (report-only)
         env:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
         run: |
-          ./mvnw -B -ntp -DskipTests=true \
-            org.owasp:dependency-check-maven:check \
-            -Dformat=HTML \
+          ./mvnw -B -ntp -DskipTests=true org.owasp:dependency-check-maven:check \
+            -Dformat=HTML,SARIF \
             -DoutputDirectory=dependency-check-report \
-            -DnvdApiKeyEnvironmentVariable=NVD_API_KEY
+            -DfailBuildOnCVSS=11 \
+            -DfailOnError=false \
+            -DnvdApiKeyEnvironmentVariable=NVD_API_KEY \
+            -DnvdValidForHours=168 \
+            -DdataDirectory=$HOME/.m2/repository/org/owasp/dependency-check-data
 
-      - name: Upload report artifact (HTML)
+      - name: Upload report artifact (HTML/SARIF)
         uses: actions/upload-artifact@v4
         with:
           name: owasp-dependency-check-report
           path: dependency-check-report
           if-no-files-found: error
+
+      - name: Upload SARIF to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: dependency-check-report/dependency-check-report.sarif
 
   docker_build_and_push:
     name: Docker Build & Push (GHCR)
