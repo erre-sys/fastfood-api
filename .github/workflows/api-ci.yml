@@ -7,9 +7,9 @@ on:
     branches: [develop, main]
   workflow_dispatch:
 
+# Permisos mínimos globales (los elevamos solo donde toca)
 permissions:
   contents: read
-  security-events: write
 
 concurrency:
   group: api-ci-${{ github.ref }}
@@ -22,6 +22,9 @@ jobs:
   trivy_repo_scan:
     name: Trivy - Repo Scan (FS/Config/Secrets)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -45,6 +48,8 @@ jobs:
   build_package_and_sonar:
     name: Build (Maven) + SonarCloud
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout (full history for Sonar)
         uses: actions/checkout@v4
@@ -74,10 +79,62 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          ./mvnw -B -ntp -DskipTests=true sonar:sonar \
+          ./mvnw -B -ntp -DskipTests=true org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }} \
             -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }}
+
+  # OWASP solo cuando realmente importa: PR a main o push a main
+  owasp_dependency_check:
+    name: OWASP Dependency-Check (CVE report) [main only]
+    if: ${{ github.ref == 'refs/heads/main' || github.base_ref == 'main' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      # Cache para Dependency-Check (reduce muchísimo tiempo/costo)
+      - name: Cache Dependency-Check data
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.m2/repository/org/owasp/dependency-check-data
+            ~/.m2/repository/org/owasp/dependency-check-utils
+            ~/.m2/repository/org/owasp/dependency-check-core
+            ~/.m2/repository/org/owasp/dependency-check-maven
+            ~/.dependency-check
+          key: dc-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            dc-${{ runner.os }}-
+
+      - name: Run OWASP Dependency-Check (build + report)
+        env:
+          # Opcional pero recomendado si lo tienes:
+          # NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+          # (Si no tienes key, borra estas 2 líneas env y el parámetro de abajo)
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: |
+          ./mvnw -B -ntp -DskipTests=true clean package \
+            org.owasp:dependency-check-maven:check \
+            -Dformat=HTML \
+            -DoutputDirectory=dependency-check-report \
+            -DnvdApiKeyEnvironmentVariable=NVD_API_KEY
+
+      - name: Upload report artifact (HTML)
+        uses: actions/upload-artifact@v4
+        with:
+          name: owasp-dependency-check-report
+          path: dependency-check-report
+          if-no-files-found: error
 
   docker_build_and_push:
     name: Docker Build & Push (GHCR)
@@ -85,6 +142,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+    # 👇 No depende de OWASP, porque OWASP no corre en develop
     needs: [build_package_and_sonar]
     if: ${{ github.event_name == 'push' }}
     outputs:
@@ -144,7 +202,8 @@ jobs:
       packages: read
       security-events: write
     needs: [docker_build_and_push]
-    if: ${{ github.event_name == 'push' }}
+    # ✅ Para ahorrar minutos, puedes escanear imagen SOLO en main:
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     steps:
       - name: Login GHCR (pull)
         uses: docker/login-action@v3
