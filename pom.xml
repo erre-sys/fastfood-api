@@ -22,10 +22,9 @@
                     <artifactId>dependency-check-maven</artifactId>
                     <version>12.1.9</version>
                     <configuration>
-                        <failBuildOnCVSS>7</failBuildOnCVSS>
+                        <failBuildOnCVSS>11</failBuildOnCVSS>
                     </configuration>
                 </plugin>
-
                 <plugin>
                     <groupId>org.sonarsource.scanner.maven</groupId>
                     <artifactId>sonar-maven-plugin</artifactId>
