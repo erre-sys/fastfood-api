@@ -86,9 +86,10 @@ jobs:
 
   # OWASP solo cuando realmente importa: PR a main o push a main
   owasp_dependency_check:
-    name: OWASP Dependency-Check (CVE report) [main only]
-    if: ${{ github.ref == 'refs/heads/main' || github.base_ref == 'main' }}
+    name: OWASP Dependency-Check (HTML report) [main only]
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     permissions:
       contents: read
     steps:
@@ -106,15 +107,10 @@ jobs:
       - name: Cache Dependency-Check data
         uses: actions/cache@v4
         with:
-          path: |
-            ~/.m2/repository/org/owasp/dependency-check-data
-            ~/.m2/repository/org/owasp/dependency-check-utils
-            ~/.m2/repository/org/owasp/dependency-check-core
-            ~/.m2/repository/org/owasp/dependency-check-maven
-            ~/.dependency-check
-          key: dc-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
+          path: ~/.m2/repository/org/owasp/dependency-check-data
+          key: owasp-dc-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
-            dc-${{ runner.os }}-
+            owasp-dc-${{ runner.os }}-
 
       - name: Run OWASP Dependency-Check (build + report)
         env:
@@ -123,7 +119,7 @@ jobs:
           # (Si no tienes key, borra estas 2 líneas env y el parámetro de abajo)
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
         run: |
-          ./mvnw -B -ntp -DskipTests=true clean package \
+          ./mvnw -B -ntp -DskipTests=true \
             org.owasp:dependency-check-maven:check \
             -Dformat=HTML \
             -DoutputDirectory=dependency-check-report \
