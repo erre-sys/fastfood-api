@@ -18,21 +18,27 @@
         <pluginManagement>
             <plugins>
                 <plugin>
+                    <groupId>net.revelc.code.formatter</groupId>
+                    <artifactId>formatter-maven-plugin</artifactId>
+                    <version>2.24.1</version>
+                    <configuration>
+                        <configFile>${project.basedir}/codeFormatter.xml</configFile>
+                    </configuration>
+                </plugin>
+
+                <plugin>
                     <groupId>org.owasp</groupId>
                     <artifactId>dependency-check-maven</artifactId>
                     <version>12.1.9</version>
                     <configuration>
                         <failBuildOnCVSS>11</failBuildOnCVSS>
+                        <skipTestScope>true</skipTestScope>
                     </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.sonarsource.scanner.maven</groupId>
-                    <artifactId>sonar-maven-plugin</artifactId>
-                    <version>5.0.0.4389</version>
                 </plugin>
             </plugins>
         </pluginManagement>
     </build>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -42,11 +48,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>net.revelc.code.formatter</groupId>
-            <artifactId>formatter-maven-plugin</artifactId>
-            <version>2.24.1</version>
         </dependency>
     </dependencies>
     <modules>

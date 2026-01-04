@@ -9,7 +9,7 @@
         <version>1.0.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>${project.parent.artifactId}-bootstrap</artifactId>
+    <artifactId>fastfood-service-bootstrap</artifactId>
     <name>${project.parent.artifactId}-bootstrap</name>
     <description>Demo project for Spring Boot</description>
     <packaging>jar</packaging>
