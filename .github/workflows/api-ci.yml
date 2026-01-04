@@ -106,19 +106,23 @@ jobs:
           restore-keys: |
             owasp-dc-${{ runner.os }}-
 
-      - name: Run Dependency-Check (report-only, no NVD update)
+      - name: Build + Dependency-Check (aggregate HTML)
         env:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
         run: |
-          ./mvnw -B -ntp -DskipTests=true \
-            org.owasp:dependency-check-maven:check \
+          java -version
+          javac -version
+
+          ./mvnw -B -ntp -DskipTests=true clean package \
+            org.owasp:dependency-check-maven:aggregate \
             -Dformat=HTML \
             -DoutputDirectory=dependency-check-report \
             -DdataDirectory=$HOME/.m2/repository/org/owasp/dependency-check-data \
             -DnvdApiKey=$NVD_API_KEY \
-            -DautoUpdate=false \
+            -DautoUpdate=true \
             -DfailBuildOnCVSS=11 \
             -DfailOnError=false
+      
 
       - uses: actions/upload-artifact@v4
         with:
