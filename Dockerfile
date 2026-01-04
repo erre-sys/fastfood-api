@@ -1,5 +1,5 @@
 # ===== Builder =====
-FROM maven:3.9.7-eclipse-temurin-17 AS build
+FROM maven:3.9.7-eclipse-temurin-21 AS build
 WORKDIR /app
 
 # --- Elegir módulo que genera el jar ejecutable ---
@@ -26,7 +26,7 @@ RUN --mount=type=cache,target=/root/.m2 \
     mvn -q -B -DskipTests -pl ${MODULE} -am package
 
 # ===== Runtime =====
-FROM eclipse-temurin:17-jre-jammy
+FROM eclipse-temurin:21-jre-jammy
 WORKDIR /opt/app
 
 # (opcional) certificados / wget para healthcheck

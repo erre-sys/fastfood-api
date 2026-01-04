@@ -9,7 +9,7 @@
         <version>1.0.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>fastfood-service--share</artifactId>
+    <artifactId>fastfood-service-share</artifactId>
     <name>${project.parent.artifactId}-share</name>
     <description>Demo project for Spring Boot</description>
 
