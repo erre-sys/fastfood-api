@@ -130,7 +130,6 @@ jobs:
         with:
           sarif_file: dependency-check-report/dependency-check-report.sarif
 
-
   docker_build_and_push:
     name: Docker Build & Push (GHCR)
     runs-on: ubuntu-latest
