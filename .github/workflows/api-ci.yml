@@ -7,6 +7,7 @@ on:
     branches: [develop, main]
   workflow_dispatch:
 
+# Permisos mínimos globales (los elevamos solo donde toca)
 permissions:
   contents: read
 
@@ -102,7 +103,8 @@ jobs:
           java-version: "17"
           cache: maven
 
-      - name: Cache OWASP Dependency-Check data
+      # Cache para Dependency-Check (reduce muchísimo tiempo/costo)
+      - name: Cache Dependency-Check data
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository/org/owasp/dependency-check-data
@@ -110,13 +112,18 @@ jobs:
           restore-keys: |
             owasp-dc-${{ runner.os }}-
 
-      - name: Run OWASP Dependency-Check (report only)
+      - name: Run OWASP Dependency-Check (build + report)
+        env:
+          # Opcional pero recomendado si lo tienes:
+          # NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+          # (Si no tienes key, borra estas 2 líneas env y el parámetro de abajo)
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
         run: |
           ./mvnw -B -ntp -DskipTests=true \
             org.owasp:dependency-check-maven:check \
             -Dformat=HTML \
             -DoutputDirectory=dependency-check-report \
-            -DdataDirectory=$HOME/.m2/repository/org/owasp/dependency-check-data
+            -DnvdApiKeyEnvironmentVariable=NVD_API_KEY
 
       - name: Upload report artifact (HTML)
         uses: actions/upload-artifact@v4
@@ -131,7 +138,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-    # No depende de OWASP, porque OWASP no corre en develop
+    # 👇 No depende de OWASP, porque OWASP no corre en develop
     needs: [build_package_and_sonar]
     if: ${{ github.event_name == 'push' }}
     outputs:
@@ -191,6 +198,7 @@ jobs:
       packages: read
       security-events: write
     needs: [docker_build_and_push]
+    # ✅ Para ahorrar minutos, puedes escanear imagen SOLO en main:
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     steps:
       - name: Login GHCR (pull)
