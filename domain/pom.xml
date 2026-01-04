@@ -9,7 +9,7 @@
         <version>1.0.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>${project.parent.artifactId}-domain</artifactId>
+    <artifactId>fastfood-service-domain</artifactId>
     <name>${project.parent.artifactId}-domain</name>
     <description>Demo project for Spring Boot</description>
 
