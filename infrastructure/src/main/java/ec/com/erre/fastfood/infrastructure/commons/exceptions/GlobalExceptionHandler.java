@@ -105,8 +105,6 @@ public class GlobalExceptionHandler {
 			if (causeMessage != null) {
 				// Errores de stored procedures
 				if (causeMessage.contains("Stock insuficiente")) {
-					// Intentar extraer el ingrediente del mensaje si viene en formato:
-					// "Stock insuficiente para ingrediente: Queso" o similar
 					return extractStockErrorMessage(causeMessage);
 				}
 				if (causeMessage.contains("Pedido no existe")) {
