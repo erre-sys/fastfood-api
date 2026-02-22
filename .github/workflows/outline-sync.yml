@@ -1,0 +1,116 @@
+name: Sync PR & Outline
+
+on:
+  pull_request:
+    types: [labeled]
+
+jobs:
+  update-outline:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+
+    steps:
+      # Extrae la URL de Outline del body del PR y el label aplicado
+      - name: Leer PR
+        id: parse
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.pull_request.body || '';
+            const label = context.payload.label.name;
+
+            // Busca URL de Outline en el body
+            const urlMatch = body.match(/https?:\/\/[^\s]*outline[^\s]*\/doc\/[^\s)]+/);
+            if (!urlMatch) {
+              console.log('Sin URL de Outline en el PR, saltando...');
+              return core.setOutput('skip', 'true');
+            }
+
+            // Extrae el urlId
+            const urlId = urlMatch[0].split('-').pop().replace(/[\s)]/g, '');
+            console.log(`Doc urlId: ${urlId}, Label: ${label}`);
+
+            const estados = {
+              'in-progress':          '🟡 En progreso',
+              'ready-for-review':     '🔵 En revisión QA',
+              'qa-testing':           '🧪 En pruebas QA',
+              'qa-approved':          '✅ QA Aprobado',
+              'deployed-to-develop':  '🟢 Desplegado en Develop',
+              'deployed-to-prod':     '🚀 En Producción'
+            };
+
+            if (!estados[label]) {
+              console.log(`Label "${label}" no tiene estado mapeado, saltando...`);
+              return core.setOutput('skip', 'true');
+            }
+
+            core.setOutput('skip', 'false');
+            core.setOutput('url_id', urlId);
+            core.setOutput('status', estados[label]);
+            core.setOutput('outline_url', urlMatch[0]);
+
+      # Busca el documento por urlId y actualiza estado + historial
+      - name: Actualizar Outline
+        if: steps.parse.outputs.skip != 'true'
+        env:
+          TOKEN: ${{ secrets.OUTLINE_API_TOKEN }}
+          BASE: ${{ secrets.OUTLINE_BASE_URL }}
+          URL_ID: ${{ steps.parse.outputs.url_id }}
+          STATUS: ${{ steps.parse.outputs.status }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          # Obtener documento por urlId
+          DOC=$(curl -s "$BASE/api/documents.search" \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"query\": \"$URL_ID\"}")
+
+          DOC_ID=$(echo "$DOC" | jq -r '.data[0].document.id // empty')
+          [ -z "$DOC_ID" ] && echo "Documento no encontrado" && exit 1
+
+          # Obtener contenido actual
+          CONTENT=$(curl -s "$BASE/api/documents.info" \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"id\": \"$DOC_ID\"}" | jq -r '.data.text')
+
+          DATE=$(date +"%Y-%m-%d %H:%M UTC")
+          ENTRY="| $DATE | $STATUS | PR: [$PR_TITLE]($PR_URL) | [Link]($PR_URL) |"
+
+          # Actualizar estado
+          if echo "$CONTENT" | grep -q "## Estado:"; then
+            CONTENT=$(echo "$CONTENT" | sed "s/## Estado:.*/## Estado: $STATUS/")
+          fi
+
+          # Agregar al historial (tabla)
+          if echo "$CONTENT" | grep -q "⏱️ Historial de cambios"; then
+            CONTENT=$(echo "$CONTENT" | sed "/| | ⚪ Sin iniciar/d")
+            CONTENT=$(echo "$CONTENT" | sed "/|-------|--------|--------|------|/a\\
+          $ENTRY")
+          fi
+
+          # Enviar actualización
+          ESCAPED=$(echo "$CONTENT" | python3 -c "import sys,json; print(json.dumps(sys.stdin.read()))")
+          HTTP=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/documents.update" \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"id\": \"$DOC_ID\", \"text\": $ESCAPED}")
+
+          [ "$HTTP" = "200" ] && echo "✅ $STATUS → $DOC_ID" || (echo "❌ HTTP $HTTP" && exit 1)
+
+      # Confirma en el PR
+      - name: Confirmar en PR
+        if: steps.parse.outputs.skip != 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `Outline actualizado → **${{ steps.parse.outputs.status }}**`
+            });
