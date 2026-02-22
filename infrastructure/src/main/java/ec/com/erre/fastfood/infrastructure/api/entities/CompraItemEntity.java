@@ -44,7 +44,6 @@ public class CompraItemEntity implements Serializable {
 	@Column(name = "costo_unitario", precision = 14, scale = 2, nullable = false)
 	private BigDecimal costoUnitario;
 
-	// Navegación opcional (no necesaria para tu flujo)
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "compra_id", insertable = false, updatable = false)
 	@JsonBackReference
