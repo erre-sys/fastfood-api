@@ -29,7 +29,6 @@ Marca con una "x" las opciones que correspondan:
 - [ ] S4S
 - [ ] MICROS OLD
 - [ ] REPORTS
----
 
 ## 📋 URL OUTLINE
 
@@ -37,3 +36,4 @@ Marca con una "x" las opciones que correspondan:
 ---
 
 🙌 ¡Gracias por tu contribución!
+
